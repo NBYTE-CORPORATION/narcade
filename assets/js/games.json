@@ -1,0 +1,52 @@
+[
+  {
+    "title": "🎯 숫자 맞추기",
+    "file": "game1.html",
+    "image": "assets/images/guess.png"
+  },
+  {
+    "title": "🖱️ 클릭 게임",
+    "file": "game2.html",
+    "image": "assets/images/click.png"
+  },
+  {
+    "title": "🧠 기억력 게임",
+    "file": "game3.html",
+    "image": "assets/images/memory.png"
+  },
+  {
+    "title": "🎲 주사위 게임",
+    "file": "game4.html",
+    "image": "assets/images/dice.png"
+  },
+  {
+    "title": "🔢 짝/홀 맞히기",
+    "file": "game5.html",
+    "image": "assets/images/evenodd.png"
+  },
+  {
+    "title": "⚡ 반응속도",
+    "file": "game6.html",
+    "image": "assets/images/reaction.png"
+  },
+  {
+    "title": "⌨️ 퀵 타이핑",
+    "file": "game7.html",
+    "image": "assets/images/game7.png"
+  },
+  {
+    "title": "➕ 산수 퀴즈",
+    "file": "game8.html",
+    "image": "assets/images/game8.png"
+  },
+  {
+    "title": "🎨 색상 기억 게임",
+    "file": "game9.html",
+    "image": "assets/images/game9.png"
+  },
+  {
+    "title": "🔢 숫자 순서 클릭",
+    "file": "game10.html",
+    "image": "assets/images/game10.png"
+  }
+]

@@ -1,0 +1,23 @@
+body {
+  overflow: hidden; /* 세로 스크롤 방지 */
+  background: #222;
+  color: white;
+  font-family: sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 80px);
+  gap: 10px;
+  justify-content: center;
+  margin: 20px auto;
+}
+
+.grid-btn {
+  width: 80px;
+  height: 80px;
+  font-size: 24px;
+  cursor: pointer;
+}
