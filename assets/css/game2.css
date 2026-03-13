@@ -1,15 +1,83 @@
-body { margin: 0; background: #111; color: white; font-family: sans-serif; }
+/* ── game2.css — 클릭 게임 (컴팩트) ── */
 
-.game-container {
+/* game-base의 .game-container를 그대로 활용 (max-width:580px, auto height) */
+/* body의 height:100vh 제거 — game-base.css의 min-height:100vh + flex centering 사용 */
+
+/* 스탯 행 */
+.click-stats {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100vh;
-  text-align: center;
+  gap: 28px;
+  margin: 18px 0 4px;
 }
-button {
+
+.click-stat { text-align: center; }
+
+.click-stat-val {
+  display: block;
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.click-stat-lbl {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-top: 3px;
+  text-transform: uppercase;
+}
+
+/* 클릭 버튼 영역 */
+.click-area {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 4px;
+}
+
+/* 동그란 클릭 버튼 */
+#clickBtn {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  font-weight: 900;
+  padding: 0;
+  background: linear-gradient(135deg, var(--primary), #5b21b6);
+  box-shadow: 0 6px 28px var(--primary-glow);
+  transition: transform 0.08s, box-shadow 0.1s, opacity 0.2s;
+  letter-spacing: 0.02em;
+}
+
+#clickBtn:active:not(:disabled) {
+  transform: scale(0.90) !important;
+  box-shadow: 0 2px 14px var(--primary-glow);
+}
+
+#clickBtn:disabled {
+  background: linear-gradient(135deg, #374151, #1f2937);
+  box-shadow: none;
+}
+
+/* 최종 메시지 */
+.final-msg {
+  font-size: 0.92rem;
+  color: var(--text-dim);
+  min-height: 22px;
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+/* 다시 하기 버튼 */
+.retry-btn {
   margin-top: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 10px 32px;
+  font-size: 0.9rem;
+  border-radius: 12px;
 }

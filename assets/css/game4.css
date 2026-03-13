@@ -1,25 +1,271 @@
+/* ── game4.css — 3D 주사위 게임 ── */
+
 body {
-  overflow: hidden; /* 세로 스크롤 방지 */
-  display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #222;
-  color: white;
-  font-family: sans-serif;
-  text-align: center;
-  padding: 20px;
+  padding: 80px 20px 40px;
+  min-height: 100vh;
 }
 
-.button-group {
+/* ── Two-column layout ── */
+.dice-layout {
   display: flex;
-  gap: 10px;
-  margin: 20px 0;
+  align-items: center;
+  gap: 60px;
+  max-width: 880px;
+  width: 100%;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+/* ────────────────────────
+   Left Panel — Controls
+   ──────────────────────── */
+.ctrl-panel {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.game-meta { text-align: center; }
+
+.meta-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 16px rgba(167,139,250,0.6));
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.meta-desc {
+  color: var(--text-dim);
+  font-size: 0.86rem;
+  margin-top: 6px;
+}
+
+/* Scoreboard */
+.scoreboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 20px;
+}
+
+.sb-side { text-align: center; flex: 1; }
+
+.sb-lbl {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.sb-num {
+  display: block;
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.sb-side.you .sb-num { color: var(--primary-light); }
+.sb-side.cpu .sb-num { color: #f87171; }
+
+.sb-sep {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+/* Result badge */
+.result-badge {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 800;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+.result-badge.win  { background: rgba(74,222,128,0.12);  color: #4ade80; border-color: rgba(74,222,128,0.25); }
+.result-badge.lose { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.25); }
+.result-badge.draw { background: rgba(251,191,36,0.12);  color: #fbbf24; border-color: rgba(251,191,36,0.25); }
+
+.round-text {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  min-height: 20px;
+}
+
+/* Buttons */
+.btn-stack { display: flex; flex-direction: column; gap: 10px; }
+
+.roll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), #5b21b6);
+  box-shadow: 0 4px 22px var(--primary-glow);
+  letter-spacing: 0.03em;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+.roll-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px var(--primary-glow);
+}
+.roll-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-dice-icon { font-size: 1.15rem; }
+
+.reset-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ────────────────────────
+   Right Panel — Dice
+   ──────────────────────── */
+.dice-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dice-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.dice-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.slot-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.slot-label.you { color: var(--primary-light); }
+.slot-label.cpu { color: #f87171; }
+
+.slot-num {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: var(--text);
+  min-height: 48px;
+  text-align: center;
+  line-height: 1;
+  transition: color 0.3s;
+}
+
+.vs-glyph {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  margin-top: 16px;
+}
+
+/* ─── 3D 주사위 씬 ─── */
+.scene {
+  width: 120px;
+  height: 120px;
+  perspective: 500px;
+}
+
+.cube {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-22deg) rotateY(28deg);
+}
+
+.face {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #f9fafb 0%, #dde3ed 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,0.07),
+    inset 0 2px 5px rgba(255,255,255,0.85);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 13px;
+  box-sizing: border-box;
+  place-items: center;
+}
+
+.face.front  { transform: rotateY(0deg)   translateZ(60px); }
+.face.back   { transform: rotateY(180deg) translateZ(60px); }
+.face.right  { transform: rotateY(90deg)  translateZ(60px); }
+.face.left   { transform: rotateY(-90deg) translateZ(60px); }
+.face.top    { transform: rotateX(90deg)  translateZ(60px); }
+.face.bottom { transform: rotateX(-90deg) translateZ(60px); }
+
+/* 주사위 점 */
+.dot {
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle at 38% 32%, #64748b, #1e293b);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  display: block;
+}
+
+/* ── Responsive ── */
+@media (max-width: 720px) {
+  .dice-layout  { flex-direction: column; gap: 28px; }
+  .ctrl-panel   { flex: none; width: 100%; max-width: 360px; }
+  .dice-row     { gap: 22px; }
+  .scene        { width: 96px; height: 96px; }
+  .cube         { width: 96px; height: 96px; }
+  .face {
+    width: 96px; height: 96px;
+    border-radius: 15px; padding: 10px;
+  }
+  .face.front  { transform: rotateY(0deg)   translateZ(48px); }
+  .face.back   { transform: rotateY(180deg) translateZ(48px); }
+  .face.right  { transform: rotateY(90deg)  translateZ(48px); }
+  .face.left   { transform: rotateY(-90deg) translateZ(48px); }
+  .face.top    { transform: rotateX(90deg)  translateZ(48px); }
+  .face.bottom { transform: rotateX(-90deg) translateZ(48px); }
+  .dot { width: 13px; height: 13px; }
 }

@@ -2,23 +2,85 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>짝수/홀수 맞히기 — 나케이드</title>
+  <title>짝수/홀수 — 나케이드</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../assets/css/game-base.css">
   <link rel="stylesheet" href="../assets/css/game5.css">
 </head>
 <body>
   <a href="../index.html" class="back-btn">← 목록</a>
-  <div class="game-container">
-    <h1>🔢 짝수/홀수 맞히기</h1>
-    <p>짝수일지 홀수일지 맞혀보세요!</p>
-    <div class="button-group">
-      <button onclick="choose('even')">짝수</button>
-      <button onclick="choose('odd')">홀수</button>
-      <button class="btn-secondary" onclick="resetGame()">다시 시작</button>
+
+  <div class="coin-layout">
+
+    <!-- 타이틀 & 스탯 -->
+    <div class="game-header">
+      <span class="header-icon">🪙</span>
+      <h1>짝수 / 홀수</h1>
+      <p class="header-desc">동전을 던져 결과를 예측하세요!</p>
+      <div class="stat-row">
+        <div class="stat-box win-box">
+          <span class="stat-num" id="statWin">0</span>
+          <span class="stat-lbl">승</span>
+        </div>
+        <div class="stat-box total-box">
+          <span class="stat-num" id="statTotal">0</span>
+          <span class="stat-lbl">판</span>
+        </div>
+        <div class="stat-box lose-box">
+          <span class="stat-num" id="statLose">0</span>
+          <span class="stat-lbl">패</span>
+        </div>
+      </div>
     </div>
-    <p id="result"></p>
+
+    <!-- 선택 버튼 -->
+    <div class="choice-area" id="choiceArea">
+      <p class="choice-hint">어느 쪽이 나올까요?</p>
+      <div class="choice-btns">
+        <button class="choice-btn even-btn" id="btnEven">
+          <span class="choice-char">짝</span>
+          <span class="choice-sub">짝수 · EVEN</span>
+        </button>
+        <button class="choice-btn odd-btn" id="btnOdd">
+          <span class="choice-char">홀</span>
+          <span class="choice-sub">홀수 · ODD</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 동전 스테이지 -->
+    <div class="coin-stage">
+      <div class="coin-wrapper">
+        <div class="coin" id="coin">
+          <!-- 앞면 = 짝수(EVEN) -->
+          <div class="coin-face heads">
+            <div class="coin-ring"></div>
+            <div class="coin-inner">
+              <span class="coin-char">짝</span>
+              <span class="coin-en">EVEN</span>
+            </div>
+          </div>
+          <!-- 뒷면 = 홀수(ODD) -->
+          <div class="coin-face tails">
+            <div class="coin-ring"></div>
+            <div class="coin-inner">
+              <span class="coin-char">홀</span>
+              <span class="coin-en">ODD</span>
+            </div>
+          </div>
+        </div>
+        <div class="floor-shadow" id="coinShadow"></div>
+      </div>
+    </div>
+
+    <!-- 결과 & 재시도 -->
+    <div class="result-zone" id="resultZone"></div>
+    <button class="replay-btn btn-secondary" id="replayBtn" style="display:none">
+      다시 던지기 🪙
+    </button>
+
   </div>
+
   <script src="../assets/js/game5.js"></script>
 </body>
 </html>

@@ -9,15 +9,81 @@
 </head>
 <body>
   <a href="../index.html" class="back-btn">← 목록</a>
-  <div class="game-container">
-    <h1>🎲 주사위 게임</h1>
-    <p>버튼을 눌러 주사위를 굴려보세요!</p>
-    <div class="button-group">
-      <button onclick="rollDice()">굴리기</button>
-      <button class="btn-secondary" onclick="resetGame()">다시 시작</button>
+
+  <div class="dice-layout">
+
+    <!-- ── 왼쪽: 컨트롤 패널 ── -->
+    <div class="ctrl-panel">
+      <div class="game-meta">
+        <span class="meta-icon">🎲</span>
+        <h1>주사위 게임</h1>
+        <p class="meta-desc">주사위를 굴려 CPU와 대결하세요!</p>
+      </div>
+
+      <div class="scoreboard">
+        <div class="sb-side you">
+          <span class="sb-lbl">나</span>
+          <span class="sb-num" id="scorePlayer">0</span>
+        </div>
+        <div class="sb-sep">VS</div>
+        <div class="sb-side cpu">
+          <span class="sb-lbl">CPU</span>
+          <span class="sb-num" id="scoreCpu">0</span>
+        </div>
+      </div>
+
+      <div class="result-badge" id="resultBadge"></div>
+      <p class="round-text" id="roundText">버튼을 눌러 시작하세요</p>
+
+      <div class="btn-stack">
+        <button class="roll-btn" id="rollBtn">
+          <span class="btn-dice-icon">🎲</span> 굴리기
+        </button>
+        <button class="btn-secondary reset-btn" id="resetBtn">초기화</button>
+      </div>
     </div>
-    <p id="result"></p>
+
+    <!-- ── 오른쪽: 3D 주사위 아레나 ── -->
+    <div class="dice-panel">
+      <div class="dice-row">
+
+        <div class="dice-slot">
+          <div class="slot-label you">YOU</div>
+          <div class="scene">
+            <div class="cube" id="cubePlayer">
+              <div class="face front"></div>
+              <div class="face back"></div>
+              <div class="face right"></div>
+              <div class="face left"></div>
+              <div class="face top"></div>
+              <div class="face bottom"></div>
+            </div>
+          </div>
+          <div class="slot-num" id="numPlayer">—</div>
+        </div>
+
+        <div class="vs-glyph">VS</div>
+
+        <div class="dice-slot">
+          <div class="slot-label cpu">CPU</div>
+          <div class="scene">
+            <div class="cube" id="cubeCpu">
+              <div class="face front"></div>
+              <div class="face back"></div>
+              <div class="face right"></div>
+              <div class="face left"></div>
+              <div class="face top"></div>
+              <div class="face bottom"></div>
+            </div>
+          </div>
+          <div class="slot-num" id="numCpu">—</div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
+
   <script src="../assets/js/game4.js"></script>
 </body>
 </html>

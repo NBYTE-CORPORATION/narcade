@@ -1,14 +1,5 @@
 [
   {
-    "id": "game1",
-    "emoji": "🎯",
-    "title": "숫자 맞추기",
-    "file": "game1.html",
-    "category": "퀴즈",
-    "desc": "1~100 사이의 숫자를 맞춰보세요. 힌트를 보며 최소 시도로 도전!",
-    "isNew": false
-  },
-  {
     "id": "game2",
     "emoji": "🖱️",
     "title": "클릭 게임",
@@ -32,16 +23,16 @@
     "title": "주사위 게임",
     "file": "game4.html",
     "category": "아케이드",
-    "desc": "주사위를 굴려 CPU와 대결! 더 높은 숫자가 나온 쪽이 이깁니다.",
+    "desc": "주사위를 굴려 CPU와 대결! 진짜처럼 구르는 3D 주사위로 승부를 가려요.",
     "isNew": false
   },
   {
     "id": "game5",
-    "emoji": "🔢",
-    "title": "짝/홀 맞히기",
+    "emoji": "🪙",
+    "title": "짝수 / 홀수",
     "file": "game5.html",
-    "category": "퀴즈",
-    "desc": "랜덤으로 나오는 숫자가 짝수인지 홀수인지 맞혀보세요.",
+    "category": "아케이드",
+    "desc": "동전을 던져 짝수인지 홀수인지 맞혀보세요! 리얼한 동전 플립 애니메이션.",
     "isNew": false
   },
   {
@@ -60,24 +51,6 @@
     "file": "game7.html",
     "category": "반사",
     "desc": "주어진 문장을 최대한 빠르고 정확하게 타이핑하세요.",
-    "isNew": false
-  },
-  {
-    "id": "game8",
-    "emoji": "➕",
-    "title": "산수 퀴즈",
-    "file": "game8.html",
-    "category": "퀴즈",
-    "desc": "사칙연산 문제를 빠르게 풀어보세요. 두뇌를 자극하는 수학 게임!",
-    "isNew": false
-  },
-  {
-    "id": "game9",
-    "emoji": "🎨",
-    "title": "색상 기억 게임",
-    "file": "game9.html",
-    "category": "퀴즈",
-    "desc": "순서대로 나타나는 색깔 배열을 기억하고 순서대로 클릭하세요.",
     "isNew": false
   },
   {
