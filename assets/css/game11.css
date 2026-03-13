@@ -1,0 +1,150 @@
+body {
+  justify-content: flex-start;
+  padding-top: 60px;
+}
+
+.snake-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.snake-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.snake-header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.score-panel {
+  display: flex;
+  gap: 12px;
+}
+
+.score-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px 16px;
+  text-align: center;
+  min-width: 64px;
+}
+
+.score-val {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #a78bfa;
+  line-height: 1;
+}
+
+.score-lbl {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.canvas-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(124, 58, 237, 0.15);
+}
+
+#snakeCanvas {
+  display: block;
+  background: #0d0d1a;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 7, 15, 0.92);
+  backdrop-filter: blur(8px);
+  transition: opacity 0.3s;
+}
+
+.overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay-content {
+  text-align: center;
+  padding: 32px;
+}
+
+.overlay-emoji {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.overlay-content h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.overlay-content p {
+  color: #94a3b8;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+}
+
+/* Mobile D-pad */
+.mobile-controls {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctrl-row {
+  display: flex;
+  gap: 4px;
+}
+
+.ctrl-btn {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  font-size: 1.2rem;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.ctrl-btn:hover {
+  background: rgba(124, 58, 237, 0.3);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 500px) {
+  #snakeCanvas {
+    width: 320px;
+    height: 320px;
+  }
+
+  .mobile-controls {
+    display: flex;
+  }
+}

@@ -1,52 +1,119 @@
 [
   {
-    "title": "🎯 숫자 맞추기",
+    "id": "game1",
+    "emoji": "🎯",
+    "title": "숫자 맞추기",
     "file": "game1.html",
-    "image": "assets/images/guess.png"
+    "category": "퀴즈",
+    "desc": "1~100 사이의 숫자를 맞춰보세요. 힌트를 보며 최소 시도로 도전!",
+    "isNew": false
   },
   {
-    "title": "🖱️ 클릭 게임",
+    "id": "game2",
+    "emoji": "🖱️",
+    "title": "클릭 게임",
     "file": "game2.html",
-    "image": "assets/images/click.png"
+    "category": "반사",
+    "desc": "10초 안에 버튼을 최대한 많이 클릭하세요! 클릭 속도를 테스트해봐요.",
+    "isNew": false
   },
   {
-    "title": "🧠 기억력 게임",
+    "id": "game3",
+    "emoji": "🧠",
+    "title": "기억력 게임",
     "file": "game3.html",
-    "image": "assets/images/memory.png"
+    "category": "퀴즈",
+    "desc": "3초 동안 보이는 11자리 숫자를 기억하고 정확히 입력하세요.",
+    "isNew": false
   },
   {
-    "title": "🎲 주사위 게임",
+    "id": "game4",
+    "emoji": "🎲",
+    "title": "주사위 게임",
     "file": "game4.html",
-    "image": "assets/images/dice.png"
+    "category": "아케이드",
+    "desc": "주사위를 굴려 CPU와 대결! 더 높은 숫자가 나온 쪽이 이깁니다.",
+    "isNew": false
   },
   {
-    "title": "🔢 짝/홀 맞히기",
+    "id": "game5",
+    "emoji": "🔢",
+    "title": "짝/홀 맞히기",
     "file": "game5.html",
-    "image": "assets/images/evenodd.png"
+    "category": "퀴즈",
+    "desc": "랜덤으로 나오는 숫자가 짝수인지 홀수인지 맞혀보세요.",
+    "isNew": false
   },
   {
-    "title": "⚡ 반응속도",
+    "id": "game6",
+    "emoji": "⚡",
+    "title": "반응속도 테스트",
     "file": "game6.html",
-    "image": "assets/images/reaction.png"
+    "category": "반사",
+    "desc": "화면이 바뀌는 순간 최대한 빠르게 클릭! 당신의 반응속도는?",
+    "isNew": false
   },
   {
-    "title": "⌨️ 퀵 타이핑",
+    "id": "game7",
+    "emoji": "⌨️",
+    "title": "퀵 타이핑",
     "file": "game7.html",
-    "image": "assets/images/game7.png"
+    "category": "반사",
+    "desc": "주어진 문장을 최대한 빠르고 정확하게 타이핑하세요.",
+    "isNew": false
   },
   {
-    "title": "➕ 산수 퀴즈",
+    "id": "game8",
+    "emoji": "➕",
+    "title": "산수 퀴즈",
     "file": "game8.html",
-    "image": "assets/images/game8.png"
+    "category": "퀴즈",
+    "desc": "사칙연산 문제를 빠르게 풀어보세요. 두뇌를 자극하는 수학 게임!",
+    "isNew": false
   },
   {
-    "title": "🎨 색상 기억 게임",
+    "id": "game9",
+    "emoji": "🎨",
+    "title": "색상 기억 게임",
     "file": "game9.html",
-    "image": "assets/images/game9.png"
+    "category": "퀴즈",
+    "desc": "순서대로 나타나는 색깔 배열을 기억하고 순서대로 클릭하세요.",
+    "isNew": false
   },
   {
-    "title": "🔢 숫자 순서 클릭",
+    "id": "game10",
+    "emoji": "🔢",
+    "title": "숫자 순서 클릭",
     "file": "game10.html",
-    "image": "assets/images/game10.png"
+    "category": "반사",
+    "desc": "1부터 9까지 순서대로 최대한 빠르게 클릭! 기록을 깨보세요.",
+    "isNew": false
+  },
+  {
+    "id": "game11",
+    "emoji": "🐍",
+    "title": "스네이크",
+    "file": "game11.html",
+    "category": "아케이드",
+    "desc": "먹이를 먹고 점점 길어지는 클래식 스네이크 게임. 벽과 몸통을 피하세요!",
+    "isNew": true
+  },
+  {
+    "id": "game12",
+    "emoji": "🧩",
+    "title": "2048",
+    "file": "game12.html",
+    "category": "퍼즐",
+    "desc": "같은 숫자 타일을 합쳐 2048을 만들어보세요. 중독성 강한 퍼즐!",
+    "isNew": true
+  },
+  {
+    "id": "game13",
+    "emoji": "🔨",
+    "title": "두더지 잡기",
+    "file": "game13.html",
+    "category": "아케이드",
+    "desc": "구멍에서 튀어나오는 두더지를 빠르게 잡아라! 30초 안에 최고 점수 도전.",
+    "isNew": true
   }
 ]

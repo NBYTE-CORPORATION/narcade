@@ -2,25 +2,58 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>나케이드</title>
+  <title>나케이드 — 미니게임 아케이드</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="assets/css/main.css">
 </head>
 <body>
-  <div class="main-wrapper">
-    <div class="content-block">
-      <header>
-        <h1>🎮 나케이드</h1>
-      </header>
-      <div class="carousel-wrapper">
-        <button id="leftBtn" class="nav-btn">◀</button>
-        <main class="card-scroll-container" id="cardScroll">
-          <div class="card-row" id="cardRow"></div>
-        </main>
-        <button id="rightBtn" class="nav-btn">▶</button>
-      </div>
-    </div>
+  <div class="bg-grid"></div>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
   </div>
+
+  <div class="site-wrapper">
+    <header class="site-header">
+      <div class="logo">
+        <span class="logo-icon">🎮</span>
+        <div class="logo-text">
+          <h1>나케이드</h1>
+          <span class="logo-sub">NARCADE · ARCADE</span>
+        </div>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="게임 검색...">
+      </div>
+      <div class="header-stat">
+        <span class="stat-num" id="gameCount">0</span>
+        <span class="stat-label">GAMES</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-badge">✨ 새 게임 추가됨</div>
+      <h2 class="hero-title">지금 바로 <span class="gradient-text">플레이</span>하세요</h2>
+      <p class="hero-desc">13가지 미니게임 · 언제 어디서나 무료</p>
+    </section>
+
+    <div class="filter-tabs">
+      <button class="tab active" data-cat="전체">🎮 전체</button>
+      <button class="tab" data-cat="퀴즈">🧩 퀴즈</button>
+      <button class="tab" data-cat="반사">⚡ 반사</button>
+      <button class="tab" data-cat="아케이드">🕹️ 아케이드</button>
+      <button class="tab" data-cat="퍼즐">🔢 퍼즐</button>
+    </div>
+
+    <main class="game-grid" id="gameGrid"></main>
+
+    <footer class="site-footer">
+      <p>🎮 나케이드 · 미니게임 모음집</p>
+    </footer>
+  </div>
+
   <script src="assets/js/main.js"></script>
 </body>
 </html>

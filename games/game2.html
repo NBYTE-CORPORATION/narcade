@@ -2,19 +2,21 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>클릭 게임</title>
+  <title>클릭 게임 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
   <link rel="stylesheet" href="../assets/css/game2.css">
 </head>
 <body>
+  <a href="../index.html" class="back-btn">← 목록</a>
   <div class="game-container">
-  <h1>🖱️ 클릭 게임</h1>
-  <p>제한 시간 안에 최대한 많이 클릭하세요!</p>
-  <button id="clickBtn">클릭!</button>
-  <p>점수: <span id="score">0</span></p>
-  <p id="timer">남은 시간: 10초</p>
-  <button id="retryBtn" style="display:none;">다시 하기</button>
-
-  <script src="../assets/js/game2.js"></script>
+    <h1>🖱️ 클릭 게임</h1>
+    <p>제한 시간 안에 최대한 많이 클릭하세요!</p>
+    <button id="clickBtn">클릭!</button>
+    <p>점수: <span id="score">0</span></p>
+    <p id="timer">남은 시간: 10초</p>
+    <button id="retryBtn" style="display:none;" class="btn-secondary">다시 하기</button>
   </div>
+  <script src="../assets/js/game2.js"></script>
 </body>
 </html>

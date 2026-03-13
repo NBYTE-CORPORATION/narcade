@@ -1,0 +1,254 @@
+/* ============================
+   나케이드 — 공통 게임 스타일
+   ============================ */
+:root {
+  --bg: #07070f;
+  --surface: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
+  --primary: #7c3aed;
+  --primary-light: #a78bfa;
+  --primary-glow: rgba(124, 58, 237, 0.35);
+  --cyan: #06b6d4;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --text: #f1f5f9;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 40px;
+  position: relative;
+}
+
+/* ── Back Button ── */
+.back-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-dim);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  transition: all 0.25s;
+  z-index: 100;
+  letter-spacing: 0.02em;
+}
+
+.back-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 4px 16px var(--primary-glow);
+}
+
+/* ── Game Container ── */
+.game-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 36px;
+  max-width: 580px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Typography ── */
+h1 {
+  font-size: 1.9rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+h1 + p,
+.game-desc {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* ── Buttons ── */
+button {
+  background: linear-gradient(135deg, var(--primary), #5b21b6);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  letter-spacing: 0.02em;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--primary-glow);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-group,
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--green), #059669);
+  box-shadow: none;
+}
+
+.btn-success:hover {
+  box-shadow: 0 8px 28px rgba(16, 185, 129, 0.35);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--red), #dc2626);
+}
+
+.btn-danger:hover {
+  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.35);
+}
+
+/* ── Inputs ── */
+input[type="text"],
+input[type="number"] {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text);
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Result / Message Text ── */
+#result,
+#message,
+.result-text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 16px;
+  min-height: 1.5em;
+  line-height: 1.5;
+}
+
+.text-success { color: var(--green); }
+.text-danger  { color: var(--red); }
+.text-info    { color: var(--cyan); }
+.text-warn    { color: var(--amber); }
+
+/* ── Score / Stats ── */
+.score-display,
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-item .stat-val {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-item .stat-lbl {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 28px 20px;
+    border-radius: 18px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}
