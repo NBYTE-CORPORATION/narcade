@@ -195,16 +195,18 @@ function draw() {
         drawBlock(ctx, piece.color, (piece.x + c) * BLOCK, (piece.y + r) * BLOCK, BLOCK);
 }
 
+const NEXT_SZ = 100;
+
 function drawNext() {
   nextCtx.fillStyle = '#07070f';
-  nextCtx.fillRect(0, 0, 120, 120);
+  nextCtx.fillRect(0, 0, NEXT_SZ, NEXT_SZ);
   if (!nextPiece) return;
 
   const cells = nextPiece.cells;
   const bw = cells[0].length, bh = cells.length;
-  const sz = 24;
-  const ox = Math.floor((120 - bw * sz) / 2);
-  const oy = Math.floor((120 - bh * sz) / 2);
+  const sz = 22;
+  const ox = Math.floor((NEXT_SZ - bw * sz) / 2);
+  const oy = Math.floor((NEXT_SZ - bh * sz) / 2);
 
   for (let r = 0; r < bh; r++)
     for (let c = 0; c < bw; c++)

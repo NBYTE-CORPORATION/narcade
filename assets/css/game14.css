@@ -164,6 +164,8 @@ body {
   margin: 8px auto 0;
   border-radius: 8px;
   background: rgba(0,0,0,0.3);
+  max-width: 100%;
+  height: auto;
 }
 
 /* ── Controls Hint ── */
@@ -215,10 +217,7 @@ kbd {
     font-size: 10px;
   }
 
-  #nextCanvas {
-    width: 80px;
-    height: 80px;
-  }
+  /* max-width: 100% 로 자동 축소되므로 별도 지정 불필요 */
 }
 
 @media (max-width: 420px) {
