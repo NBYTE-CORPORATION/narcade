@@ -154,7 +154,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 11px 18px;
+  padding: 18px 20px;
   gap: 10px;
   transition: border-color 0.3s, box-shadow 0.3s;
   backdrop-filter: blur(20px);
