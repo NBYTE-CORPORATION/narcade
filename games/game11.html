@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스네이크 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game11.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="snake-wrapper">
+    <div class="snake-header">
+      <h1>🐍 스네이크</h1>
+      <div class="score-panel">
+        <div class="score-box">
+          <span class="score-val" id="score">0</span>
+          <span class="score-lbl">점수</span>
+        </div>
+        <div class="score-box">
+          <span class="score-val" id="bestScore">0</span>
+          <span class="score-lbl">최고</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="snakeCanvas" width="400" height="400"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-content">
+          <div class="overlay-emoji">🐍</div>
+          <h2 id="overlayTitle">스네이크</h2>
+          <p id="overlayMsg">방향키 또는 WASD로 조작하세요</p>
+          <button id="startBtn" onclick="startGame()">시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-controls">
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="setDir(0,-1)">▲</button>
+      </div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn" onclick="setDir(-1,0)">◀</button>
+        <button class="ctrl-btn" onclick="setDir(0,1)">▼</button>
+        <button class="ctrl-btn" onclick="setDir(1,0)">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game11.js"></script>
+</body>
+</html>

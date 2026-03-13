@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>2048 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game12.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="game2048-wrap">
+    <div class="game2048-header">
+      <h1>🧩 2048</h1>
+      <div class="score-panel">
+        <div class="score-box">
+          <span class="score-val" id="score">0</span>
+          <span class="score-lbl">점수</span>
+        </div>
+        <div class="score-box">
+          <span class="score-val" id="best">0</span>
+          <span class="score-lbl">최고</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board-bg">
+        <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+        <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+        <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+        <div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div><div class="cell-bg"></div>
+      </div>
+      <div class="board" id="board"></div>
+    </div>
+
+    <p class="hint-text">방향키 또는 스와이프로 조작하세요</p>
+    <button onclick="newGame()" class="btn-secondary new-game-btn">새 게임</button>
+
+    <div class="result-overlay hidden" id="resultOverlay">
+      <div class="result-box">
+        <div class="result-emoji" id="resultEmoji">🏆</div>
+        <h2 id="resultTitle">클리어!</h2>
+        <p id="resultScore"></p>
+        <button onclick="newGame()">다시 하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game12.js"></script>
+</body>
+</html>
