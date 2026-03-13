@@ -1,74 +1,29 @@
 [
   {
-    "id": "game2",
-    "emoji": "🖱️",
-    "title": "클릭 게임",
-    "file": "game2.html",
-    "category": "반사",
-    "desc": "10초 안에 버튼을 최대한 많이 클릭하세요! 클릭 속도를 테스트해봐요.",
-    "isNew": false
-  },
-  {
-    "id": "game3",
-    "emoji": "🧠",
-    "title": "기억력 게임",
-    "file": "game3.html",
-    "category": "퀴즈",
-    "desc": "3초 동안 보이는 11자리 숫자를 기억하고 정확히 입력하세요.",
-    "isNew": false
-  },
-  {
-    "id": "game4",
-    "emoji": "🎲",
-    "title": "주사위 게임",
-    "file": "game4.html",
+    "id": "game15",
+    "emoji": "🏓",
+    "title": "벽돌 깨기",
+    "file": "game15.html",
     "category": "아케이드",
-    "desc": "주사위를 굴려 CPU와 대결! 진짜처럼 구르는 3D 주사위로 승부를 가려요.",
-    "isNew": false
+    "desc": "패들로 공을 튕겨 모든 벽돌을 부수세요! 파티클 이펙트와 레벨 시스템이 짜릿해요.",
+    "isNew": true
   },
   {
-    "id": "game5",
-    "emoji": "🪙",
-    "title": "짝수 / 홀수",
-    "file": "game5.html",
+    "id": "game14",
+    "emoji": "🧱",
+    "title": "테트리스",
+    "file": "game14.html",
+    "category": "퍼즐",
+    "desc": "7가지 테트로미노를 쌓아 줄을 완성하세요! 고스트 블록, 하드드롭, 레벨 시스템 완비.",
+    "isNew": true
+  },
+  {
+    "id": "game13",
+    "emoji": "🔨",
+    "title": "두더지 잡기",
+    "file": "game13.html",
     "category": "아케이드",
-    "desc": "동전을 던져 짝수인지 홀수인지 맞혀보세요! 리얼한 동전 플립 애니메이션.",
-    "isNew": false
-  },
-  {
-    "id": "game6",
-    "emoji": "⚡",
-    "title": "반응속도 테스트",
-    "file": "game6.html",
-    "category": "반사",
-    "desc": "화면이 바뀌는 순간 최대한 빠르게 클릭! 당신의 반응속도는?",
-    "isNew": false
-  },
-  {
-    "id": "game7",
-    "emoji": "⌨️",
-    "title": "퀵 타이핑",
-    "file": "game7.html",
-    "category": "반사",
-    "desc": "주어진 문장을 최대한 빠르고 정확하게 타이핑하세요.",
-    "isNew": false
-  },
-  {
-    "id": "game10",
-    "emoji": "🔢",
-    "title": "숫자 순서 클릭",
-    "file": "game10.html",
-    "category": "반사",
-    "desc": "1부터 9까지 순서대로 최대한 빠르게 클릭! 기록을 깨보세요.",
-    "isNew": false
-  },
-  {
-    "id": "game11",
-    "emoji": "🐍",
-    "title": "스네이크",
-    "file": "game11.html",
-    "category": "아케이드",
-    "desc": "먹이를 먹고 점점 길어지는 클래식 스네이크 게임. 벽과 몸통을 피하세요!",
+    "desc": "구멍에서 튀어나오는 두더지를 빠르게 잡아라! 30초 안에 최고 점수 도전.",
     "isNew": true
   },
   {
@@ -81,30 +36,75 @@
     "isNew": true
   },
   {
-    "id": "game13",
-    "emoji": "🔨",
-    "title": "두더지 잡기",
-    "file": "game13.html",
+    "id": "game11",
+    "emoji": "🐍",
+    "title": "스네이크",
+    "file": "game11.html",
     "category": "아케이드",
-    "desc": "구멍에서 튀어나오는 두더지를 빠르게 잡아라! 30초 안에 최고 점수 도전.",
+    "desc": "먹이를 먹고 점점 길어지는 클래식 스네이크 게임. 벽과 몸통을 피하세요!",
     "isNew": false
   },
   {
-    "id": "game14",
-    "emoji": "🧱",
-    "title": "테트리스",
-    "file": "game14.html",
-    "category": "퍼즐",
-    "desc": "7가지 테트로미노를 쌓아 줄을 완성하세요! 고스트 블록, 하드드롭, 레벨 시스템 완비.",
-    "isNew": true
+    "id": "game10",
+    "emoji": "🔢",
+    "title": "숫자 순서 클릭",
+    "file": "game10.html",
+    "category": "반사",
+    "desc": "1부터 9까지 순서대로 최대한 빠르게 클릭! 기록을 깨보세요.",
+    "isNew": false
   },
   {
-    "id": "game15",
-    "emoji": "🏓",
-    "title": "벽돌 깨기",
-    "file": "game15.html",
+    "id": "game7",
+    "emoji": "⌨️",
+    "title": "퀵 타이핑",
+    "file": "game7.html",
+    "category": "반사",
+    "desc": "주어진 문장을 최대한 빠르고 정확하게 타이핑하세요.",
+    "isNew": false
+  },
+  {
+    "id": "game6",
+    "emoji": "⚡",
+    "title": "반응속도 테스트",
+    "file": "game6.html",
+    "category": "반사",
+    "desc": "화면이 바뀌는 순간 최대한 빠르게 클릭! 당신의 반응속도는?",
+    "isNew": false
+  },
+  {
+    "id": "game5",
+    "emoji": "🪙",
+    "title": "짝수 / 홀수",
+    "file": "game5.html",
     "category": "아케이드",
-    "desc": "패들로 공을 튕겨 모든 벽돌을 부수세요! 파티클 이펙트와 레벨 시스템이 짜릿해요.",
-    "isNew": true
+    "desc": "동전을 던져 짝수인지 홀수인지 맞혀보세요! 리얼한 동전 플립 애니메이션.",
+    "isNew": false
+  },
+  {
+    "id": "game4",
+    "emoji": "🎲",
+    "title": "주사위 게임",
+    "file": "game4.html",
+    "category": "아케이드",
+    "desc": "주사위를 굴려 CPU와 대결! 진짜처럼 구르는 3D 주사위로 승부를 가려요.",
+    "isNew": false
+  },
+  {
+    "id": "game3",
+    "emoji": "🧠",
+    "title": "기억력 게임",
+    "file": "game3.html",
+    "category": "퀴즈",
+    "desc": "3초 동안 보이는 11자리 숫자를 기억하고 정확히 입력하세요.",
+    "isNew": false
+  },
+  {
+    "id": "game2",
+    "emoji": "🖱️",
+    "title": "클릭 게임",
+    "file": "game2.html",
+    "category": "반사",
+    "desc": "10초 안에 버튼을 최대한 많이 클릭하세요! 클릭 속도를 테스트해봐요.",
+    "isNew": false
   }
 ]
