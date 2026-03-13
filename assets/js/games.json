@@ -87,6 +87,24 @@
     "file": "game13.html",
     "category": "아케이드",
     "desc": "구멍에서 튀어나오는 두더지를 빠르게 잡아라! 30초 안에 최고 점수 도전.",
+    "isNew": false
+  },
+  {
+    "id": "game14",
+    "emoji": "🧱",
+    "title": "테트리스",
+    "file": "game14.html",
+    "category": "퍼즐",
+    "desc": "7가지 테트로미노를 쌓아 줄을 완성하세요! 고스트 블록, 하드드롭, 레벨 시스템 완비.",
+    "isNew": true
+  },
+  {
+    "id": "game15",
+    "emoji": "🏓",
+    "title": "벽돌 깨기",
+    "file": "game15.html",
+    "category": "아케이드",
+    "desc": "패들로 공을 튕겨 모든 벽돌을 부수세요! 파티클 이펙트와 레벨 시스템이 짜릿해요.",
     "isNew": true
   }
 ]

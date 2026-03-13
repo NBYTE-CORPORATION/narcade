@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>테트리스 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game14.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="tetris-wrapper">
+    <!-- Left Panel -->
+    <div class="side-panel left-panel">
+      <div class="info-block">
+        <span class="info-lbl">점수</span>
+        <span class="info-val" id="score">0</span>
+      </div>
+      <div class="info-block">
+        <span class="info-lbl">레벨</span>
+        <span class="info-val" id="level">1</span>
+      </div>
+      <div class="info-block">
+        <span class="info-lbl">줄 수</span>
+        <span class="info-val" id="lines">0</span>
+      </div>
+      <div class="info-block best-block">
+        <span class="info-lbl">최고</span>
+        <span class="info-val best-val" id="best">0</span>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrap">
+      <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-inner">
+          <div class="overlay-emoji">🧱</div>
+          <h2 id="overlayTitle">테트리스</h2>
+          <p id="overlayMsg">방향키로 이동<br>↑ 또는 X 로 회전<br>스페이스바로 즉시 낙하</p>
+          <button id="startBtn" class="start-btn">시작하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="side-panel right-panel">
+      <div class="next-block">
+        <span class="info-lbl">다음</span>
+        <canvas id="nextCanvas" width="120" height="120"></canvas>
+      </div>
+      <div class="controls-hint">
+        <div class="hint-row"><kbd>← →</kbd> 이동</div>
+        <div class="hint-row"><kbd>↑</kbd> 회전</div>
+        <div class="hint-row"><kbd>↓</kbd> 빠르게</div>
+        <div class="hint-row"><kbd>Space</kbd> 낙하</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game14.js"></script>
+</body>
+</html>

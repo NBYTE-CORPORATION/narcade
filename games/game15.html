@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>벽돌 깨기 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game15.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="breakout-wrapper">
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-lbl">점수</span>
+        <span class="hud-val" id="score">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">레벨</span>
+        <span class="hud-val" id="level">1</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">목숨</span>
+        <span class="hud-val hearts" id="lives">❤️❤️❤️</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">최고</span>
+        <span class="hud-val best-val" id="best">0</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="breakoutCanvas" width="480" height="520"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-inner">
+          <div class="overlay-emoji">🧱</div>
+          <h2 id="overlayTitle">벽돌 깨기</h2>
+          <p id="overlayMsg">마우스 / 터치로 패들을 움직여<br>모든 벽돌을 부수세요!</p>
+          <button id="startBtn" class="start-btn">시작하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game15.js"></script>
+</body>
+</html>
