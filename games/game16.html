@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스페이스 슈터 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game16.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="shooter-wrap">
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-lbl">SCORE</span>
+        <span class="hud-val" id="scoreEl">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">WAVE</span>
+        <span class="hud-val" id="waveEl">1</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">LIVES</span>
+        <span class="hud-val hud-lives" id="livesEl">❤️❤️❤️</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">BEST</span>
+        <span class="hud-val" id="bestEl">0</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c" width="360" height="560"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">🚀</div>
+          <h2 id="ovTitle">스페이스 슈터</h2>
+          <p id="ovMsg">적 우주선을 격파하고 최고 기록을 세워라!<br>← → 혹은 A/D 키로 이동</p>
+          <button id="startBtn">시작하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game16.js"></script>
+</body>
+</html>
