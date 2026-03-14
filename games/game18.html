@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>리듬 탭 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game18.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="rhythm-wrap">
+    <div class="rhythm-hud">
+      <div class="hud-item">
+        <span class="hud-val" id="scoreEl">0</span>
+        <span class="hud-lbl">SCORE</span>
+      </div>
+      <div class="hud-item hud-center">
+        <span class="hud-val hud-timer" id="timerEl">60</span>
+        <span class="hud-lbl">TIME</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="comboEl">0</span>
+        <span class="hud-lbl">COMBO</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c" width="400" height="540"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">🎵</div>
+          <h2 id="ovTitle">리듬 탭</h2>
+          <p id="ovMsg">D · F · J · K 키로 노트를 받아라!<br>타이밍에 맞게 60초 도전</p>
+          <div class="key-guide">
+            <span class="key-chip" data-color="cyan">D</span>
+            <span class="key-chip" data-color="purple">F</span>
+            <span class="key-chip" data-color="pink">J</span>
+            <span class="key-chip" data-color="amber">K</span>
+          </div>
+          <button id="startBtn">시작하기</button>
+          <div class="best-info" id="bestInfo"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game18.js"></script>
+</body>
+</html>

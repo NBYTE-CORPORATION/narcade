@@ -1,5 +1,41 @@
 [
   {
+    "id": "game19",
+    "emoji": "🃏",
+    "title": "카드 짝 맞추기",
+    "file": "game19.html",
+    "category": "퀴즈",
+    "desc": "같은 카드 쌍을 찾아라! 3D 플립 애니메이션, 콤보 시스템, 3가지 난이도.",
+    "isNew": true
+  },
+  {
+    "id": "game18",
+    "emoji": "🎵",
+    "title": "리듬 탭",
+    "file": "game18.html",
+    "category": "반사",
+    "desc": "D·F·J·K 키로 4레인 노트를 받아라! Perfect/Good 판정, 60초 도전.",
+    "isNew": true
+  },
+  {
+    "id": "game17",
+    "emoji": "💣",
+    "title": "지뢰 찾기",
+    "file": "game17.html",
+    "category": "퍼즐",
+    "desc": "숨겨진 지뢰를 피하며 모든 칸을 열어라! 3가지 난이도, 첫 클릭 안전 보장.",
+    "isNew": true
+  },
+  {
+    "id": "game16",
+    "emoji": "🚀",
+    "title": "스페이스 슈터",
+    "file": "game16.html",
+    "category": "아케이드",
+    "desc": "우주선을 조종해 적을 처치하라! 웨이브, 파티클 폭발, 파워업 시스템.",
+    "isNew": true
+  },
+  {
     "id": "game15",
     "emoji": "🏓",
     "title": "벽돌 깨기",
