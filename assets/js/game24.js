@@ -84,6 +84,7 @@ const TARGETS_DEF = [
 let score, best, balls, multiplier, gameRunning;
 let multDecayTimer = 0;          // 멀티 감소 타이머
 let plungerCharge = 0, plungerCharging = false;
+let waitingToLaunch = false;     // 공이 발사 대기 중 (물리 정지)
 let particles = [], popups = [];
 let bumperFlash = new Array(BUMPERS.length).fill(0);
 let targets = [], targetsAllHit = false;
@@ -122,7 +123,9 @@ function spawnBall() {
   ball.x = laneCenter; ball.y = CH - 95;
   ball.vx = 0; ball.vy = 0;
   ball.active = true;
-  plungerCharge = 0; plungerCharging = false;
+  plungerCharge = 0;
+  plungerCharging = false;
+  waitingToLaunch = true;   // 발사 전까지 물리 정지
 }
 
 /* ── HUD ── */
@@ -257,6 +260,13 @@ function collideSeg(ax, ay, bx, by, restitution = 0.68, extraPush = 0) {
 ══════════════════════════════════ */
 function updateBall() {
   if (!ball.active) return;
+
+  /* 발사 대기 중 (아직 ArrowDown / Space 안 눌림) */
+  if (waitingToLaunch) {
+    ball.x = LANE_W + (RW - LANE_W) / 2;
+    ball.y = CH - 95;
+    return;
+  }
 
   /* 플런저 충전 중 */
   if (plungerCharging) {
@@ -603,6 +613,22 @@ function drawBall() {
 }
 
 function drawPlunger() {
+  /* 발사 대기 중 → 펄싱 힌트 */
+  if (waitingToLaunch) {
+    const lc = LANE_W + (RW - LANE_W) / 2;
+    const t  = Date.now() / 400;
+    const alpha = 0.5 + 0.5 * Math.sin(t);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowBlur = 10; ctx.shadowColor = '#a78bfa';
+    ctx.fillText('SPACE', lc, CH - 115);
+    ctx.fillText('↓  ↑  발사', lc, CH - 103);
+    ctx.restore();
+    return;
+  }
   if (!plungerCharging && plungerCharge < 0.01) return;
   const laneCenter = LANE_W + (RW - LANE_W) / 2;
   const barW = 16, barH = 60;
@@ -706,26 +732,44 @@ function loop() {
 /* ══════════════════════════════════
    입력
 ══════════════════════════════════ */
+function startPlunger() {
+  if (!gameRunning || !ball.active || plungerCharging) return;
+  if (waitingToLaunch) {
+    waitingToLaunch = false;
+    plungerCharging = true;
+    return;
+  }
+  if (ball.y > CH - 130 && ball.x > LANE_W - BALL_R) plungerCharging = true;
+}
+
+function releasePlunger() {
+  if (plungerCharging) {
+    ball.vy = -(plungerCharge * 18 + 6);
+    ball.vx = 0;
+    plungerCharging = false;
+    plungerCharge = 0;
+  }
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'z' || e.key === 'Z') flipState.L = true;
   if (e.key === 'x' || e.key === 'X') flipState.R = true;
-  if (e.key === 'ArrowDown') {
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); flipState.L = true; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); flipState.R = true; }
+  if (e.key === 'ArrowDown' || e.key === ' ') {
     e.preventDefault();
-    if (!gameRunning || !ball.active || plungerCharging) return;
-    if (ball.y > CH - 130 && ball.x > LANE_W - BALL_R) plungerCharging = true;
+    startPlunger();
   }
 });
 
 document.addEventListener('keyup', e => {
   if (e.key === 'z' || e.key === 'Z') flipState.L = false;
   if (e.key === 'x' || e.key === 'X') flipState.R = false;
-  if (e.key === 'ArrowDown') {
-    if (plungerCharging) {
-      ball.vy = -(plungerCharge * 18 + 6);
-      ball.vx = 0;
-      plungerCharging = false;
-      plungerCharge = 0;
-    }
+  if (e.key === 'ArrowLeft')  flipState.L = false;
+  if (e.key === 'ArrowRight') flipState.R = false;
+  if (e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault();
+    releasePlunger();
   }
 });
 
