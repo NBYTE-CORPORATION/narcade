@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>슬라이딩 퍼즐 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game22.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="slide-container">
+    <div class="slide-header">
+      <h1>🔢 슬라이딩 퍼즐</h1>
+
+      <div class="slide-stats">
+        <div class="stat-item">
+          <span class="stat-val" id="movesEl">0</span>
+          <span class="stat-lbl">MOVES</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="timeEl">0:00</span>
+          <span class="stat-lbl">TIME</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="bestEl">—</span>
+          <span class="stat-lbl">BEST</span>
+        </div>
+      </div>
+
+      <div class="diff-btns">
+        <button class="diff-btn active" data-size="3">3×3</button>
+        <button class="diff-btn" data-size="4">4×4</button>
+        <button class="diff-btn" data-size="5">5×5</button>
+      </div>
+    </div>
+
+    <div class="puzzle-board" id="board"></div>
+
+    <div class="slide-controls">
+      <button id="shuffleBtn" class="btn-secondary">🔀 섞기</button>
+      <button id="hintBtn" class="btn-secondary">💡 힌트</button>
+    </div>
+
+    <div class="win-panel" id="winPanel" style="display:none">
+      <div class="win-icon">🎉</div>
+      <p id="winMsg"></p>
+      <button id="nextBtn">다음 게임</button>
+    </div>
+  </div>
+
+  <script src="../assets/js/game22.js"></script>
+</body>
+</html>

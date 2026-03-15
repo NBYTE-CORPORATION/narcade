@@ -1,0 +1,155 @@
+/* ── game22.css — 슬라이딩 퍼즐 ── */
+body {
+  padding: 60px 16px 40px;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+}
+
+.slide-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px 24px 32px;
+  max-width: 500px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 40px rgba(124,58,237,0.08);
+  margin-top: 10px;
+}
+
+.slide-header { text-align: center; margin-bottom: 20px; }
+h1 { font-size: 1.55rem; font-weight: 900; margin-bottom: 16px; letter-spacing: -0.02em; }
+
+.slide-stats {
+  display: flex; justify-content: space-around;
+  background: rgba(0,0,0,0.25); border-radius: 12px;
+  padding: 12px 16px; margin-bottom: 14px;
+}
+
+.slide-stats .stat-val {
+  display: block;
+  font-size: 1.5rem; font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; line-height: 1;
+}
+
+.slide-stats .stat-lbl {
+  display: block; font-size: 9px;
+  letter-spacing: 0.12em; color: var(--text-muted);
+  font-weight: 700; margin-top: 4px;
+}
+
+.diff-btns { display: flex; gap: 8px; justify-content: center; }
+.diff-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-dim); padding: 6px 20px;
+  border-radius: 20px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.diff-btn:hover:not(.active) { border-color: rgba(124,58,237,0.5); color: white; }
+.diff-btn.active {
+  background: var(--primary); border-color: var(--primary);
+  color: white; box-shadow: 0 4px 16px var(--primary-glow); transform: none;
+}
+
+/* ── 퍼즐 보드 ── */
+.puzzle-board {
+  display: grid;
+  gap: 6px;
+  margin: 20px auto;
+  width: fit-content;
+}
+
+.tile {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  font-weight: 900; cursor: pointer;
+  user-select: none;
+  transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+  position: relative;
+  background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(124,58,237,0.15));
+  border: 1px solid rgba(124,58,237,0.35);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  color: var(--text);
+}
+
+.tile::before {
+  content: '';
+  position: absolute; top: 3px; left: 3px; right: 3px; height: 35%;
+  border-radius: 9px 9px 50% 50%;
+  background: rgba(255,255,255,0.07);
+  pointer-events: none;
+}
+
+.tile:hover:not(.empty) {
+  transform: scale(0.95);
+  box-shadow: 0 8px 24px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-color: rgba(167,139,250,0.6);
+}
+
+.tile.empty {
+  background: rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.05);
+  cursor: default;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.tile.empty::before { display: none; }
+
+.tile.slide-anim {
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.tile.correct {
+  background: linear-gradient(135deg, rgba(16,185,129,0.25), rgba(16,185,129,0.12));
+  border-color: rgba(16,185,129,0.5);
+}
+
+.tile.hint-flash {
+  animation: hintFlash 0.5s ease;
+}
+
+@keyframes hintFlash {
+  0%,100% { border-color: rgba(124,58,237,0.35); }
+  50% { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.5); }
+}
+
+/* ── Controls ── */
+.slide-controls {
+  display: flex; gap: 10px; justify-content: center; margin-top: 16px;
+}
+
+.slide-controls button {
+  padding: 10px 24px; font-size: 14px;
+}
+
+/* ── Win Panel ── */
+.win-panel {
+  text-align: center; margin-top: 20px;
+  background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px 20px;
+}
+
+.win-icon {
+  font-size: 52px; display: block; margin-bottom: 10px;
+  animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.win-panel p {
+  font-size: 1rem; font-weight: 600; color: var(--text-dim);
+  line-height: 1.8; margin-bottom: 16px;
+}
+
+.win-panel strong { color: var(--primary-light); }
+
+@media (max-width: 480px) {
+  .slide-container { padding: 20px 14px 24px; }
+}
