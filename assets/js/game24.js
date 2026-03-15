@@ -18,11 +18,11 @@ const CW = 360, CH = 640;
 canvas.width = CW; canvas.height = CH;
 
 /* ── 물리 상수 ── */
-const GRAVITY_BASE = 0.38;   // 기존 0.30 → 더 빠르게
+const GRAVITY_BASE = 0.24;
 let   gravity      = GRAVITY_BASE;
 const BALL_R       = 9;
-const FRICTION     = 0.998;
-const SPEED_CAP    = 22;
+const FRICTION     = 0.995;
+const SPEED_CAP    = 14;
 const SUBSTEPS     = 3;      // 터널링 방지 서브스텝
 
 /* ── 필드 경계 ── */
@@ -148,7 +148,7 @@ function addScore(pts) {
     spawnPopup(CW / 2, 280, '×' + multiplier + ' MULTI!');
   }
   // 점수 올라갈수록 중력 강해짐 (최대 0.58)
-  gravity = Math.min(0.58, GRAVITY_BASE + score / 40000);
+  gravity = Math.min(0.38, GRAVITY_BASE + score / 50000);
   if (score > best) { best = score; saveBest(best); }
   updateHUD();
 }
@@ -342,9 +342,9 @@ function wallCollisions() {
     ball.y = TW + BALL_R + 0.5;
     if (ball.x > LANE_W - 20) {
       /* 발사 레인에서 올라온 공 → 상단 곡선 가이드가 강하게 왼쪽으로 꺾어줌 */
-      const kickSpd = Math.max(10, Math.abs(ball.vy) * 0.9);
-      ball.vx = -(kickSpd * 0.85 + Math.random() * 1.5);
-      ball.vy = kickSpd * 0.35;
+      const kickSpd = Math.max(7, Math.abs(ball.vy) * 0.85);
+      ball.vx = -(kickSpd * 0.8 + Math.random() * 1.2);
+      ball.vy = kickSpd * 0.3;
     } else {
       ball.vy = Math.abs(ball.vy) * 0.65;
     }
@@ -386,7 +386,7 @@ function bumperCollisions() {
     ball.x = b.x + nx * (b.r + BALL_R + 1);
     ball.y = b.y + ny * (b.r + BALL_R + 1);
     // 강하게 튕기기
-    const spd = Math.max(7.5, Math.sqrt(ball.vx**2 + ball.vy**2));
+    const spd = Math.max(5.5, Math.sqrt(ball.vx**2 + ball.vy**2));
     ball.vx = nx * spd;
     ball.vy = ny * spd;
 
@@ -757,7 +757,7 @@ function startPlunger() {
 
 function releasePlunger() {
   if (plungerCharging) {
-    ball.vy = -(plungerCharge * 18 + 6);
+    ball.vy = -(plungerCharge * 13 + 5);
     ball.vx = 0;      // 곧장 위로 → 상단 곡선 벽에서 꺾여 메인 필드 진입
     plungerCharging = false;
     plungerCharge = 0;
@@ -812,7 +812,7 @@ canvas.addEventListener('touchend', e => {
     else              flipState.R = false;
   }
   if (plungerCharging) {
-    ball.vy = -(plungerCharge * 18 + 6);
+    ball.vy = -(plungerCharge * 13 + 5);
     ball.vx = 0;
     plungerCharging = false;
     plungerCharge = 0;
