@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>피카츄 배구 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game25.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="pv-wrap">
+    <div class="pv-hud">
+      <div class="pv-score-box">
+        <span class="pv-score-lbl">🟡 플레이어</span>
+        <span class="pv-score-val" id="scoreP">0</span>
+      </div>
+      <div class="pv-set-info" id="setInfo">SET 1</div>
+      <div class="pv-score-box pv-ai-box">
+        <span class="pv-score-lbl">🔴 AI</span>
+        <span class="pv-score-val" id="scoreA">0</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">⚡</div>
+          <h2 id="ovTitle">피카츄 배구</h2>
+          <p id="ovMsg">← → 이동 &nbsp;|&nbsp; Z 점프<br>공을 상대 코트에 떨어트려라!<br>5점 먼저 내면 승리</p>
+          <button id="startBtn">게임 시작</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pv-controls">
+      <kbd>←</kbd><kbd>→</kbd> 이동 &nbsp;&nbsp; <kbd>Z</kbd> 점프
+    </div>
+  </div>
+
+  <script src="../assets/js/game25.js"></script>
+</body>
+</html>

@@ -1,5 +1,32 @@
 [
   {
+    "id": "game27",
+    "emoji": "🪖",
+    "title": "메탈 슬러그",
+    "file": "game27.html",
+    "category": "아케이드",
+    "desc": "달려라 쏴라! 적 병사와 탱크를 처치하는 런앤건. 수류탄, 웨이브 시스템, 폭발 이펙트.",
+    "isNew": true
+  },
+  {
+    "id": "game26",
+    "emoji": "🍄",
+    "title": "슈퍼 마리오",
+    "file": "game26.html",
+    "category": "아케이드",
+    "desc": "달리고 점프하고 굼바를 밟아라! ? 블록, 코인, 파이프가 있는 클래식 플랫포머.",
+    "isNew": true
+  },
+  {
+    "id": "game25",
+    "emoji": "⚡",
+    "title": "피카츄 배구",
+    "file": "game25.html",
+    "category": "아케이드",
+    "desc": "피카츄와 배구 대결! 점프하고 공을 쳐서 상대 코트에 떨어트려라. 5점 선취 승리.",
+    "isNew": true
+  },
+  {
     "id": "game24",
     "emoji": "🎱",
     "title": "핀볼",

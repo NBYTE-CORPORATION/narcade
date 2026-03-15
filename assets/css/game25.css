@@ -1,0 +1,88 @@
+/* ── game25.css — 피카츄 배구 ── */
+body {
+  padding: 60px 10px 20px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh;
+}
+
+.pv-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+}
+
+/* HUD */
+.pv-hud {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 480px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 10px 24px;
+  backdrop-filter: blur(12px);
+}
+
+.pv-score-box { text-align: center; min-width: 100px; }
+.pv-score-lbl { display: block; font-size: 11px; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 700; }
+.pv-score-val { display: block; font-size: 2rem; font-weight: 900; color: #f59e0b; }
+.pv-ai-box .pv-score-val { color: #f43f5e; }
+.pv-set-info { font-size: 13px; font-weight: 800; color: var(--text-dim); letter-spacing: 0.08em; }
+
+/* Canvas */
+.canvas-wrap {
+  position: relative; border-radius: 16px; overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07),
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 50px rgba(245,158,11,0.1);
+}
+
+canvas { display: block; }
+
+/* Overlay */
+.overlay {
+  position: absolute; inset: 0;
+  background: rgba(7,5,18,0.93); backdrop-filter: blur(14px);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 16px;
+}
+
+.ov-inner { text-align: center; padding: 28px 24px; }
+
+.ov-emoji {
+  font-size: 52px; display: block; margin-bottom: 14px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.ov-inner h2 {
+  font-size: 26px; font-weight: 900; margin: 0 0 10px;
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ov-inner p {
+  color: var(--text-dim); font-size: 13px;
+  line-height: 1.9; margin: 0 0 20px;
+}
+
+/* Controls */
+.pv-controls {
+  font-size: 12px; color: var(--text-muted);
+  display: flex; gap: 4px; align-items: center;
+}
+
+.pv-controls kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; height: 22px; padding: 0 5px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px; font-size: 11px; font-weight: 700; color: var(--text);
+}
+
+@media (max-width: 520px) {
+  .pv-hud { width: 100%; max-width: 480px; }
+  canvas { width: 100% !important; height: auto !important; max-width: 480px; }
+}

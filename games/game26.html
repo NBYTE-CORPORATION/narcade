@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>슈퍼 마리오 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game26.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="mario-wrap">
+    <div class="mario-hud">
+      <div class="hud-item">
+        <span class="hud-val" id="scoreEl">0</span>
+        <span class="hud-lbl">SCORE</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="coinsEl">0</span>
+        <span class="hud-lbl">COINS</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="livesEl">❤️❤️❤️</span>
+        <span class="hud-lbl">LIVES</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="timerEl">300</span>
+        <span class="hud-lbl">TIME</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">🍄</div>
+          <h2 id="ovTitle">슈퍼 마리오</h2>
+          <p id="ovMsg">← → 이동 &nbsp;|&nbsp; Z·Space·↑ 점프<br>굼바를 밟고 코인을 모아라!<br>깃발에 도달하면 클리어!</p>
+          <button id="startBtn">게임 시작</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mario-controls">
+      <kbd>← →</kbd> 이동 &nbsp;&nbsp; <kbd>Z</kbd> / <kbd>Space</kbd> 점프
+    </div>
+  </div>
+
+  <script src="../assets/js/game26.js"></script>
+</body>
+</html>
