@@ -1,0 +1,215 @@
+/* ── game24.css — 핀볼 ── */
+body {
+  padding: 60px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* ── 전체 래퍼 ── */
+.pb-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* ── 사이드바 HUD ── */
+.pb-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.pb-score-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+}
+
+.pb-best-box {
+  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(251,191,36,0.04));
+  border-color: rgba(245,158,11,0.25);
+}
+
+.pb-score-lbl {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pb-score-val {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  word-break: break-all;
+}
+
+.pb-best-val { color: #f59e0b; }
+
+/* ── 볼 도트 ── */
+.pb-mini-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.pb-balls {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.pb-ball-dot {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #c4b5fd, #7c3aed);
+  box-shadow: 0 0 6px rgba(124,58,237,0.8);
+  transition: opacity 0.3s;
+}
+
+.pb-ball-dot.used {
+  background: rgba(100,116,139,0.3);
+  box-shadow: none;
+}
+
+.pb-multi-val {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #06b6d4;
+  margin-top: 4px;
+  text-shadow: 0 0 12px rgba(6,182,212,0.6);
+}
+
+/* ── 컨트롤 힌트 ── */
+.pb-controls {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pb-key-row {
+  font-size: 11px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pb-key-row kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 4px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+/* ── 캔버스 래퍼 ── */
+.canvas-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07),
+    0 24px 64px rgba(0,0,0,0.7),
+    0 0 60px rgba(124,58,237,0.15);
+}
+
+canvas { display: block; }
+
+/* ── Overlay ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(7,5,18,0.93);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+.ov-inner {
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.ov-emoji {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 14px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.ov-inner h2 {
+  font-size: 26px;
+  font-weight: 900;
+  margin: 0 0 10px;
+  background: linear-gradient(135deg, #a78bfa, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ov-inner p {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 0 0 18px;
+}
+
+.pb-best-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #f59e0b;
+  min-height: 18px;
+}
+
+/* ── 모바일 ── */
+@media (max-width: 540px) {
+  .pb-wrap { flex-direction: column; align-items: center; }
+  .pb-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 360px;
+    justify-content: center;
+  }
+  .pb-score-box, .pb-mini-box, .pb-controls { width: auto; min-width: 80px; }
+  canvas { width: 100% !important; height: auto !important; max-width: 360px; }
+}
