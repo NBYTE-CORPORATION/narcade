@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>핀볼 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game24.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="pb-wrap">
+
+    <!-- 사이드 HUD -->
+    <div class="pb-sidebar">
+      <div class="pb-score-box">
+        <span class="pb-score-lbl">SCORE</span>
+        <span class="pb-score-val" id="scoreEl">0</span>
+      </div>
+      <div class="pb-score-box pb-best-box">
+        <span class="pb-score-lbl">BEST</span>
+        <span class="pb-score-val pb-best-val" id="bestEl">0</span>
+      </div>
+      <div class="pb-mini-box">
+        <span class="pb-score-lbl">BALL</span>
+        <div class="pb-balls" id="ballsEl">
+          <span class="pb-ball-dot"></span>
+          <span class="pb-ball-dot"></span>
+          <span class="pb-ball-dot"></span>
+        </div>
+      </div>
+      <div class="pb-mini-box">
+        <span class="pb-score-lbl">MULTI</span>
+        <span class="pb-multi-val" id="multEl">×1</span>
+      </div>
+      <div class="pb-controls">
+        <div class="pb-key-row"><kbd>Z</kbd> 왼쪽 플리퍼</div>
+        <div class="pb-key-row"><kbd>X</kbd> 오른쪽 플리퍼</div>
+        <div class="pb-key-row"><kbd>↓</kbd> 플런저 충전</div>
+      </div>
+    </div>
+
+    <!-- 캔버스 -->
+    <div class="canvas-wrap">
+      <canvas id="c"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">🎱</div>
+          <h2 id="ovTitle">핀볼</h2>
+          <p id="ovMsg">↓ 누르고 있다가 놓으면 발사!<br>Z · X 로 플리퍼 조작<br>모바일: 좌/우 탭으로 플리퍼</p>
+          <button id="startBtn">게임 시작</button>
+          <div class="pb-best-info" id="bestInfo"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../assets/js/game24.js"></script>
+</body>
+</html>

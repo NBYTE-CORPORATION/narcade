@@ -1,5 +1,14 @@
 [
   {
+    "id": "game24",
+    "emoji": "🎱",
+    "title": "핀볼",
+    "file": "game24.html",
+    "category": "아케이드",
+    "desc": "플리퍼로 공을 튕겨라! 범퍼, 슬링샷, 플런저 발사 시스템의 완전한 핀볼.",
+    "isNew": true
+  },
+  {
     "id": "game23",
     "emoji": "♟️",
     "title": "오목",
