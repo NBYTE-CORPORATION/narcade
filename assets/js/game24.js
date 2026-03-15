@@ -335,8 +335,16 @@ function wallCollisions() {
   /* 상단 벽 */
   if (ball.y - BALL_R < TW) {
     ball.y = TW + BALL_R + 0.5;
-    ball.vy = Math.abs(ball.vy) * 0.65;
+    if (ball.x > LANE_W - 20) {
+      /* 발사 레인에서 올라온 공 → 상단 곡선 가이드가 강하게 왼쪽으로 꺾어줌 */
+      const kickSpd = Math.max(10, Math.abs(ball.vy) * 0.9);
+      ball.vx = -(kickSpd * 0.85 + Math.random() * 1.5);
+      ball.vy = kickSpd * 0.35;
+    } else {
+      ball.vy = Math.abs(ball.vy) * 0.65;
+    }
   }
+
 
   /* 드레인 경사 벽 충돌 */
   for (const dw of DRAIN_WALLS) {
@@ -745,7 +753,7 @@ function startPlunger() {
 function releasePlunger() {
   if (plungerCharging) {
     ball.vy = -(plungerCharge * 18 + 6);
-    ball.vx = 0;
+    ball.vx = 0;      // 곧장 위로 → 상단 곡선 벽에서 꺾여 메인 필드 진입
     plungerCharging = false;
     plungerCharge = 0;
   }
