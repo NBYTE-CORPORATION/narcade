@@ -18,11 +18,11 @@ const CW = 360, CH = 640;
 canvas.width = CW; canvas.height = CH;
 
 /* ── 물리 상수 ── */
-const GRAVITY_BASE = 0.38;   // 기존 0.30 → 더 빠르게
+const GRAVITY_BASE = 0.24;
 let   gravity      = GRAVITY_BASE;
 const BALL_R       = 9;
-const FRICTION     = 0.998;
-const SPEED_CAP    = 22;
+const FRICTION     = 0.995;
+const SPEED_CAP    = 14;
 const SUBSTEPS     = 3;      // 터널링 방지 서브스텝
 
 /* ── 필드 경계 ── */
@@ -84,6 +84,7 @@ const TARGETS_DEF = [
 let score, best, balls, multiplier, gameRunning;
 let multDecayTimer = 0;          // 멀티 감소 타이머
 let plungerCharge = 0, plungerCharging = false;
+let waitingToLaunch = false;     // 공이 발사 대기 중 (물리 정지)
 let particles = [], popups = [];
 let bumperFlash = new Array(BUMPERS.length).fill(0);
 let targets = [], targetsAllHit = false;
@@ -122,7 +123,9 @@ function spawnBall() {
   ball.x = laneCenter; ball.y = CH - 95;
   ball.vx = 0; ball.vy = 0;
   ball.active = true;
-  plungerCharge = 0; plungerCharging = false;
+  plungerCharge = 0;
+  plungerCharging = false;
+  waitingToLaunch = true;   // 발사 전까지 물리 정지
 }
 
 /* ── HUD ── */
@@ -145,7 +148,7 @@ function addScore(pts) {
     spawnPopup(CW / 2, 280, '×' + multiplier + ' MULTI!');
   }
   // 점수 올라갈수록 중력 강해짐 (최대 0.58)
-  gravity = Math.min(0.58, GRAVITY_BASE + score / 40000);
+  gravity = Math.min(0.38, GRAVITY_BASE + score / 50000);
   if (score > best) { best = score; saveBest(best); }
   updateHUD();
 }
@@ -258,6 +261,13 @@ function collideSeg(ax, ay, bx, by, restitution = 0.68, extraPush = 0) {
 function updateBall() {
   if (!ball.active) return;
 
+  /* 발사 대기 중 (아직 ArrowDown / Space 안 눌림) */
+  if (waitingToLaunch) {
+    ball.x = LANE_W + (RW - LANE_W) / 2;
+    ball.y = CH - 95;
+    return;
+  }
+
   /* 플런저 충전 중 */
   if (plungerCharging) {
     plungerCharge = Math.min(1, plungerCharge + 0.022);
@@ -298,25 +308,30 @@ function updateBall() {
 
 /* ── 벽 충돌 ── */
 function wallCollisions() {
-  const inLane = ball.x + BALL_R > LANE_W;
+  /* 공의 중심으로 구역 판정 (엣지 기준이면 메인 필드 → 레인으로 잘못 빨림) */
+  const inLane = ball.x > LANE_W;
 
   if (inLane) {
     /* 발사 레인 내부 */
+    /* 레인 왼쪽 벽: 아래쪽(LANE_OPEN_Y 이하)에서만 막음 */
     if (ball.x - BALL_R < LANE_W && ball.y > LANE_OPEN_Y) {
       ball.x = LANE_W + BALL_R + 0.5;
       ball.vx = Math.abs(ball.vx) * 0.75;
     }
+    /* 레인 오른쪽(외벽) */
     if (ball.x + BALL_R > RW) {
       ball.x = RW - BALL_R - 0.5;
       ball.vx = -Math.abs(ball.vx) * 0.78;
     }
   } else {
     /* 메인 필드 */
+    /* 왼쪽 외벽 */
     if (ball.x - BALL_R < LW) {
       ball.x = LW + BALL_R + 0.5;
       ball.vx = Math.abs(ball.vx) * 0.75;
     }
-    if (ball.x + BALL_R > LANE_W) {
+    /* 오른쪽 벽(레인 경계) — 메인 필드에서 레인으로 못 빠져나가게 */
+    if (ball.x + BALL_R > LANE_W && ball.y > LANE_OPEN_Y) {
       ball.x = LANE_W - BALL_R - 0.5;
       ball.vx = -Math.abs(ball.vx) * 0.75;
     }
@@ -325,8 +340,16 @@ function wallCollisions() {
   /* 상단 벽 */
   if (ball.y - BALL_R < TW) {
     ball.y = TW + BALL_R + 0.5;
-    ball.vy = Math.abs(ball.vy) * 0.65;
+    if (ball.x > LANE_W - 20) {
+      /* 발사 레인에서 올라온 공 → 상단 곡선 가이드가 강하게 왼쪽으로 꺾어줌 */
+      const kickSpd = Math.max(7, Math.abs(ball.vy) * 0.85);
+      ball.vx = -(kickSpd * 0.8 + Math.random() * 1.2);
+      ball.vy = kickSpd * 0.3;
+    } else {
+      ball.vy = Math.abs(ball.vy) * 0.65;
+    }
   }
+
 
   /* 드레인 경사 벽 충돌 */
   for (const dw of DRAIN_WALLS) {
@@ -363,7 +386,7 @@ function bumperCollisions() {
     ball.x = b.x + nx * (b.r + BALL_R + 1);
     ball.y = b.y + ny * (b.r + BALL_R + 1);
     // 강하게 튕기기
-    const spd = Math.max(7.5, Math.sqrt(ball.vx**2 + ball.vy**2));
+    const spd = Math.max(5.5, Math.sqrt(ball.vx**2 + ball.vy**2));
     ball.vx = nx * spd;
     ball.vy = ny * spd;
 
@@ -603,6 +626,22 @@ function drawBall() {
 }
 
 function drawPlunger() {
+  /* 발사 대기 중 → 펄싱 힌트 */
+  if (waitingToLaunch) {
+    const lc = LANE_W + (RW - LANE_W) / 2;
+    const t  = Date.now() / 400;
+    const alpha = 0.5 + 0.5 * Math.sin(t);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#a78bfa';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowBlur = 10; ctx.shadowColor = '#a78bfa';
+    ctx.fillText('SPACE', lc, CH - 115);
+    ctx.fillText('↓  ↑  발사', lc, CH - 103);
+    ctx.restore();
+    return;
+  }
   if (!plungerCharging && plungerCharge < 0.01) return;
   const laneCenter = LANE_W + (RW - LANE_W) / 2;
   const barW = 16, barH = 60;
@@ -706,26 +745,44 @@ function loop() {
 /* ══════════════════════════════════
    입력
 ══════════════════════════════════ */
+function startPlunger() {
+  if (!gameRunning || !ball.active || plungerCharging) return;
+  if (waitingToLaunch) {
+    waitingToLaunch = false;
+    plungerCharging = true;
+    return;
+  }
+  if (ball.y > CH - 130 && ball.x > LANE_W - BALL_R) plungerCharging = true;
+}
+
+function releasePlunger() {
+  if (plungerCharging) {
+    ball.vy = -(plungerCharge * 13 + 5);
+    ball.vx = 0;      // 곧장 위로 → 상단 곡선 벽에서 꺾여 메인 필드 진입
+    plungerCharging = false;
+    plungerCharge = 0;
+  }
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'z' || e.key === 'Z') flipState.L = true;
   if (e.key === 'x' || e.key === 'X') flipState.R = true;
-  if (e.key === 'ArrowDown') {
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); flipState.L = true; }
+  if (e.key === 'ArrowRight') { e.preventDefault(); flipState.R = true; }
+  if (e.key === 'ArrowDown' || e.key === ' ') {
     e.preventDefault();
-    if (!gameRunning || !ball.active || plungerCharging) return;
-    if (ball.y > CH - 130 && ball.x > LANE_W - BALL_R) plungerCharging = true;
+    startPlunger();
   }
 });
 
 document.addEventListener('keyup', e => {
   if (e.key === 'z' || e.key === 'Z') flipState.L = false;
   if (e.key === 'x' || e.key === 'X') flipState.R = false;
-  if (e.key === 'ArrowDown') {
-    if (plungerCharging) {
-      ball.vy = -(plungerCharge * 18 + 6);
-      ball.vx = 0;
-      plungerCharging = false;
-      plungerCharge = 0;
-    }
+  if (e.key === 'ArrowLeft')  flipState.L = false;
+  if (e.key === 'ArrowRight') flipState.R = false;
+  if (e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault();
+    releasePlunger();
   }
 });
 
@@ -755,7 +812,7 @@ canvas.addEventListener('touchend', e => {
     else              flipState.R = false;
   }
   if (plungerCharging) {
-    ball.vy = -(plungerCharge * 18 + 6);
+    ball.vy = -(plungerCharge * 13 + 5);
     ball.vx = 0;
     plungerCharging = false;
     plungerCharge = 0;
