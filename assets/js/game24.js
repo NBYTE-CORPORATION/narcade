@@ -308,25 +308,30 @@ function updateBall() {
 
 /* ── 벽 충돌 ── */
 function wallCollisions() {
-  const inLane = ball.x + BALL_R > LANE_W;
+  /* 공의 중심으로 구역 판정 (엣지 기준이면 메인 필드 → 레인으로 잘못 빨림) */
+  const inLane = ball.x > LANE_W;
 
   if (inLane) {
     /* 발사 레인 내부 */
+    /* 레인 왼쪽 벽: 아래쪽(LANE_OPEN_Y 이하)에서만 막음 */
     if (ball.x - BALL_R < LANE_W && ball.y > LANE_OPEN_Y) {
       ball.x = LANE_W + BALL_R + 0.5;
       ball.vx = Math.abs(ball.vx) * 0.75;
     }
+    /* 레인 오른쪽(외벽) */
     if (ball.x + BALL_R > RW) {
       ball.x = RW - BALL_R - 0.5;
       ball.vx = -Math.abs(ball.vx) * 0.78;
     }
   } else {
     /* 메인 필드 */
+    /* 왼쪽 외벽 */
     if (ball.x - BALL_R < LW) {
       ball.x = LW + BALL_R + 0.5;
       ball.vx = Math.abs(ball.vx) * 0.75;
     }
-    if (ball.x + BALL_R > LANE_W) {
+    /* 오른쪽 벽(레인 경계) — 메인 필드에서 레인으로 못 빠져나가게 */
+    if (ball.x + BALL_R > LANE_W && ball.y > LANE_OPEN_Y) {
       ball.x = LANE_W - BALL_R - 0.5;
       ball.vx = -Math.abs(ball.vx) * 0.75;
     }
