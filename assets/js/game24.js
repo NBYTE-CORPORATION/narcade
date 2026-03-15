@@ -1,120 +1,116 @@
-/* ── game24.js — 핀볼 ── */
+/* ── game24.js — 핀볼 (v2 · 버그픽스 + 난이도 강화) ── */
 'use strict';
 
-const canvas  = document.getElementById('c');
-const ctx     = canvas.getContext('2d');
-const overlay = document.getElementById('overlay');
-const ovTitle = document.getElementById('ovTitle');
-const ovMsg   = document.getElementById('ovMsg');
+const canvas   = document.getElementById('c');
+const ctx      = canvas.getContext('2d');
+const overlay  = document.getElementById('overlay');
+const ovTitle  = document.getElementById('ovTitle');
+const ovMsg    = document.getElementById('ovMsg');
 const startBtn = document.getElementById('startBtn');
-const scoreEl = document.getElementById('scoreEl');
-const bestEl  = document.getElementById('bestEl');
-const ballsEl = document.getElementById('ballsEl');
-const multEl  = document.getElementById('multEl');
+const scoreEl  = document.getElementById('scoreEl');
+const bestEl   = document.getElementById('bestEl');
+const ballsEl  = document.getElementById('ballsEl');
+const multEl   = document.getElementById('multEl');
 const bestInfo = document.getElementById('bestInfo');
 
-/* ── 캔버스 크기 ── */
+/* ── 캔버스 ── */
 const CW = 360, CH = 640;
-canvas.width  = CW;
-canvas.height = CH;
+canvas.width = CW; canvas.height = CH;
 
 /* ── 물리 상수 ── */
-const GRAVITY   = 0.30;
-const BALL_R    = 9;
-const FRICTION  = 0.995;
+const GRAVITY_BASE = 0.38;   // 기존 0.30 → 더 빠르게
+let   gravity      = GRAVITY_BASE;
+const BALL_R       = 9;
+const FRICTION     = 0.998;
+const SPEED_CAP    = 22;
+const SUBSTEPS     = 3;      // 터널링 방지 서브스텝
 
-/* ── 벽 경계 ── */
-const LEFT_WALL   = 22;   // 메인 필드 왼쪽
-const RIGHT_WALL  = 338;  // 메인 필드 오른쪽
-const TOP_WALL    = 44;   // 상단
-const LAUNCH_X    = 318;  // 발사 레인 왼쪽 벽
-// 발사 레인: LAUNCH_X ~ RIGHT_WALL(338), 공이 위로 올라감
+/* ── 필드 경계 ── */
+const LW      = 22;    // 메인 필드 왼쪽 벽
+const LANE_W  = 316;   // 발사 레인 왼쪽 벽 (메인 필드 오른쪽)
+const RW      = 338;   // 발사 레인 오른쪽 벽
+const TW      = 44;    // 상단 벽
+const LANE_OPEN_Y = TW + 72; // 이 y 위면 레인 ↔ 메인 필드 연통
 
 /* ── 플리퍼 설정 ── */
 const FLIP = {
-  L: { px: 98,  py: 578, restAngle: 28,  activeAngle: -30, dir: -1 },
-  R: { px: 262, py: 578, restAngle: 152, activeAngle: 210, dir:  1 },
+  L: { px: 95,  py: 576, restAngle: 30,  activeAngle: -32 },
+  R: { px: 265, py: 576, restAngle: 150, activeAngle: 212 },
 };
-const FLIP_LEN  = 76;
-const FLIP_SPEED = 18;  // deg/frame
+const FLIP_LEN   = 72;   // 기존 76 → 조금 짧게 (더 어렵)
+const FLIP_SPEED = 22;   // 각도/프레임
 
-/* ── 범퍼 ── */
+/* ── 범퍼 (6개로 증가) ── */
 const BUMPERS = [
-  { x: 145, y: 175, r: 22, color: '#06b6d4',  pts: 300 },
-  { x: 88,  y: 255, r: 18, color: '#f43f5e',  pts: 200 },
-  { x: 202, y: 255, r: 18, color: '#f59e0b',  pts: 200 },
-  { x: 145, y: 315, r: 20, color: '#a78bfa',  pts: 250 },
+  { x: 145, y: 162, r: 22, color: '#06b6d4', pts: 300 },
+  { x: 82,  y: 238, r: 18, color: '#f43f5e', pts: 200 },
+  { x: 208, y: 238, r: 18, color: '#f59e0b', pts: 200 },
+  { x: 125, y: 305, r: 18, color: '#a78bfa', pts: 250 },
+  { x: 185, y: 305, r: 18, color: '#22c55e', pts: 250 },
+  { x: 145, y: 372, r: 15, color: '#f43f5e', pts: 150 },
 ];
 
-/* ── 슬링샷 (좌우 대각 킥 벽) ── */
+/* ── 슬링샷 ── */
 const SLINGS = [
-  // 왼쪽 슬링샷
-  { x1: LEFT_WALL, y1: 480, x2: 110, y2: 420, pts: 50 },
-  // 오른쪽 슬링샷
-  { x1: RIGHT_WALL - (LEFT_WALL - 0), y1: 480, x2: LAUNCH_X - 72, y2: 420, pts: 50 },
-];
-// 실제 x 계산을 더 정확하게
-SLINGS[0] = { x1: LEFT_WALL, y1: 490, x2: 112, y2: 422, pts: 50 };
-SLINGS[1] = { x1: LAUNCH_X - 4, y1: 490, x2: 248, y2: 422, pts: 50 };
-
-/* ── 목표물 (드롭 타겟) ── */
-const TARGETS_DEF = [
-  { x: 80,  y: 120, w: 18, h: 12, pts: 100, color: '#f43f5e' },
-  { x: 110, y: 105, w: 18, h: 12, pts: 100, color: '#f59e0b' },
-  { x: 145, y: 96,  w: 18, h: 12, pts: 150, color: '#a78bfa' },
-  { x: 180, y: 105, w: 18, h: 12, pts: 100, color: '#f59e0b' },
-  { x: 210, y: 120, w: 18, h: 12, pts: 100, color: '#f43f5e' },
+  { x1: LW,     y1: 488, x2: 108, y2: 418, pts: 60 },
+  { x1: LANE_W, y1: 488, x2: 232, y2: 418, pts: 60 },
 ];
 
-/* ── 상단 아치 가이드 핀 ── */
+/* ── 드레인 경사 벽 (충돌 포함) ── */
+const DRAIN_WALLS = [
+  { x1: LW,     y1: CH - 18, x2: FLIP.L.px - 10, y2: FLIP.L.py + 2 },
+  { x1: LANE_W, y1: CH - 18, x2: FLIP.R.px + 10, y2: FLIP.R.py + 2 },
+];
+
+/* ── 가이드 핀 (5개로 증가 + 드레인 유도 배치) ── */
 const GUIDE_PINS = [
-  { x: 68,  y: 390 },
-  { x: 180, y: 370 },
-  { x: 272, y: 390 },
+  { x: 70,  y: 390 },
+  { x: 100, y: 355 },
+  { x: 145, y: 425 },
+  { x: 200, y: 355 },
+  { x: 240, y: 390 },
 ];
 
-/* ── 게임 상태 ── */
+/* ── 드롭 타겟 ── */
+const TARGETS_DEF = [
+  { x: 76,  y: 118, w: 18, h: 12, pts: 100, color: '#f43f5e' },
+  { x: 108, y: 103, w: 18, h: 12, pts: 100, color: '#f59e0b' },
+  { x: 145, y: 95,  w: 18, h: 12, pts: 150, color: '#a78bfa' },
+  { x: 182, y: 103, w: 18, h: 12, pts: 100, color: '#f59e0b' },
+  { x: 214, y: 118, w: 18, h: 12, pts: 100, color: '#f43f5e' },
+];
+
+/* ── 상태 ── */
 let score, best, balls, multiplier, gameRunning;
+let multDecayTimer = 0;          // 멀티 감소 타이머
 let plungerCharge = 0, plungerCharging = false;
 let particles = [], popups = [];
 let bumperFlash = new Array(BUMPERS.length).fill(0);
-let targets = [];
-let targetsAllHit = false;
-
-/* ── 공 상태 ── */
+let targets = [], targetsAllHit = false;
 let ball = { x: 0, y: 0, vx: 0, vy: 0, active: false };
-
-/* ── 플리퍼 상태 ── */
 let flipState = { L: false, R: false };
-let flipAngle = { L: FLIP.L.restAngle, R: FLIP.R.restAngle };
-
-/* ── 키 상태 ── */
-const keys = { z: false, x: false, down: false };
+let flipAngle  = { L: FLIP.L.restAngle, R: FLIP.R.restAngle };
 
 /* ── localStorage ── */
-function loadBest() {
-  const v = localStorage.getItem('pinball_best');
-  return v ? parseInt(v) : 0;
-}
+function loadBest() { const v = localStorage.getItem('pinball_best'); return v ? parseInt(v) : 0; }
 function saveBest(v) { localStorage.setItem('pinball_best', v); }
 
 /* ══════════════════════════════════
    초기화
 ══════════════════════════════════ */
 function initGame() {
-  score = 0;
-  best  = loadBest();
-  balls = 3;
-  multiplier = 1;
+  score = 0; best = loadBest();
+  balls = 3; multiplier = 1;
+  gravity = GRAVITY_BASE;
   gameRunning = true;
-  particles = [];
-  popups = [];
+  multDecayTimer = 0;
+  particles = []; popups = [];
   bumperFlash.fill(0);
   targets = TARGETS_DEF.map(t => ({ ...t, hit: false }));
   targetsAllHit = false;
   flipAngle.L = FLIP.L.restAngle;
   flipAngle.R = FLIP.R.restAngle;
-
+  flipState.L = false; flipState.R = false;
   updateHUD();
   spawnBall();
   overlay.style.display = 'none';
@@ -122,27 +118,57 @@ function initGame() {
 }
 
 function spawnBall() {
-  ball.x  = LAUNCH_X + (RIGHT_WALL - LAUNCH_X) / 2;
-  ball.y  = CH - 100;
-  ball.vx = 0;
-  ball.vy = 0;
+  const laneCenter = LANE_W + (RW - LANE_W) / 2;
+  ball.x = laneCenter; ball.y = CH - 95;
+  ball.vx = 0; ball.vy = 0;
   ball.active = true;
-  plungerCharge = 0;
-  plungerCharging = false;
+  plungerCharge = 0; plungerCharging = false;
 }
 
-/* ══════════════════════════════════
-   HUD 업데이트
-══════════════════════════════════ */
+/* ── HUD ── */
 function updateHUD() {
   scoreEl.textContent = score.toLocaleString();
   bestEl.textContent  = best.toLocaleString();
   multEl.textContent  = '×' + multiplier;
-
-  const dots = ballsEl.querySelectorAll('.pb-ball-dot');
-  dots.forEach((d, i) => {
+  ballsEl.querySelectorAll('.pb-ball-dot').forEach((d, i) => {
     d.classList.toggle('used', i >= balls);
   });
+}
+
+/* ── 점수 ── */
+function addScore(pts) {
+  score += pts * multiplier;
+  multDecayTimer = 0;   // 점수 획득 시 타이머 리셋
+  const newMult = Math.min(6, 1 + Math.floor(score / 1800));
+  if (newMult !== multiplier) {
+    multiplier = newMult;
+    spawnPopup(CW / 2, 280, '×' + multiplier + ' MULTI!');
+  }
+  // 점수 올라갈수록 중력 강해짐 (최대 0.58)
+  gravity = Math.min(0.58, GRAVITY_BASE + score / 40000);
+  if (score > best) { best = score; saveBest(best); }
+  updateHUD();
+}
+
+/* ── 볼 잃음 ── */
+function loseBall() {
+  ball.active = false;
+  balls--;
+  updateHUD();
+  if (balls <= 0) {
+    gameRunning = false;
+    setTimeout(() => {
+      ovTitle.textContent = 'GAME OVER';
+      ovMsg.innerHTML = `최종 점수: <strong>${score.toLocaleString()}</strong><br>`
+        + (score >= best ? '<span style="color:#f59e0b">🏆 베스트 스코어!</span>'
+                         : `베스트: ${best.toLocaleString()}`);
+      bestInfo.textContent = best > 0 ? `최고 기록: ${best.toLocaleString()}` : '';
+      startBtn.textContent = '다시 시작';
+      overlay.style.display = 'flex';
+    }, 500);
+  } else {
+    setTimeout(spawnBall, 700);
+  }
 }
 
 /* ══════════════════════════════════
@@ -150,388 +176,319 @@ function updateHUD() {
 ══════════════════════════════════ */
 function spawnParticles(x, y, color, count = 10) {
   for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 1.5 + Math.random() * 4;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 1,
-      decay: 0.03 + Math.random() * 0.04,
-      size: 2 + Math.random() * 3,
-      color,
-    });
+    const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * 4.5;
+    particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+                     life: 1, decay: 0.03 + Math.random()*0.04,
+                     size: 2 + Math.random()*3, color });
   }
 }
-
-function spawnPopup(x, y, text) {
-  popups.push({ x, y: y - 10, text, life: 1, vy: -0.8 });
+function spawnPopup(x, y, text, color = '#f59e0b') {
+  popups.push({ x, y: y - 10, text, life: 1, vy: -0.9, color });
 }
-
 function updateParticles() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.x += p.vx; p.y += p.vy;
-    p.vy += 0.1;
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12;
     p.life -= p.decay;
     if (p.life <= 0) particles.splice(i, 1);
   }
   for (let i = popups.length - 1; i >= 0; i--) {
     const p = popups[i];
-    p.y += p.vy;
-    p.life -= 0.022;
+    p.y += p.vy; p.life -= 0.02;
     if (p.life <= 0) popups.splice(i, 1);
   }
 }
 
 /* ══════════════════════════════════
-   플리퍼 물리
+   플리퍼
 ══════════════════════════════════ */
 function updateFlippers() {
-  const step = FLIP_SPEED;
-
-  // 왼쪽 플리퍼
-  const targetL = flipState.L ? FLIP.L.activeAngle : FLIP.L.restAngle;
-  const diffL   = targetL - flipAngle.L;
-  flipAngle.L += Math.sign(diffL) * Math.min(step, Math.abs(diffL));
-
-  // 오른쪽 플리퍼
-  const targetR = flipState.R ? FLIP.R.activeAngle : FLIP.R.restAngle;
-  const diffR   = targetR - flipAngle.R;
-  flipAngle.R += Math.sign(diffR) * Math.min(step, Math.abs(diffR));
+  for (const side of ['L', 'R']) {
+    const target = flipState[side] ? FLIP[side].activeAngle : FLIP[side].restAngle;
+    const diff   = target - flipAngle[side];
+    flipAngle[side] += Math.sign(diff) * Math.min(FLIP_SPEED, Math.abs(diff));
+  }
 }
 
-function flipperSegment(side) {
-  const f   = FLIP[side];
+function flipperEndpoint(side) {
   const ang = flipAngle[side] * Math.PI / 180;
   return {
-    px: f.px, py: f.py,
-    ex: f.px + Math.cos(ang) * FLIP_LEN,
-    ey: f.py + Math.sin(ang) * FLIP_LEN,
-    angularVel: (side === 'L' ? -1 : 1) *
-      (flipState[side] ? 8 : -2),
+    px: FLIP[side].px, py: FLIP[side].py,
+    ex: FLIP[side].px + Math.cos(ang) * FLIP_LEN,
+    ey: FLIP[side].py + Math.sin(ang) * FLIP_LEN,
   };
 }
 
 /* ══════════════════════════════════
    충돌 헬퍼
 ══════════════════════════════════ */
-function closestPointOnSeg(px, py, ax, ay, bx, by) {
-  const dx = bx - ax, dy = by - ay;
-  const lenSq = dx * dx + dy * dy;
-  if (lenSq === 0) return { x: ax, y: ay, t: 0 };
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
-  return { x: ax + t * dx, y: ay + t * dy, t };
+function closestPtOnSeg(px, py, ax, ay, bx, by) {
+  const dx = bx-ax, dy = by-ay, lenSq = dx*dx + dy*dy;
+  if (lenSq < 0.001) return { x: ax, y: ay };
+  const t = Math.max(0, Math.min(1, ((px-ax)*dx + (py-ay)*dy) / lenSq));
+  return { x: ax + t*dx, y: ay + t*dy };
 }
 
-function circleSegCollide(bx, by, vx, vy, ax, ay, ex, ey, radius, restitution = 0.65, extraImpulse = 0) {
-  const { x: cx, y: cy, t } = closestPointOnSeg(bx, by, ax, ay, ex, ey);
-  const dx = bx - cx, dy = by - cy;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  if (dist > radius || dist < 0.001) return false;
+/* 선분과 원 충돌 - true 반환 시 ball.x/y/vx/vy 수정됨 */
+function collideSeg(ax, ay, bx, by, restitution = 0.68, extraPush = 0) {
+  const { x: cx, y: cy } = closestPtOnSeg(ball.x, ball.y, ax, ay, bx, by);
+  const dx = ball.x - cx, dy = ball.y - cy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > BALL_R || dist < 0.001) return false;
 
-  // 법선 벡터
   const nx = dx / dist, ny = dy / dist;
   // 겹침 해소
-  ball.x = cx + nx * (radius + 0.5);
-  ball.y = cy + ny * (radius + 0.5);
-
-  // 반사 + 반발
+  ball.x = cx + nx * (BALL_R + 0.8);
+  ball.y = cy + ny * (BALL_R + 0.8);
+  // 반사
   const dot = ball.vx * nx + ball.vy * ny;
-  ball.vx -= (1 + restitution) * dot * nx + extraImpulse * nx;
-  ball.vy -= (1 + restitution) * dot * ny + extraImpulse * ny;
+  if (dot > 0) return false;  // 이미 멀어지는 중이면 무시
+  ball.vx -= (1 + restitution) * dot * nx;
+  ball.vy -= (1 + restitution) * dot * ny;
+  if (extraPush > 0) {
+    ball.vx += nx * extraPush;
+    ball.vy += ny * extraPush;
+  }
   return true;
 }
 
 /* ══════════════════════════════════
-   공 물리 업데이트
+   공 물리 (서브스텝)
 ══════════════════════════════════ */
 function updateBall() {
   if (!ball.active) return;
 
-  /* 플런저 (발사 레인에 있을 때) */
+  /* 플런저 충전 중 */
   if (plungerCharging) {
-    plungerCharge = Math.min(1, plungerCharge + 0.025);
-    ball.x = LAUNCH_X + (RIGHT_WALL - LAUNCH_X) / 2;
-    ball.y = CH - 100;
+    plungerCharge = Math.min(1, plungerCharge + 0.022);
+    ball.x = LANE_W + (RW - LANE_W) / 2;
+    ball.y = CH - 95;
     return;
   }
-
-  /* 중력 */
-  ball.vy += GRAVITY;
-  ball.vx *= FRICTION;
-  ball.vy *= FRICTION;
 
   /* 속도 상한 */
-  const spd = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
-  if (spd > 18) {
-    ball.vx = ball.vx / spd * 18;
-    ball.vy = ball.vy / spd * 18;
+  const spd0 = Math.sqrt(ball.vx**2 + ball.vy**2);
+  if (spd0 > SPEED_CAP) {
+    ball.vx = ball.vx / spd0 * SPEED_CAP;
+    ball.vy = ball.vy / spd0 * SPEED_CAP;
   }
 
-  ball.x += ball.vx;
-  ball.y += ball.vy;
+  /* 서브스텝 */
+  const dt = 1 / SUBSTEPS;
+  for (let step = 0; step < SUBSTEPS; step++) {
+    ball.vy += gravity * dt;
+    ball.vx *= Math.pow(FRICTION, dt);
+    ball.vy *= Math.pow(FRICTION, dt);
+    ball.x  += ball.vx * dt;
+    ball.y  += ball.vy * dt;
 
-  /* ── 벽 충돌 ── */
-  // 왼쪽 메인 벽
-  if (ball.x - BALL_R < LEFT_WALL) {
-    ball.x = LEFT_WALL + BALL_R;
-    ball.vx = Math.abs(ball.vx) * 0.7;
+    wallCollisions();
+    flipperCollisions();
   }
-  // 오른쪽 - 발사 레인 왼쪽 벽 (공이 그 안에 있으면 bounce)
-  if (ball.x > LAUNCH_X - BALL_R && ball.x < RIGHT_WALL) {
-    // 발사 레인 내에서 메인 필드 진입 방지 (위 탈출구 제외)
-    if (ball.y > TOP_WALL + 60) {
-      ball.x = LAUNCH_X - BALL_R - 1;
-      ball.vx = -Math.abs(ball.vx) * 0.7;
+
+  /* 드레인 */
+  if (ball.y > CH + 30) { loseBall(); return; }
+
+  /* 범퍼, 슬링샷, 드롭타겟, 핀 (서브스텝 바깥에서 한 번만) */
+  bumperCollisions();
+  slingCollisions();
+  targetCollisions();
+  pinCollisions();
+}
+
+/* ── 벽 충돌 ── */
+function wallCollisions() {
+  const inLane = ball.x + BALL_R > LANE_W;
+
+  if (inLane) {
+    /* 발사 레인 내부 */
+    if (ball.x - BALL_R < LANE_W && ball.y > LANE_OPEN_Y) {
+      ball.x = LANE_W + BALL_R + 0.5;
+      ball.vx = Math.abs(ball.vx) * 0.75;
+    }
+    if (ball.x + BALL_R > RW) {
+      ball.x = RW - BALL_R - 0.5;
+      ball.vx = -Math.abs(ball.vx) * 0.78;
+    }
+  } else {
+    /* 메인 필드 */
+    if (ball.x - BALL_R < LW) {
+      ball.x = LW + BALL_R + 0.5;
+      ball.vx = Math.abs(ball.vx) * 0.75;
+    }
+    if (ball.x + BALL_R > LANE_W) {
+      ball.x = LANE_W - BALL_R - 0.5;
+      ball.vx = -Math.abs(ball.vx) * 0.75;
     }
   }
-  // 오른쪽 외벽
-  if (ball.x + BALL_R > LAUNCH_X) {
-    if (ball.y > TOP_WALL + 60) {
-      ball.x = LAUNCH_X - BALL_R;
-      ball.vx = -Math.abs(ball.vx) * 0.7;
-    }
-  }
-  // 상단 벽
-  if (ball.y - BALL_R < TOP_WALL) {
-    ball.y = TOP_WALL + BALL_R;
-    ball.vy = Math.abs(ball.vy) * 0.6;
+
+  /* 상단 벽 */
+  if (ball.y - BALL_R < TW) {
+    ball.y = TW + BALL_R + 0.5;
+    ball.vy = Math.abs(ball.vy) * 0.65;
   }
 
-  /* ── 드레인 감지 (하단 탈출) ── */
-  if (ball.y > CH + 20) {
-    loseBall();
-    return;
+  /* 드레인 경사 벽 충돌 */
+  for (const dw of DRAIN_WALLS) {
+    collideSeg(dw.x1, dw.y1, dw.x2, dw.y2, 0.55, 0);
   }
+}
 
-  /* ── 플리퍼 충돌 ── */
+/* ── 플리퍼 충돌 ── */
+function flipperCollisions() {
   for (const side of ['L', 'R']) {
-    const seg = flipperSegment(side);
-    const prevMoving = flipState[side];
-    const angVelImpulse = prevMoving ? 3.5 : 0;
-    circleSegCollide(
-      ball.x, ball.y, ball.vx, ball.vy,
-      seg.px, seg.py, seg.ex, seg.ey,
-      BALL_R, 0.6, angVelImpulse
-    );
-  }
-
-  /* ── 슬링샷 충돌 ── */
-  for (const sl of SLINGS) {
-    const hit = circleSegCollide(
-      ball.x, ball.y, ball.vx, ball.vy,
-      sl.x1, sl.y1, sl.x2, sl.y2,
-      BALL_R, 1.1, 4
-    );
-    if (hit) {
-      addScore(sl.pts);
-      spawnParticles(ball.x, ball.y, '#f59e0b', 6);
+    const seg     = flipperEndpoint(side);
+    const isActive = flipState[side];
+    const hit = collideSeg(seg.px, seg.py, seg.ex, seg.ey, 0.65, 0);
+    if (hit && isActive) {
+      /* 플리퍼 각속도 → 공 임펄스 */
+      const ang = flipAngle[side] * Math.PI / 180;
+      const nx  = -Math.sin(ang), ny = Math.cos(ang);
+      const impulse = side === 'L' ? 4.5 : 4.5;
+      ball.vx += nx * impulse * (side === 'L' ? -1 : 1);
+      ball.vy -= impulse * 0.5;
     }
   }
+}
 
-  /* ── 범퍼 충돌 ── */
+/* ── 범퍼 충돌 ── */
+function bumperCollisions() {
   for (let i = 0; i < BUMPERS.length; i++) {
     const b = BUMPERS[i];
     const dx = ball.x - b.x, dy = ball.y - b.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < b.r + BALL_R) {
-      // 겹침 해소
-      const nx = dx / dist, ny = dy / dist;
-      ball.x = b.x + nx * (b.r + BALL_R + 1);
-      ball.y = b.y + ny * (b.r + BALL_R + 1);
-      // 튕겨내기 (반발 계수 크게)
-      const dot = ball.vx * nx + ball.vy * ny;
-      ball.vx = nx * 7 - ball.vx * 0.2;
-      ball.vy = ny * 7 - ball.vy * 0.2;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist > b.r + BALL_R || dist < 0.001) continue;
 
-      addScore(b.pts);
-      bumperFlash[i] = 8;
-      spawnParticles(ball.x, ball.y, b.color, 10);
-      spawnPopup(b.x, b.y - b.r - 10, '+' + (b.pts * multiplier));
+    const nx = dx / dist, ny = dy / dist;
+    ball.x = b.x + nx * (b.r + BALL_R + 1);
+    ball.y = b.y + ny * (b.r + BALL_R + 1);
+    // 강하게 튕기기
+    const spd = Math.max(7.5, Math.sqrt(ball.vx**2 + ball.vy**2));
+    ball.vx = nx * spd;
+    ball.vy = ny * spd;
+
+    addScore(b.pts);
+    bumperFlash[i] = 10;
+    spawnParticles(ball.x, ball.y, b.color, 12);
+    spawnPopup(b.x, b.y - b.r - 12, '+' + (b.pts * multiplier), b.color);
+  }
+}
+
+/* ── 슬링샷 충돌 ── */
+function slingCollisions() {
+  for (const sl of SLINGS) {
+    const hit = collideSeg(sl.x1, sl.y1, sl.x2, sl.y2, 1.15, 5);
+    if (hit) {
+      addScore(sl.pts);
+      spawnParticles(ball.x, ball.y, '#f59e0b', 8);
+      spawnPopup(ball.x, ball.y - 12, '+' + (sl.pts * multiplier));
     }
   }
+}
 
-  /* ── 드롭 타겟 충돌 ── */
+/* ── 드롭 타겟 충돌 ── */
+function targetCollisions() {
   for (const t of targets) {
     if (t.hit) continue;
     if (
-      ball.x + BALL_R > t.x - t.w / 2 &&
-      ball.x - BALL_R < t.x + t.w / 2 &&
-      ball.y + BALL_R > t.y - t.h / 2 &&
-      ball.y - BALL_R < t.y + t.h / 2
+      ball.x + BALL_R > t.x - t.w/2 &&
+      ball.x - BALL_R < t.x + t.w/2 &&
+      ball.y + BALL_R > t.y - t.h/2 &&
+      ball.y - BALL_R < t.y + t.h/2
     ) {
       t.hit = true;
-      ball.vy = -Math.abs(ball.vy) * 0.8;
+      ball.vy = -Math.abs(ball.vy) * 0.85;
       addScore(t.pts);
-      spawnParticles(t.x, t.y, t.color, 8);
-      spawnPopup(t.x, t.y - 14, '+' + (t.pts * multiplier));
+      spawnParticles(t.x, t.y, t.color, 10);
+      spawnPopup(t.x, t.y - 16, '+' + (t.pts * multiplier), t.color);
 
-      // 전부 맞추면 보너스
-      if (targets.every(tt => tt.hit)) {
-        if (!targetsAllHit) {
-          addScore(1000);
-          spawnPopup(CW / 2, CH / 2, 'BONUS +1000!');
-          targetsAllHit = true;
-          // 리셋 (1.5초 후)
-          setTimeout(() => {
-            targets.forEach(tt => tt.hit = false);
-            targetsAllHit = false;
-          }, 1500);
-        }
+      if (targets.every(tt => tt.hit) && !targetsAllHit) {
+        targetsAllHit = true;
+        addScore(1500);
+        spawnPopup(CW / 2, CH / 2, 'BONUS +1500!');
+        setTimeout(() => { targets.forEach(tt => tt.hit = false); targetsAllHit = false; }, 1800);
       }
     }
   }
+}
 
-  /* ── 가이드 핀 충돌 ── */
+/* ── 가이드 핀 충돌 ── */
+function pinCollisions() {
   for (const pin of GUIDE_PINS) {
     const dx = ball.x - pin.x, dy = ball.y - pin.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const pinR = 5;
-    if (dist < pinR + BALL_R) {
-      const nx = dx / dist, ny = dy / dist;
-      ball.x = pin.x + nx * (pinR + BALL_R + 0.5);
-      ball.y = pin.y + ny * (pinR + BALL_R + 0.5);
-      const dot = ball.vx * nx + ball.vy * ny;
-      ball.vx -= 1.5 * dot * nx;
-      ball.vy -= 1.5 * dot * ny;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const r = 5;
+    if (dist > r + BALL_R || dist < 0.001) continue;
+    const nx = dx/dist, ny = dy/dist;
+    ball.x = pin.x + nx * (r + BALL_R + 0.5);
+    ball.y = pin.y + ny * (r + BALL_R + 0.5);
+    const dot = ball.vx*nx + ball.vy*ny;
+    if (dot < 0) {
+      ball.vx -= 1.6 * dot * nx;
+      ball.vy -= 1.6 * dot * ny;
     }
   }
-}
-
-/* ══════════════════════════════════
-   점수 추가
-══════════════════════════════════ */
-function addScore(pts) {
-  score += pts * multiplier;
-  // 멀티플라이어: 1000점당 +1 (최대 ×5)
-  const newMult = Math.min(5, 1 + Math.floor(score / 2000));
-  if (newMult !== multiplier) {
-    multiplier = newMult;
-    spawnPopup(CW / 2, 300, '×' + multiplier + ' MULTI!');
-  }
-  if (score > best) {
-    best = score;
-    saveBest(best);
-  }
-  updateHUD();
-}
-
-/* ══════════════════════════════════
-   볼 잃음
-══════════════════════════════════ */
-function loseBall() {
-  ball.active = false;
-  balls--;
-  updateHUD();
-
-  if (balls <= 0) {
-    setTimeout(gameOver, 400);
-  } else {
-    setTimeout(spawnBall, 600);
-  }
-}
-
-function gameOver() {
-  gameRunning = false;
-  ovTitle.textContent = 'GAME OVER';
-  ovMsg.innerHTML =
-    `최종 점수: <strong>${score.toLocaleString()}</strong><br>` +
-    (score >= best ? '<span style="color:#f59e0b">🏆 베스트 스코어!</span>' : `베스트: ${best.toLocaleString()}`);
-  bestInfo.textContent = best > 0 ? `최고 기록: ${best.toLocaleString()}` : '';
-  startBtn.textContent = '다시 시작';
-  overlay.style.display = 'flex';
 }
 
 /* ══════════════════════════════════
    렌더링
 ══════════════════════════════════ */
 function drawBackground() {
-  // 배경 그라디언트
   const bg = ctx.createLinearGradient(0, 0, 0, CH);
-  bg.addColorStop(0, '#080520');
-  bg.addColorStop(1, '#060316');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, CW, CH);
+  bg.addColorStop(0, '#080520'); bg.addColorStop(1, '#06031a');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, CW, CH);
 
-  // 필드 내부 약간 밝게
-  const field = ctx.createLinearGradient(LEFT_WALL, TOP_WALL, LAUNCH_X, CH);
-  field.addColorStop(0, 'rgba(124,58,237,0.05)');
-  field.addColorStop(1, 'rgba(124,58,237,0.02)');
-  ctx.fillStyle = field;
-  ctx.fillRect(LEFT_WALL, TOP_WALL, LAUNCH_X - LEFT_WALL, CH - TOP_WALL);
+  // 필드 내부
+  ctx.fillStyle = 'rgba(124,58,237,0.04)';
+  ctx.fillRect(LW, TW, LANE_W - LW, CH - TW);
 
-  // 격자 도트 패턴
-  ctx.fillStyle = 'rgba(124,58,237,0.08)';
-  for (let y = TOP_WALL + 20; y < CH - 20; y += 30) {
-    for (let x = LEFT_WALL + 15; x < LAUNCH_X - 5; x += 30) {
-      ctx.beginPath();
-      ctx.arc(x, y, 1, 0, Math.PI * 2);
-      ctx.fill();
+  // 도트 패턴
+  ctx.fillStyle = 'rgba(124,58,237,0.07)';
+  for (let y = TW + 22; y < CH - 18; y += 32) {
+    for (let x = LW + 16; x < LANE_W - 4; x += 32) {
+      ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill();
     }
   }
 }
 
 function drawWalls() {
   ctx.save();
-  ctx.strokeStyle = 'rgba(124,58,237,0.7)';
-  ctx.lineWidth = 3;
-  ctx.shadowBlur = 12;
-  ctx.shadowColor = 'rgba(124,58,237,0.5)';
 
-  // 왼쪽 외벽
+  const glow = (color, blur) => { ctx.shadowBlur = blur; ctx.shadowColor = color; };
+
+  /* 왼쪽 외벽 */
+  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 3;
+  glow('rgba(124,58,237,0.5)', 12);
+  ctx.beginPath(); ctx.moveTo(LW, TW); ctx.lineTo(LW, CH - 18); ctx.stroke();
+
+  /* 발사 레인 왼쪽 벽 */
+  ctx.beginPath(); ctx.moveTo(LANE_W, LANE_OPEN_Y); ctx.lineTo(LANE_W, CH - 18); ctx.stroke();
+
+  /* 발사 레인 오른쪽 벽 */
+  ctx.strokeStyle = 'rgba(124,58,237,0.45)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(RW, TW); ctx.lineTo(RW, CH - 18); ctx.stroke();
+
+  /* 상단 곡선 벽 */
+  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 3;
+  glow('rgba(124,58,237,0.5)', 12);
   ctx.beginPath();
-  ctx.moveTo(LEFT_WALL, TOP_WALL);
-  ctx.lineTo(LEFT_WALL, CH - 20);
+  ctx.moveTo(LW, TW);
+  ctx.quadraticCurveTo(CW/2 - 18, TW - 12, LANE_W, LANE_OPEN_Y);
   ctx.stroke();
 
-  // 오른쪽 메인 필드 벽 (발사 레인 왼쪽)
-  ctx.beginPath();
-  ctx.moveTo(LAUNCH_X, TOP_WALL + 60);
-  ctx.lineTo(LAUNCH_X, CH - 20);
-  ctx.stroke();
-
-  // 발사 레인 오른쪽 벽
-  ctx.strokeStyle = 'rgba(124,58,237,0.4)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(RIGHT_WALL, TOP_WALL);
-  ctx.lineTo(RIGHT_WALL, CH - 20);
-  ctx.stroke();
-
-  // 상단 곡선 벽
-  ctx.strokeStyle = 'rgba(124,58,237,0.7)';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(LEFT_WALL, TOP_WALL);
-  ctx.quadraticCurveTo(CW / 2 - 20, TOP_WALL - 10, LAUNCH_X, TOP_WALL + 60);
-  ctx.stroke();
-
-  // 슬링샷
-  ctx.strokeStyle = 'rgba(245,158,11,0.6)';
-  ctx.lineWidth = 4;
-  ctx.shadowColor = 'rgba(245,158,11,0.4)';
+  /* 슬링샷 */
+  ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 4;
+  glow('rgba(245,158,11,0.5)', 14);
   for (const sl of SLINGS) {
-    ctx.beginPath();
-    ctx.moveTo(sl.x1, sl.y1);
-    ctx.lineTo(sl.x2, sl.y2);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sl.x1, sl.y1); ctx.lineTo(sl.x2, sl.y2); ctx.stroke();
   }
 
-  // 하단 출구 (드레인)
-  ctx.strokeStyle = 'rgba(124,58,237,0.4)';
-  ctx.lineWidth = 2;
-  ctx.shadowBlur = 0;
-  // 왼쪽 드레인 경사
-  ctx.beginPath();
-  ctx.moveTo(LEFT_WALL, CH - 20);
-  ctx.lineTo(FLIP.L.px - 12, FLIP.L.py);
-  ctx.stroke();
-  // 오른쪽 드레인 경사
-  ctx.beginPath();
-  ctx.moveTo(LAUNCH_X, CH - 20);
-  ctx.lineTo(FLIP.R.px + 12, FLIP.R.py);
-  ctx.stroke();
+  /* 드레인 경사 벽 */
+  ctx.strokeStyle = 'rgba(124,58,237,0.5)'; ctx.lineWidth = 2.5;
+  glow('rgba(124,58,237,0.3)', 8);
+  for (const dw of DRAIN_WALLS) {
+    ctx.beginPath(); ctx.moveTo(dw.x1, dw.y1); ctx.lineTo(dw.x2, dw.y2); ctx.stroke();
+  }
 
   ctx.restore();
 }
@@ -543,31 +500,29 @@ function drawBumpers() {
     if (bumperFlash[i] > 0) bumperFlash[i]--;
 
     ctx.save();
-    ctx.shadowBlur = flash ? 30 : 14;
-    ctx.shadowColor = b.color;
+    ctx.shadowBlur = flash ? 36 : 16; ctx.shadowColor = b.color;
 
-    // 외부 링
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-    ctx.strokeStyle = b.color + (flash ? 'ff' : '99');
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    /* 외부 링 */
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    ctx.strokeStyle = b.color + (flash ? 'ff' : '88');
+    ctx.lineWidth = flash ? 4 : 2.5; ctx.stroke();
 
-    // 내부 채우기
-    const grd = ctx.createRadialGradient(b.x - b.r * 0.3, b.y - b.r * 0.3, 0, b.x, b.y, b.r);
-    grd.addColorStop(0, flash ? b.color + 'cc' : b.color + '44');
-    grd.addColorStop(1, flash ? b.color + '66' : b.color + '11');
+    /* 내부 */
+    const grd = ctx.createRadialGradient(b.x - b.r*.3, b.y - b.r*.3, 0, b.x, b.y, b.r);
+    grd.addColorStop(0, flash ? b.color + 'ee' : b.color + '44');
+    grd.addColorStop(1, flash ? b.color + '55' : b.color + '0a');
     ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
 
-    // 중앙 도트
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = flash ? '#fff' : b.color;
-    ctx.fill();
+    /* 중앙 점 */
+    ctx.beginPath(); ctx.arc(b.x, b.y, flash ? 6 : 4, 0, Math.PI*2);
+    ctx.fillStyle = flash ? '#fff' : b.color; ctx.fill();
 
+    /* 점수 텍스트 */
+    ctx.font = `bold ${b.r < 18 ? 9 : 10}px monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = flash ? '#fff' : b.color + 'bb';
+    ctx.fillText(b.pts, b.x, b.y + b.r + 10);
     ctx.restore();
   }
 }
@@ -576,15 +531,12 @@ function drawTargets() {
   for (const t of targets) {
     if (t.hit) continue;
     ctx.save();
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = t.color;
+    ctx.shadowBlur = 10; ctx.shadowColor = t.color;
     ctx.fillStyle = t.color + 'cc';
-    ctx.strokeStyle = t.color;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = t.color; ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(t.x - t.w / 2, t.y - t.h / 2, t.w, t.h, 3);
-    ctx.fill();
-    ctx.stroke();
+    ctx.roundRect(t.x - t.w/2, t.y - t.h/2, t.w, t.h, 3);
+    ctx.fill(); ctx.stroke();
     ctx.restore();
   }
 }
@@ -592,43 +544,34 @@ function drawTargets() {
 function drawGuidePins() {
   for (const pin of GUIDE_PINS) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(pin.x, pin.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#a78bfa44';
-    ctx.strokeStyle = '#a78bfa99';
-    ctx.lineWidth = 1.5;
-    ctx.fill();
-    ctx.stroke();
+    ctx.shadowBlur = 8; ctx.shadowColor = '#a78bfa';
+    ctx.beginPath(); ctx.arc(pin.x, pin.y, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#a78bfa33';
+    ctx.strokeStyle = '#a78bfa88'; ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
     ctx.restore();
   }
 }
 
 function drawFlippers() {
   for (const side of ['L', 'R']) {
-    const f   = FLIP[side];
-    const seg = flipperSegment(side);
+    const seg    = flipperEndpoint(side);
     const active = flipState[side];
 
     ctx.save();
     ctx.lineCap = 'round';
-    ctx.shadowBlur = active ? 18 : 8;
+    ctx.shadowBlur = active ? 22 : 10;
     ctx.shadowColor = active ? '#a78bfa' : 'rgba(124,58,237,0.4)';
 
-    // 그림자/아웃라인
     ctx.beginPath();
-    ctx.moveTo(seg.px, seg.py);
-    ctx.lineTo(seg.ex, seg.ey);
-    ctx.strokeStyle = active ? '#a78bfa' : '#6d28d9';
-    ctx.lineWidth = 14;
-    ctx.stroke();
+    ctx.moveTo(seg.px, seg.py); ctx.lineTo(seg.ex, seg.ey);
+    ctx.strokeStyle = active ? '#7c3aed' : '#4c1d95';
+    ctx.lineWidth = 15; ctx.stroke();
 
-    // 내부 밝은 선
     ctx.beginPath();
-    ctx.moveTo(seg.px, seg.py);
-    ctx.lineTo(seg.ex, seg.ey);
-    ctx.strokeStyle = active ? '#ddd6fe' : '#8b5cf6';
-    ctx.lineWidth = 6;
-    ctx.stroke();
+    ctx.moveTo(seg.px, seg.py); ctx.lineTo(seg.ex, seg.ey);
+    ctx.strokeStyle = active ? '#c4b5fd' : '#7c3aed';
+    ctx.lineWidth = 7; ctx.stroke();
 
     ctx.restore();
   }
@@ -636,60 +579,47 @@ function drawFlippers() {
 
 function drawBall() {
   if (!ball.active) return;
-
   ctx.save();
-  ctx.shadowBlur = 18;
-  ctx.shadowColor = 'rgba(167,139,250,0.8)';
+  ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(167,139,250,0.9)';
 
-  // 공 그라디언트
   const grd = ctx.createRadialGradient(
-    ball.x - BALL_R * 0.35, ball.y - BALL_R * 0.35, 0,
+    ball.x - BALL_R*.35, ball.y - BALL_R*.35, 0,
     ball.x, ball.y, BALL_R
   );
-  grd.addColorStop(0, '#ddd6fe');
-  grd.addColorStop(0.4, '#8b5cf6');
-  grd.addColorStop(1, '#4c1d95');
+  grd.addColorStop(0, '#ede9fe');
+  grd.addColorStop(0.4, '#7c3aed');
+  grd.addColorStop(1, '#3b0764');
   ctx.fillStyle = grd;
-  ctx.beginPath();
-  ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2); ctx.fill();
 
-  // 광택
-  const shine = ctx.createRadialGradient(
-    ball.x - BALL_R * 0.3, ball.y - BALL_R * 0.4, 0,
-    ball.x, ball.y, BALL_R * 0.8
-  );
-  shine.addColorStop(0, 'rgba(255,255,255,0.4)');
-  shine.addColorStop(0.7, 'rgba(255,255,255,0)');
-  ctx.fillStyle = shine;
-  ctx.beginPath();
-  ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
-  ctx.fill();
+  /* 광택 */
+  const sh = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 0, ball.x, ball.y, BALL_R*.8);
+  sh.addColorStop(0, 'rgba(255,255,255,0.45)');
+  sh.addColorStop(0.7, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sh;
+  ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2); ctx.fill();
 
   ctx.restore();
 }
 
 function drawPlunger() {
-  if (!plungerCharging && plungerCharge === 0) return;
-  const px = LAUNCH_X + (RIGHT_WALL - LAUNCH_X) / 2;
-  const py = CH - 80;
-
-  // 충전 바
-  const barW = 18, barH = 60;
-  const barX = px - barW / 2, barY = py + 10;
+  if (!plungerCharging && plungerCharge < 0.01) return;
+  const laneCenter = LANE_W + (RW - LANE_W) / 2;
+  const barW = 16, barH = 60;
+  const barX = laneCenter - barW/2, barY = CH - 68;
 
   ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.roundRect(barX, barY, barW, barH, 4);
-  ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.roundRect(barX, barY, barW, barH, 4); ctx.fill();
 
   const fillH = barH * plungerCharge;
-  const color = plungerCharge > 0.7 ? '#f43f5e' : plungerCharge > 0.4 ? '#f59e0b' : '#a78bfa';
-  ctx.fillStyle = color;
-  ctx.shadowBlur = 10;
-  ctx.shadowColor = color;
-  ctx.roundRect(barX, barY + barH - fillH, barW, fillH, 4);
-  ctx.fill();
+  const col = plungerCharge > 0.72 ? '#f43f5e' : plungerCharge > 0.44 ? '#f59e0b' : '#a78bfa';
+  ctx.fillStyle = col; ctx.shadowBlur = 12; ctx.shadowColor = col;
+  ctx.roundRect(barX, barY + barH - fillH, barW, fillH, 4); ctx.fill();
+
+  ctx.fillStyle = col + 'aa';
+  ctx.font = '8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('POWER', laneCenter, barY - 4);
   ctx.restore();
 }
 
@@ -697,44 +627,36 @@ function drawParticles() {
   for (const p of particles) {
     ctx.save();
     ctx.globalAlpha = p.life;
-    ctx.shadowBlur = 6;
-    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 8; ctx.shadowColor = p.color;
     ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   }
 }
 
 function drawPopups() {
   ctx.save();
-  ctx.font = 'bold 13px "Segoe UI", sans-serif';
-  ctx.textAlign = 'center';
   for (const p of popups) {
-    ctx.globalAlpha = p.life;
-    ctx.fillStyle = '#f59e0b';
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = '#f59e0b';
+    ctx.globalAlpha = Math.min(1, p.life * 1.5);
+    ctx.fillStyle = p.color || '#f59e0b';
+    ctx.shadowBlur = 10; ctx.shadowColor = p.color || '#f59e0b';
+    ctx.font = 'bold 13px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
     ctx.fillText(p.text, p.x, p.y);
   }
   ctx.restore();
 }
 
-function drawLaunchArrow() {
-  if (!plungerCharging && !ball.active) return;
-  if (ball.active && ball.y < CH - 80) return;
-  if (!plungerCharging) return;
-
-  // 발사 방향 화살표
-  const px = LAUNCH_X + (RIGHT_WALL - LAUNCH_X) / 2;
+function drawMultiDecay() {
+  if (multiplier <= 1) return;
+  /* 멀티 감소까지 남은 시간 시각화 */
+  const pct = 1 - multDecayTimer / 600;
   ctx.save();
-  ctx.strokeStyle = 'rgba(167,139,250,0.6)';
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = multiplier >= 4 ? '#f43f5e' : '#a78bfa';
+  ctx.lineWidth = 3;
+  ctx.globalAlpha = 0.5;
   ctx.beginPath();
-  ctx.moveTo(px, CH - 110);
-  ctx.lineTo(px, TOP_WALL + 80);
+  ctx.arc(LANE_W + (RW - LANE_W)/2, 30, 12, -Math.PI/2, -Math.PI/2 + Math.PI*2*pct);
   ctx.stroke();
   ctx.restore();
 }
@@ -743,15 +665,28 @@ function drawLaunchArrow() {
    메인 루프
 ══════════════════════════════════ */
 let rafId = null;
+let frameCount = 0;
 
 function loop() {
   if (!gameRunning) { rafId = null; return; }
+
+  frameCount++;
+
+  /* 멀티플라이어 자동 감소 (10초 이상 점수 없으면) */
+  if (multiplier > 1) {
+    multDecayTimer++;
+    if (multDecayTimer >= 600) {   // 60fps × 10초
+      multiplier--;
+      multDecayTimer = 0;
+      updateHUD();
+      spawnPopup(CW/2, 260, 'MULTI DOWN...', '#64748b');
+    }
+  }
 
   updateFlippers();
   updateBall();
   updateParticles();
 
-  /* 렌더 */
   ctx.clearRect(0, 0, CW, CH);
   drawBackground();
   drawWalls();
@@ -761,35 +696,32 @@ function loop() {
   drawFlippers();
   drawBall();
   drawPlunger();
-  drawLaunchArrow();
   drawParticles();
   drawPopups();
+  drawMultiDecay();
 
   rafId = requestAnimationFrame(loop);
 }
 
 /* ══════════════════════════════════
-   입력 처리
+   입력
 ══════════════════════════════════ */
 document.addEventListener('keydown', e => {
-  if (e.key === 'z' || e.key === 'Z') { keys.z = true; flipState.L = true; }
-  if (e.key === 'x' || e.key === 'X') { keys.x = true; flipState.R = true; }
+  if (e.key === 'z' || e.key === 'Z') flipState.L = true;
+  if (e.key === 'x' || e.key === 'X') flipState.R = true;
   if (e.key === 'ArrowDown') {
     e.preventDefault();
-    if (!gameRunning) return;
-    if (ball.active && !plungerCharging && ball.y > CH - 120 && ball.x > LAUNCH_X) {
-      plungerCharging = true;
-    }
+    if (!gameRunning || !ball.active || plungerCharging) return;
+    if (ball.y > CH - 130 && ball.x > LANE_W - BALL_R) plungerCharging = true;
   }
 });
 
 document.addEventListener('keyup', e => {
-  if (e.key === 'z' || e.key === 'Z') { keys.z = false; flipState.L = false; }
-  if (e.key === 'x' || e.key === 'X') { keys.x = false; flipState.R = false; }
+  if (e.key === 'z' || e.key === 'Z') flipState.L = false;
+  if (e.key === 'x' || e.key === 'X') flipState.R = false;
   if (e.key === 'ArrowDown') {
     if (plungerCharging) {
-      // 발사!
-      ball.vy = -(plungerCharge * 17 + 5);
+      ball.vy = -(plungerCharge * 18 + 6);
       ball.vx = 0;
       plungerCharging = false;
       plungerCharge = 0;
@@ -797,71 +729,47 @@ document.addEventListener('keyup', e => {
   }
 });
 
-/* ── 모바일 터치 (좌/우 탭 → 플리퍼) ── */
+/* 모바일 터치 */
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   const rect = canvas.getBoundingClientRect();
+  const scaleY = CH / rect.height;
   for (const t of e.changedTouches) {
-    const tx = t.clientX - rect.left;
-    const ty = t.clientY - rect.top;
-    // 하단 절반 터치만
-    if (ty < CH * 0.5) continue;
-    if (tx < CW / 2) flipState.L = true;
-    else              flipState.R = true;
-  }
-}, { passive: false });
-
-canvas.addEventListener('touchend', e => {
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  for (const t of e.changedTouches) {
-    const tx = t.clientX - rect.left;
-    if (tx < CW / 2) flipState.L = false;
-    else              flipState.R = false;
-  }
-}, { passive: false });
-
-/* 모바일 플런저: 화면 위쪽 탭 */
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  if (!gameRunning) return;
-  for (const t of e.changedTouches) {
-    const rect = canvas.getBoundingClientRect();
-    const ty = t.clientY - rect.top;
-    if (ty > CH * 0.7 && ball.active && !plungerCharging) {
-      if (ball.y > CH - 120) plungerCharging = true;
+    const tx = (t.clientX - rect.left) * (CW / rect.width);
+    const ty = (t.clientY - rect.top)  * scaleY;
+    if (ty > CH * 0.55) {
+      if (tx < CW / 2) flipState.L = true;
+      else              flipState.R = true;
+    } else if (ty > CH * 0.7 && ball.active && !plungerCharging && ball.y > CH - 130) {
+      plungerCharging = true;
     }
   }
 }, { passive: false });
 
 canvas.addEventListener('touchend', e => {
   e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  for (const t of e.changedTouches) {
+    const tx = (t.clientX - rect.left) * (CW / rect.width);
+    if (tx < CW / 2) flipState.L = false;
+    else              flipState.R = false;
+  }
   if (plungerCharging) {
-    ball.vy = -(plungerCharge * 17 + 5);
+    ball.vy = -(plungerCharge * 18 + 6);
     ball.vx = 0;
     plungerCharging = false;
     plungerCharge = 0;
   }
 }, { passive: false });
 
-/* ══════════════════════════════════
-   시작 버튼
-══════════════════════════════════ */
-startBtn.addEventListener('click', () => {
-  initGame();
-});
+/* ── 시작 ── */
+startBtn.addEventListener('click', initGame);
 
-/* ── 초기 화면 ── */
 best = loadBest();
 bestEl.textContent  = best.toLocaleString();
 bestInfo.textContent = best > 0 ? `최고 기록: ${best.toLocaleString()}` : '';
 scoreEl.textContent = '0';
 multEl.textContent  = '×1';
 
-// 초기 렌더 (오버레이 뒤에 배경 보이게)
 ctx.clearRect(0, 0, CW, CH);
-drawBackground();
-drawWalls();
-drawBumpers();
-drawTargets();
-drawGuidePins();
+drawBackground(); drawWalls(); drawBumpers(); drawTargets(); drawGuidePins();
