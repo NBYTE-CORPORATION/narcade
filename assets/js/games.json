@@ -1,5 +1,41 @@
 [
   {
+    "id": "game23",
+    "emoji": "♟️",
+    "title": "오목",
+    "file": "game23.html",
+    "category": "퍼즐",
+    "desc": "AI와 오목 대결! 5개를 연속으로 이어라. 휴리스틱 AI, 승리 라인 하이라이트.",
+    "isNew": true
+  },
+  {
+    "id": "game22",
+    "emoji": "🔢",
+    "title": "슬라이딩 퍼즐",
+    "file": "game22.html",
+    "category": "퍼즐",
+    "desc": "숫자 타일을 밀어 순서를 맞춰라! 3×3·4×4·5×5 난이도, 키보드 조작 지원.",
+    "isNew": true
+  },
+  {
+    "id": "game21",
+    "emoji": "🎯",
+    "title": "에임 트레이너",
+    "file": "game21.html",
+    "category": "반사",
+    "desc": "사라지기 전에 타깃을 클릭하라! 30초 정확도·콤보 도전, 에임 실력 측정.",
+    "isNew": true
+  },
+  {
+    "id": "game20",
+    "emoji": "🏃",
+    "title": "엔드리스 러너",
+    "file": "game20.html",
+    "category": "아케이드",
+    "desc": "장애물을 피해 달려라! 더블 점프, 파라렉스 배경, 속도 증가 시스템.",
+    "isNew": true
+  },
+  {
     "id": "game19",
     "emoji": "🃏",
     "title": "카드 짝 맞추기",
