@@ -1,523 +1,781 @@
-/* ── game25.js — 피카츄 배구 ── */
+/* ── game25.js — 체스 (알파-베타 AI) ── */
 'use strict';
 
-const canvas  = document.getElementById('c');
-const ctx     = canvas.getContext('2d');
-const overlay = document.getElementById('overlay');
-const ovTitle = document.getElementById('ovTitle');
-const ovMsg   = document.getElementById('ovMsg');
-const startBtn = document.getElementById('startBtn');
-const scorePEl = document.getElementById('scoreP');
-const scoreAEl = document.getElementById('scoreA');
-const setInfoEl = document.getElementById('setInfo');
+/* ══ 상수 ══ */
+const EMPTY=0, PAWN=1, KNIGHT=2, BISHOP=3, ROOK=4, QUEEN=5, KING=6;
+const WHITE=1, BLACK=-1;
+const SQ = 60; // 한 칸 픽셀
 
-const CW = 480, CH = 300;
-canvas.width = CW; canvas.height = CH;
+/* ══ 기물 유니코드 ══ */
+const GLYPHS = {
+  [WHITE*PAWN]:'♙',[WHITE*KNIGHT]:'♘',[WHITE*BISHOP]:'♗',
+  [WHITE*ROOK]:'♖',[WHITE*QUEEN]:'♕',[WHITE*KING]:'♔',
+  [BLACK*PAWN]:'♟',[BLACK*KNIGHT]:'♞',[BLACK*BISHOP]:'♝',
+  [BLACK*ROOK]:'♜',[BLACK*QUEEN]:'♛',[BLACK*KING]:'♚',
+};
 
-/* ── 상수 ── */
-const GROUND    = CH - 48;
-const NET_X     = CW / 2;
-const NET_H     = 60;
-const NET_TOP   = GROUND - NET_H;
-const GRAVITY   = 0.55;
-const BALL_R    = 14;
-const CHAR_R    = 26;
-const WIN_SCORE = 5;
+/* ══ 기물 가치 ══ */
+const VAL = [0, 100, 320, 330, 500, 900, 20000];
 
-/* ── 상태 ── */
-let scoreP = 0, scoreA = 0;
-let setNum = 1;
-let gameRunning = false;
-let serveLeft = true;   // 서브 방향
-let rallyActive = false;
-let touchCountP = 0, touchCountA = 0;
-let particles = [];
-let flashTimer = 0, flashWinner = '';
+/* ══ 위치 테이블 (white 관점, black은 뒤집어 사용) ══ */
+const PST = {
+  [PAWN]: [
+    [ 0,  0,  0,  0,  0,  0,  0,  0],
+    [50, 50, 50, 50, 50, 50, 50, 50],
+    [10, 10, 20, 30, 30, 20, 10, 10],
+    [ 5,  5, 10, 25, 25, 10,  5,  5],
+    [ 0,  0,  0, 20, 20,  0,  0,  0],
+    [ 5, -5,-10,  0,  0,-10, -5,  5],
+    [ 5, 10, 10,-20,-20, 10, 10,  5],
+    [ 0,  0,  0,  0,  0,  0,  0,  0],
+  ],
+  [KNIGHT]: [
+    [-50,-40,-30,-30,-30,-30,-40,-50],
+    [-40,-20,  0,  0,  0,  0,-20,-40],
+    [-30,  0, 10, 15, 15, 10,  0,-30],
+    [-30,  5, 15, 20, 20, 15,  5,-30],
+    [-30,  0, 15, 20, 20, 15,  0,-30],
+    [-30,  5, 10, 15, 15, 10,  5,-30],
+    [-40,-20,  0,  5,  5,  0,-20,-40],
+    [-50,-40,-30,-30,-30,-30,-40,-50],
+  ],
+  [BISHOP]: [
+    [-20,-10,-10,-10,-10,-10,-10,-20],
+    [-10,  0,  0,  0,  0,  0,  0,-10],
+    [-10,  0,  5, 10, 10,  5,  0,-10],
+    [-10,  5,  5, 10, 10,  5,  5,-10],
+    [-10,  0, 10, 10, 10, 10,  0,-10],
+    [-10, 10, 10, 10, 10, 10, 10,-10],
+    [-10,  5,  0,  0,  0,  0,  5,-10],
+    [-20,-10,-10,-10,-10,-10,-10,-20],
+  ],
+  [ROOK]: [
+    [ 0,  0,  0,  0,  0,  0,  0,  0],
+    [ 5, 10, 10, 10, 10, 10, 10,  5],
+    [-5,  0,  0,  0,  0,  0,  0, -5],
+    [-5,  0,  0,  0,  0,  0,  0, -5],
+    [-5,  0,  0,  0,  0,  0,  0, -5],
+    [-5,  0,  0,  0,  0,  0,  0, -5],
+    [-5,  0,  0,  0,  0,  0,  0, -5],
+    [ 0,  0,  0,  5,  5,  0,  0,  0],
+  ],
+  [QUEEN]: [
+    [-20,-10,-10, -5, -5,-10,-10,-20],
+    [-10,  0,  0,  0,  0,  0,  0,-10],
+    [-10,  0,  5,  5,  5,  5,  0,-10],
+    [ -5,  0,  5,  5,  5,  5,  0, -5],
+    [  0,  0,  5,  5,  5,  5,  0, -5],
+    [-10,  5,  5,  5,  5,  5,  0,-10],
+    [-10,  0,  5,  0,  0,  0,  0,-10],
+    [-20,-10,-10, -5, -5,-10,-10,-20],
+  ],
+  [KING]: [
+    [-30,-40,-40,-50,-50,-40,-40,-30],
+    [-30,-40,-40,-50,-50,-40,-40,-30],
+    [-30,-40,-40,-50,-50,-40,-40,-30],
+    [-30,-40,-40,-50,-50,-40,-40,-30],
+    [-20,-30,-30,-40,-40,-30,-30,-20],
+    [-10,-20,-20,-20,-20,-20,-20,-10],
+    [ 20, 20,  0,  0,  0,  0, 20, 20],
+    [ 20, 30, 10,  0,  0, 10, 30, 20],
+  ],
+};
 
-/* ── 캐릭터 ── */
-const player = { x: 110, y: GROUND, vy: 0, vx: 0, onGround: true, facing: 1, isP: true };
-const ai     = { x: 370, y: GROUND, vy: 0, vx: 0, onGround: true, facing: -1, isP: false };
+/* ══════════════════════════
+   보드 상태
+══════════════════════════ */
+class ChessState {
+  constructor() {
+    this.board = this._initBoard();
+    this.turn = WHITE;
+    this.castleRights = { WK:true, WQ:true, BK:true, BQ:true };
+    this.enPassant = null;   // {r,c} 앙파상 가능 칸
+    this.halfMove = 0;
+    this.fullMove = 1;
+    this.history = [];       // [{board,turn,castleRights,enPassant,halfMove,fullMove}]
+    this.moveLog  = [];      // 기보 [{white,black}]
+  }
 
-/* ── 공 ── */
-const ball = { x: 0, y: 0, vx: 0, vy: 0 };
+  _initBoard() {
+    const b = Array.from({length:8}, ()=>Array(8).fill(0));
+    const back = [ROOK,KNIGHT,BISHOP,QUEEN,KING,BISHOP,KNIGHT,ROOK];
+    for(let c=0;c<8;c++){
+      b[0][c] = -back[c];
+      b[1][c] = -PAWN;
+      b[6][c] =  PAWN;
+      b[7][c] =  back[c];
+    }
+    return b;
+  }
 
-/* ── 키 ── */
-const keys = {};
-document.addEventListener('keydown', e => {
-  keys[e.key] = true;
-  if (e.key === 'z' || e.key === 'Z') {
-    if (gameRunning && player.onGround) {
-      player.vy = -13.5;
-      player.onGround = false;
+  clone() {
+    const s = new ChessState();
+    s.board = this.board.map(r=>[...r]);
+    s.turn  = this.turn;
+    s.castleRights = {...this.castleRights};
+    s.enPassant = this.enPassant ? {...this.enPassant} : null;
+    s.halfMove  = this.halfMove;
+    s.fullMove  = this.fullMove;
+    s.history   = [];
+    s.moveLog   = [];
+    return s;
+  }
+
+  snapshot() {
+    return {
+      board: this.board.map(r=>[...r]),
+      turn:  this.turn,
+      castleRights: {...this.castleRights},
+      enPassant: this.enPassant ? {...this.enPassant} : null,
+      halfMove: this.halfMove,
+      fullMove: this.fullMove,
+    };
+  }
+}
+
+/* ══════════════════════════
+   수 생성
+══════════════════════════ */
+function inBounds(r,c){ return r>=0&&r<8&&c>=0&&c<8; }
+
+function pseudoMoves(state, turn) {
+  const moves = [];
+  const b = state.board;
+
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const pc = b[r][c];
+    if(!pc || Math.sign(pc)!==turn) continue;
+    const type = Math.abs(pc);
+
+    if(type===PAWN){
+      const dir = -turn; // white goes up (row--)
+      const startRow = turn===WHITE ? 6 : 1;
+      // 전진
+      if(inBounds(r+dir,c) && b[r+dir][c]===0){
+        if((turn===WHITE&&r+dir===0)||(turn===BLACK&&r+dir===7)){
+          for(const p of [QUEEN,ROOK,BISHOP,KNIGHT])
+            moves.push({fr:r,fc:c,tr:r+dir,tc:c,promo:p*turn});
+        } else {
+          moves.push({fr:r,fc:c,tr:r+dir,tc:c});
+          if(r===startRow && b[r+2*dir][c]===0)
+            moves.push({fr:r,fc:c,tr:r+2*dir,tc:c,dbl:true});
+        }
+      }
+      // 대각 먹기
+      for(const dc of[-1,1]){
+        if(!inBounds(r+dir,c+dc)) continue;
+        const target = b[r+dir][c+dc];
+        // 앙파상
+        if(state.enPassant && state.enPassant.r===r+dir && state.enPassant.c===c+dc)
+          moves.push({fr:r,fc:c,tr:r+dir,tc:c+dc,ep:true});
+        else if(target && Math.sign(target)===-turn){
+          if((turn===WHITE&&r+dir===0)||(turn===BLACK&&r+dir===7)){
+            for(const p of [QUEEN,ROOK,BISHOP,KNIGHT])
+              moves.push({fr:r,fc:c,tr:r+dir,tc:c+dc,promo:p*turn});
+          } else {
+            moves.push({fr:r,fc:c,tr:r+dir,tc:c+dc});
+          }
+        }
+      }
+    }
+
+    else if(type===KNIGHT){
+      for(const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){
+        const nr=r+dr,nc=c+dc;
+        if(inBounds(nr,nc) && Math.sign(b[nr][nc])!==turn)
+          moves.push({fr:r,fc:c,tr:nr,tc:nc});
+      }
+    }
+
+    else if(type===BISHOP||type===QUEEN){
+      for(const [dr,dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
+        let nr=r+dr,nc=c+dc;
+        while(inBounds(nr,nc)){
+          if(b[nr][nc]===0) moves.push({fr:r,fc:c,tr:nr,tc:nc});
+          else { if(Math.sign(b[nr][nc])!==turn) moves.push({fr:r,fc:c,tr:nr,tc:nc}); break; }
+          nr+=dr; nc+=dc;
+        }
+      }
+    }
+
+    if(type===ROOK||type===QUEEN){
+      for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+        let nr=r+dr,nc=c+dc;
+        while(inBounds(nr,nc)){
+          if(b[nr][nc]===0) moves.push({fr:r,fc:c,tr:nr,tc:nc});
+          else { if(Math.sign(b[nr][nc])!==turn) moves.push({fr:r,fc:c,tr:nr,tc:nc}); break; }
+          nr+=dr; nc+=dc;
+        }
+      }
+    }
+
+    else if(type===KING){
+      for(const [dr,dc] of [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){
+        const nr=r+dr,nc=c+dc;
+        if(inBounds(nr,nc) && Math.sign(b[nr][nc])!==turn)
+          moves.push({fr:r,fc:c,tr:nr,tc:nc});
+      }
+      // 캐슬링
+      const kr = turn===WHITE ? 7 : 0;
+      if(r===kr && c===4){
+        if(turn===WHITE){
+          if(state.castleRights.WK && b[7][5]===0 && b[7][6]===0 && !isAttacked(state,7,4,BLACK) && !isAttacked(state,7,5,BLACK))
+            moves.push({fr:7,fc:4,tr:7,tc:6,castle:'WK'});
+          if(state.castleRights.WQ && b[7][3]===0 && b[7][2]===0 && b[7][1]===0 && !isAttacked(state,7,4,BLACK) && !isAttacked(state,7,3,BLACK))
+            moves.push({fr:7,fc:4,tr:7,tc:2,castle:'WQ'});
+        } else {
+          if(state.castleRights.BK && b[0][5]===0 && b[0][6]===0 && !isAttacked(state,0,4,WHITE) && !isAttacked(state,0,5,WHITE))
+            moves.push({fr:0,fc:4,tr:0,tc:6,castle:'BK'});
+          if(state.castleRights.BQ && b[0][3]===0 && b[0][2]===0 && b[0][1]===0 && !isAttacked(state,0,4,WHITE) && !isAttacked(state,0,3,WHITE))
+            moves.push({fr:0,fc:4,tr:0,tc:2,castle:'BQ'});
+        }
+      }
     }
   }
-  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
-});
-document.addEventListener('keyup', e => { keys[e.key] = false; });
-
-/* ── 초기화 ── */
-function initGame() {
-  scoreP = 0; scoreA = 0; setNum = 1;
-  serveLeft = true;
-  gameRunning = true;
-  particles = [];
-  updateHUD();
-  servePoint();
-  overlay.style.display = 'none';
-  if (!rafId) loop();
+  return moves;
 }
 
-function servePoint() {
-  rallyActive = false;
-  touchCountP = 0; touchCountA = 0;
-
-  // 위치 리셋
-  player.x = 110; player.y = GROUND; player.vy = 0; player.vx = 0; player.onGround = true;
-  ai.x     = 370; ai.y     = GROUND; ai.vy     = 0; ai.vx     = 0; ai.onGround     = true;
-
-  // 공 서브 위치
-  if (serveLeft) {
-    ball.x = 130; ball.y = GROUND - 80;
-    ball.vx = 4.5; ball.vy = -8;
-  } else {
-    ball.x = 350; ball.y = GROUND - 80;
-    ball.vx = -4.5; ball.vy = -8;
+function isAttacked(state, r, c, byColor) {
+  const b = state.board;
+  // 나이트
+  for(const [dr,dc] of [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){
+    const nr=r+dr,nc=c+dc;
+    if(inBounds(nr,nc) && b[nr][nc]===byColor*KNIGHT) return true;
   }
-
-  setTimeout(() => { rallyActive = true; }, 600);
-}
-
-function updateHUD() {
-  scorePEl.textContent = scoreP;
-  scoreAEl.textContent = scoreA;
-  setInfoEl.textContent = `SET ${setNum}`;
-}
-
-/* ── 파티클 ── */
-function spawnParticles(x, y, color) {
-  for (let i = 0; i < 12; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const spd   = 2 + Math.random() * 5;
-    particles.push({ x, y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd - 2,
-                     life: 1, decay: 0.03+Math.random()*0.04, size: 3+Math.random()*4, color });
-  }
-}
-
-/* ── 물리 업데이트 ── */
-function updateCharacter(ch) {
-  ch.vy += GRAVITY;
-  ch.x  += ch.vx;
-  ch.y  += ch.vy;
-  ch.vx *= 0.85;
-
-  if (ch.y >= GROUND) {
-    ch.y = GROUND; ch.vy = 0; ch.onGround = true;
-  }
-
-  // 코트 경계
-  const minX = CHAR_R + (ch.isP ? 2 : NET_X + 4);
-  const maxX = (ch.isP ? NET_X - 4 : CW - 2) - CHAR_R;
-  if (ch.x < minX) ch.x = minX;
-  if (ch.x > maxX) ch.x = maxX;
-}
-
-function updateBall() {
-  if (!rallyActive) return;
-
-  ball.vy += GRAVITY * 0.8;
-  ball.x  += ball.vx;
-  ball.y  += ball.vy;
-
-  // 속도 제한
-  const spd = Math.sqrt(ball.vx**2 + ball.vy**2);
-  if (spd > 22) { ball.vx = ball.vx/spd*22; ball.vy = ball.vy/spd*22; }
-
-  // 좌우 벽
-  if (ball.x - BALL_R < 2)         { ball.x = 2 + BALL_R;      ball.vx =  Math.abs(ball.vx)*0.8; }
-  if (ball.x + BALL_R > CW - 2)    { ball.x = CW - 2 - BALL_R; ball.vx = -Math.abs(ball.vx)*0.8; }
-  // 상단 벽
-  if (ball.y - BALL_R < 20)        { ball.y = 20 + BALL_R;     ball.vy =  Math.abs(ball.vy)*0.7; }
-
-  // 네트 충돌
-  if (
-    ball.x + BALL_R > NET_X - 5 &&
-    ball.x - BALL_R < NET_X + 5 &&
-    ball.y + BALL_R > NET_TOP
-  ) {
-    // 어느 쪽에서 왔는지 기준 반사
-    if (ball.x < NET_X) { ball.x = NET_X - 5 - BALL_R; ball.vx = -Math.abs(ball.vx)*0.6; }
-    else                 { ball.x = NET_X + 5 + BALL_R; ball.vx =  Math.abs(ball.vx)*0.6; }
-    ball.vy *= 0.5;
-  }
-
-  // 캐릭터 충돌
-  ballCharCollide(player, true);
-  ballCharCollide(ai, false);
-
-  // 땅에 닿으면 포인트 결정
-  if (ball.y + BALL_R >= GROUND) {
-    rallyActive = false;
-    spawnParticles(ball.x, GROUND, '#f59e0b');
-    if (ball.x < NET_X) {
-      // 플레이어 코트에 떨어짐 → AI 득점
-      scoreA++;
-      serveLeft = false;
-      flashWinner = 'AI';
-    } else {
-      // AI 코트에 떨어짐 → 플레이어 득점
-      scoreP++;
-      serveLeft = true;
-      flashWinner = 'P';
-    }
-    flashTimer = 60;
-    updateHUD();
-    checkWin();
-  }
-}
-
-function ballCharCollide(ch, isPlayer) {
-  const dx = ball.x - ch.x;
-  const dy = ball.y - (ch.y - CHAR_R * 0.6);
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  const minDist = BALL_R + CHAR_R;
-
-  if (dist < minDist && dist > 0.1) {
-    const nx = dx / dist, ny = dy / dist;
-    // 겹침 해소
-    ball.x = ch.x + nx * (minDist + 1);
-    ball.y = (ch.y - CHAR_R * 0.6) + ny * (minDist + 1);
-
-    // 튕기기 - 캐릭터 속도 전달
-    const relVx = ball.vx - ch.vx;
-    const relVy = ball.vy - ch.vy;
-    const dot = relVx * nx + relVy * ny;
-    ball.vx -= 1.8 * dot * nx;
-    ball.vy -= 1.8 * dot * ny;
-
-    // 최소 위 방향 보장
-    if (ball.vy > -2) ball.vy = -8;
-
-    // 터치 카운트
-    if (isPlayer) {
-      touchCountP++;
-      spawnParticles(ball.x, ball.y, '#facc15');
-    } else {
-      touchCountA++;
-      spawnParticles(ball.x, ball.y, '#f87171');
+  // 대각 (비숍/퀸/폰)
+  for(const [dr,dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
+    let nr=r+dr,nc=c+dc,dist=1;
+    while(inBounds(nr,nc)){
+      const pc=b[nr][nc];
+      if(pc!==0){
+        if(Math.sign(pc)===byColor){
+          const t=Math.abs(pc);
+          if(t===BISHOP||t===QUEEN) return true;
+          if(dist===1&&t===KING) return true;
+          if(dist===1&&t===PAWN&&((byColor===WHITE&&dr===1)||(byColor===BLACK&&dr===-1))) return true;
+        }
+        break;
+      }
+      nr+=dr; nc+=dc; dist++;
     }
   }
-}
-
-/* ── 승리 판정 ── */
-function checkWin() {
-  if (scoreP >= WIN_SCORE || scoreA >= WIN_SCORE) {
-    const pWon = scoreP >= WIN_SCORE;
-    gameRunning = false;
-    setTimeout(() => {
-      ovTitle.textContent = pWon ? '🏆 승리!' : '😔 패배';
-      ovMsg.innerHTML = pWon
-        ? `축하해요! ${scoreP} : ${scoreA} 로 이겼습니다!`
-        : `AI가 이겼습니다. ${scoreP} : ${scoreA}<br>다시 도전!`;
-      startBtn.textContent = '다시 시작';
-      overlay.style.display = 'flex';
-    }, 800);
-  } else {
-    setTimeout(servePoint, 900);
+  // 직선 (룩/퀸)
+  for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]){
+    let nr=r+dr,nc=c+dc,dist=1;
+    while(inBounds(nr,nc)){
+      const pc=b[nr][nc];
+      if(pc!==0){
+        if(Math.sign(pc)===byColor){
+          const t=Math.abs(pc);
+          if(t===ROOK||t===QUEEN) return true;
+          if(dist===1&&t===KING) return true;
+        }
+        break;
+      }
+      nr+=dr; nc+=dc; dist++;
+    }
   }
+  return false;
 }
 
-/* ── AI 로직 ── */
-function updateAI() {
-  if (!rallyActive) return;
+function applyMove(state, mv) {
+  const b = state.board;
+  const pc = b[mv.fr][mv.fc];
+  const captured = b[mv.tr][mv.tc];
 
-  const target = ball.x;
-  const diff   = target - ai.x;
-  const speed  = 3.5;
+  b[mv.tr][mv.tc] = mv.promo ? mv.promo : pc;
+  b[mv.fr][mv.fc] = 0;
 
-  if (Math.abs(diff) > 8) {
-    ai.vx = Math.sign(diff) * Math.min(speed, Math.abs(diff) * 0.15);
-    ai.facing = Math.sign(diff);
+  // 앙파상 먹기
+  if(mv.ep){
+    b[mv.fr][mv.tc] = 0;
+  }
+  // 앙파상 기회 설정
+  state.enPassant = mv.dbl
+    ? { r:(mv.fr+mv.tr)/2, c:mv.fc }
+    : null;
+
+  // 캐슬링 룩 이동
+  if(mv.castle){
+    if(mv.castle==='WK'){ b[7][7]=0; b[7][5]=ROOK; }
+    if(mv.castle==='WQ'){ b[7][0]=0; b[7][3]=ROOK; }
+    if(mv.castle==='BK'){ b[0][7]=0; b[0][5]=-ROOK; }
+    if(mv.castle==='BQ'){ b[0][0]=0; b[0][3]=-ROOK; }
   }
 
-  // 점프 판단: 공이 AI 코트에 있고 내려오는 중이면 점프
-  if (
-    ball.x > NET_X &&
-    ball.vy > 0 &&
-    ball.y < GROUND - 60 &&
-    Math.abs(ball.x - ai.x) < 80 &&
-    ai.onGround
-  ) {
-    ai.vy = -13;
-    ai.onGround = false;
-  }
+  // 캐슬링 권리 업데이트
+  const t=Math.abs(pc);
+  if(t===KING){ if(state.turn===WHITE){state.castleRights.WK=false;state.castleRights.WQ=false;}else{state.castleRights.BK=false;state.castleRights.BQ=false;} }
+  if(t===ROOK){ if(mv.fr===7&&mv.fc===7)state.castleRights.WK=false; if(mv.fr===7&&mv.fc===0)state.castleRights.WQ=false; if(mv.fr===0&&mv.fc===7)state.castleRights.BK=false; if(mv.fr===0&&mv.fc===0)state.castleRights.BQ=false; }
+
+  state.halfMove = (t===PAWN||captured!==0) ? 0 : state.halfMove+1;
+  if(state.turn===BLACK) state.fullMove++;
+  state.turn = -state.turn;
+
+  return captured;
 }
 
-/* ── 플레이어 입력 ── */
-function updatePlayer() {
-  const spd = 4.5;
-  if (keys['ArrowLeft'])  { player.vx = -spd; player.facing = -1; }
-  if (keys['ArrowRight']) { player.vx =  spd; player.facing =  1; }
-}
-
-/* ── 렌더링 ── */
-function drawBg() {
-  // 하늘
-  const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
-  sky.addColorStop(0, '#0d1b4b');
-  sky.addColorStop(1, '#1a3a6b');
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, CW, GROUND);
-
-  // 구름
-  ctx.fillStyle = 'rgba(255,255,255,0.07)';
-  [[60,50,40],[160,30,55],[300,45,45],[400,25,50]].forEach(([cx,cy,r]) => {
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx+30, cy+10, r*0.7, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(cx-25, cy+8, r*0.6, 0, Math.PI*2); ctx.fill();
+function legalMoves(state) {
+  const pseudo = pseudoMoves(state, state.turn);
+  return pseudo.filter(mv => {
+    const clone = state.clone();
+    applyMove(clone, mv);
+    return !kingInCheck(clone, state.turn);
   });
-
-  // 코트 바닥
-  const ground = ctx.createLinearGradient(0, GROUND, 0, CH);
-  ground.addColorStop(0, '#1e8c3a');
-  ground.addColorStop(0.3, '#166b2e');
-  ground.addColorStop(1, '#0f4a1f');
-  ctx.fillStyle = ground;
-  ctx.fillRect(0, GROUND, CW, CH - GROUND);
-
-  // 코트 라인
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(2, GROUND); ctx.lineTo(CW-2, GROUND); ctx.stroke();
-  // 센터 라인 (점선)
-  ctx.setLineDash([8, 8]);
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.beginPath(); ctx.moveTo(NET_X, GROUND + 5); ctx.lineTo(NET_X, CH); ctx.stroke();
-  ctx.setLineDash([]);
 }
 
-function drawNet() {
-  // 네트 기둥
-  ctx.fillStyle = '#e5e7eb';
-  ctx.fillRect(NET_X - 4, NET_TOP, 8, NET_H);
-
-  // 네트 줄
-  ctx.strokeStyle = 'rgba(229,231,235,0.6)';
-  ctx.lineWidth = 1;
-  for (let y = NET_TOP + 8; y < GROUND; y += 10) {
-    ctx.beginPath();
-    ctx.moveTo(NET_X - 4, y);
-    ctx.lineTo(NET_X + 4, y);
-    ctx.stroke();
+function kingInCheck(state, color) {
+  const b = state.board;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(b[r][c]===color*KING) return isAttacked(state,r,c,-color);
   }
-
-  // 상단 흰 띠
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(NET_X - 5, NET_TOP, 10, 6);
+  return false;
 }
 
-function drawPikachu(x, y, color, facing, isAI) {
-  ctx.save();
-  ctx.translate(x, y);
-  if (facing < 0) ctx.scale(-1, 1);
+/* ══════════════════════════
+   AI — 알파베타
+══════════════════════════ */
+function evaluate(state) {
+  let score = 0;
+  const b = state.board;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const pc = b[r][c];
+    if(!pc) continue;
+    const side  = Math.sign(pc);
+    const type  = Math.abs(pc);
+    const pstR  = side===WHITE ? r : 7-r;
+    const mat   = VAL[type];
+    const pos   = PST[type] ? PST[type][pstR][c] : 0;
+    score += side * (mat + pos);
+  }
+  return score;
+}
 
-  const fy = -CHAR_R * 1.1;  // 몸 중심 y (발 기준 위로)
+function orderMoves(state, moves) {
+  return moves.sort((a,b)=>{
+    const capA = Math.abs(state.board[a.tr][a.tc]);
+    const capB = Math.abs(state.board[b.tr][b.tc]);
+    return (capB?VAL[capB]:0) - (capA?VAL[capA]:0);
+  });
+}
 
-  // 꼬리
-  ctx.save();
-  ctx.strokeStyle = color === 'yellow' ? '#f59e0b' : '#dc2626';
-  ctx.lineWidth = 5; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(-8, fy + 4);
-  ctx.quadraticCurveTo(-28, fy - 8, -22, fy - 22);
-  ctx.quadraticCurveTo(-14, fy - 30, -4, fy - 20);
-  ctx.stroke();
-
-  // 귀
-  const earColor = color === 'yellow' ? '#facc15' : '#fca5a5';
-  const earTip   = '#1a1a1a';
-  // 왼쪽 귀
-  ctx.fillStyle = earTip;
-  ctx.beginPath();
-  ctx.moveTo(-10, fy - CHAR_R);
-  ctx.lineTo(-16, fy - CHAR_R - 28);
-  ctx.lineTo(-4,  fy - CHAR_R - 20);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = earColor;
-  ctx.beginPath();
-  ctx.moveTo(-10, fy - CHAR_R + 2);
-  ctx.lineTo(-14, fy - CHAR_R - 20);
-  ctx.lineTo(-5,  fy - CHAR_R - 14);
-  ctx.closePath(); ctx.fill();
-  // 오른쪽 귀
-  ctx.fillStyle = earTip;
-  ctx.beginPath();
-  ctx.moveTo(10, fy - CHAR_R);
-  ctx.lineTo(16, fy - CHAR_R - 28);
-  ctx.lineTo(4,  fy - CHAR_R - 20);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = earColor;
-  ctx.beginPath();
-  ctx.moveTo(10, fy - CHAR_R + 2);
-  ctx.lineTo(14, fy - CHAR_R - 20);
-  ctx.lineTo(5,  fy - CHAR_R - 14);
-  ctx.closePath(); ctx.fill();
-
-  // 몸통
-  const bodyColor = color === 'yellow' ? '#facc15' : '#fca5a5';
-  ctx.fillStyle = bodyColor;
-  ctx.shadowBlur = 8;
-  ctx.shadowColor = color === 'yellow' ? 'rgba(250,204,21,0.5)' : 'rgba(252,165,165,0.5)';
-  ctx.beginPath();
-  ctx.ellipse(0, fy + 6, CHAR_R * 0.75, CHAR_R * 0.85, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // 얼굴
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = bodyColor;
-  ctx.beginPath();
-  ctx.arc(0, fy, CHAR_R, 0, Math.PI*2);
-  ctx.fill();
-
-  // 볼 빨간 원
-  ctx.fillStyle = color === 'yellow' ? '#f87171' : '#fbbf24';
-  ctx.beginPath(); ctx.ellipse(12, fy + 4, 6, 4, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(-12, fy + 4, 6, 4, 0, 0, Math.PI*2); ctx.fill();
-
-  // 눈
-  ctx.fillStyle = '#1a1a1a';
-  ctx.beginPath(); ctx.ellipse(7, fy - 4, 3.5, 4, 0, 0, Math.PI*2); ctx.fill();
-  // 눈 광택
-  ctx.fillStyle = 'white';
-  ctx.beginPath(); ctx.arc(8.5, fy - 5.5, 1.2, 0, Math.PI*2); ctx.fill();
-
-  // 코
-  ctx.fillStyle = '#1a1a1a';
-  ctx.beginPath(); ctx.ellipse(3, fy + 1, 2, 1.5, 0, 0, Math.PI*2); ctx.fill();
-
-  // 입
-  ctx.strokeStyle = '#1a1a1a';
-  ctx.lineWidth = 1.5; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(-2, fy + 5);
-  ctx.quadraticCurveTo(3, fy + 9, 8, fy + 5);
-  ctx.stroke();
-
-  // 전기 효과 (AI는 빨간색)
-  if (!isAI) {
-    ctx.strokeStyle = '#fde68a';
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.6;
-    for (let i = 0; i < 3; i++) {
-      const bx = -20 + i * 20, by = fy - 15 - i * 5;
-      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx+5, by-5); ctx.lineTo(bx+2, by-10); ctx.stroke();
+function alphaBeta(state, depth, alpha, beta, maximizing) {
+  if(depth===0) return evaluate(state);
+  const moves = legalMoves(state);
+  if(moves.length===0){
+    if(kingInCheck(state, state.turn)) return maximizing ? -99999 : 99999;
+    return 0; // 스테일메이트
+  }
+  orderMoves(state, moves);
+  if(maximizing){
+    let best=-Infinity;
+    for(const mv of moves){
+      const clone=state.clone(); applyMove(clone,mv);
+      const v=alphaBeta(clone,depth-1,alpha,beta,false);
+      best=Math.max(best,v); alpha=Math.max(alpha,v);
+      if(beta<=alpha) break;
     }
-    ctx.globalAlpha = 1;
-  }
-
-  ctx.restore();
-}
-
-function drawBall() {
-  ctx.save();
-  // 그림자
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.beginPath(); ctx.ellipse(ball.x, GROUND + 4, BALL_R * 0.8, 4, 0, 0, Math.PI*2); ctx.fill();
-
-  // 배구공
-  ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(255,255,255,0.4)';
-  const grad = ctx.createRadialGradient(ball.x - 4, ball.y - 4, 0, ball.x, ball.y, BALL_R);
-  grad.addColorStop(0, '#fff9e6');
-  grad.addColorStop(0.6, '#fde68a');
-  grad.addColorStop(1, '#f59e0b');
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2); ctx.fill();
-
-  // 배구공 라인
-  ctx.strokeStyle = 'rgba(180,100,0,0.5)';
-  ctx.lineWidth = 1;
-  ctx.shadowBlur = 0;
-  ctx.beginPath(); ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2); ctx.stroke();
-  // 수직선
-  ctx.beginPath(); ctx.moveTo(ball.x, ball.y - BALL_R); ctx.lineTo(ball.x, ball.y + BALL_R); ctx.stroke();
-  // 곡선
-  ctx.beginPath();
-  ctx.arc(ball.x + 5, ball.y, BALL_R - 2, -Math.PI*0.4, Math.PI*0.4);
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawParticles() {
-  for (const p of particles) {
-    ctx.save();
-    ctx.globalAlpha = p.life;
-    ctx.fillStyle = p.color;
-    ctx.shadowBlur = 6; ctx.shadowColor = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
+    return best;
+  } else {
+    let best=Infinity;
+    for(const mv of moves){
+      const clone=state.clone(); applyMove(clone,mv);
+      const v=alphaBeta(clone,depth-1,alpha,beta,true);
+      best=Math.min(best,v); beta=Math.min(beta,v);
+      if(beta<=alpha) break;
+    }
+    return best;
   }
 }
 
-function drawFlash() {
-  if (flashTimer <= 0) return;
-  const alpha = (flashTimer / 60) * 0.3;
-  ctx.fillStyle = flashWinner === 'P'
-    ? `rgba(250,204,21,${alpha})`
-    : `rgba(248,113,113,${alpha})`;
-  ctx.fillRect(0, 0, CW, CH);
+function bestAIMove(state, depth) {
+  const moves = legalMoves(state);
+  if(!moves.length) return null;
+  let bestScore=Infinity, bestMv=null;
+  orderMoves(state, moves);
+  for(const mv of moves){
+    const clone=state.clone(); applyMove(clone,mv);
+    const v=alphaBeta(clone,depth-1,-Infinity,Infinity,true);
+    if(v<bestScore){ bestScore=v; bestMv=mv; }
+  }
+  return bestMv;
+}
 
-  // 득점 텍스트
-  if (flashTimer > 30) {
-    ctx.save();
-    ctx.font = 'bold 28px "Segoe UI"';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = flashWinner === 'P' ? '#facc15' : '#f87171';
-    ctx.shadowBlur = 20; ctx.shadowColor = ctx.fillStyle;
-    ctx.fillText(flashWinner === 'P' ? '득점! ⚡' : 'AI 득점!', CW / 2, CH / 2 - 10);
-    ctx.restore();
+/* ══════════════════════════
+   기보 표기 (간략 대수기보)
+══════════════════════════ */
+const FILE_NAMES = ['a','b','c','d','e','f','g','h'];
+const PIECE_NAMES = {[PAWN]:'',[KNIGHT]:'N',[BISHOP]:'B',[ROOK]:'R',[QUEEN]:'Q',[KING]:'K'};
+function toAlgebraic(mv, type) {
+  const p = PIECE_NAMES[Math.abs(type)] || '';
+  const cap = mv.capture ? 'x' : '';
+  const from = mv.ep ? FILE_NAMES[mv.fc] : '';
+  const to = FILE_NAMES[mv.tc] + (8 - mv.tr);
+  const promo = mv.promo ? '='+PIECE_NAMES[Math.abs(mv.promo)] : '';
+  if(mv.castle==='WK'||mv.castle==='BK') return 'O-O';
+  if(mv.castle==='WQ'||mv.castle==='BQ') return 'O-O-O';
+  const capFile = (p===''&&cap) ? FILE_NAMES[mv.fc] : '';
+  return p + capFile + cap + to + promo;
+}
+
+/* ══════════════════════════
+   UI / 렌더링
+══════════════════════════ */
+const canvas    = document.getElementById('chessCanvas');
+const ctx       = canvas.getContext('2d');
+const overlay   = document.getElementById('chessOverlay');
+const overlayBtn= document.getElementById('overlayBtn');
+const overlayTitle = document.getElementById('overlayTitle');
+const overlayMsg   = document.getElementById('overlayMsg');
+const statusBox = document.getElementById('statusBox');
+const statusText= document.getElementById('statusText');
+const histList  = document.getElementById('historyList');
+const whiteCap  = document.getElementById('whiteCaptured');
+const blackCap  = document.getElementById('blackCaptured');
+const startBtn  = document.getElementById('startBtn');
+const undoBtn   = document.getElementById('undoBtn');
+const promoPopup= document.getElementById('promotionPopup');
+const whitePanel= document.getElementById('whitePanel');
+const blackPanel= document.getElementById('blackPanel');
+
+/* 좌표 라벨 */
+const ranksEl = document.getElementById('boardRanks');
+const filesEl = document.getElementById('boardFiles');
+for(let i=8;i>=1;i--){ const s=document.createElement('span'); s.textContent=i; ranksEl.appendChild(s); }
+for(const f of 'abcdefgh'){ const s=document.createElement('span'); s.textContent=f; filesEl.appendChild(s); }
+
+/* ── 색상 팔레트 ── */
+const LIGHT_SQ  = '#d4c9a8';
+const DARK_SQ   = '#7c5c3a';
+const HIGHLIGHT = 'rgba(255,214,0,0.42)';
+const LAST_MOVE = 'rgba(124,193,52,0.38)';
+const LEGAL_DOT = 'rgba(0,0,0,0.22)';
+const LEGAL_CAP = 'rgba(255,80,80,0.35)';
+const CHECK_CLR = 'rgba(220,40,40,0.50)';
+
+/* ── 게임 상태 ── */
+let state = null;
+let selected = null;   // {r,c}
+let legal   = [];      // 현재 선택된 기물의 합법 수
+let allLegal= [];      // 현재 turn의 전체 합법 수
+let lastMove= null;    // {fr,fc,tr,tc}
+let gameActive = false;
+let aiDepth = 3;
+let aiThinking = false;
+let pendingPromo = null;  // {mv, ...} 프로모션 대기
+let whiteCaptured = [], blackCaptured = [];
+let savedSnap = null;   // 무르기용
+
+function startGame() {
+  state = new ChessState();
+  selected = null; legal = [];
+  lastMove = null;
+  gameActive = true;
+  aiThinking  = false;
+  pendingPromo= null;
+  whiteCaptured = []; blackCaptured = [];
+  whiteCap.textContent = '';
+  blackCap.textContent = '';
+  histList.innerHTML = '';
+  overlay.classList.add('hidden');
+  promoPopup.classList.add('hidden');
+  undoBtn.disabled = false;
+  allLegal = legalMoves(state);
+  updateStatus();
+  render();
+}
+
+/* ── 렌더 ── */
+function render() {
+  ctx.clearRect(0,0,480,480);
+  drawBoard();
+  drawHighlights();
+  drawPieces();
+}
+
+function drawBoard() {
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    ctx.fillStyle = (r+c)%2===0 ? LIGHT_SQ : DARK_SQ;
+    ctx.fillRect(c*SQ, r*SQ, SQ, SQ);
   }
 }
 
-/* ── 메인 루프 ── */
-let rafId = null;
-
-function loop() {
-  if (!gameRunning) { rafId = null; return; }
-
-  // 업데이트
-  updatePlayer();
-  updateAI();
-  updateCharacter(player);
-  updateCharacter(ai);
-  updateBall();
-
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx; p.y += p.vy; p.vy += 0.2;
-    p.life -= p.decay;
-    if (p.life <= 0) particles.splice(i, 1);
+function drawHighlights() {
+  // 마지막 이동
+  if(lastMove){
+    ctx.fillStyle = LAST_MOVE;
+    ctx.fillRect(lastMove.fc*SQ,lastMove.fr*SQ,SQ,SQ);
+    ctx.fillRect(lastMove.tc*SQ,lastMove.tr*SQ,SQ,SQ);
   }
-  if (flashTimer > 0) flashTimer--;
-
-  // 렌더
-  ctx.clearRect(0, 0, CW, CH);
-  drawBg();
-  drawNet();
-  drawParticles();
-  drawPikachu(player.x, player.y, 'yellow', player.facing, false);
-  drawPikachu(ai.x,     ai.y,     'red',    ai.facing,     true);
-  drawBall();
-  drawFlash();
-
-  rafId = requestAnimationFrame(loop);
+  // 선택된 칸
+  if(selected){
+    ctx.fillStyle = HIGHLIGHT;
+    ctx.fillRect(selected.c*SQ,selected.r*SQ,SQ,SQ);
+  }
+  // 체크 표시
+  if(gameActive && kingInCheck(state, state.turn)){
+    const b=state.board;
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+      if(b[r][c]===state.turn*KING){
+        const grd=ctx.createRadialGradient(c*SQ+SQ/2,r*SQ+SQ/2,0,c*SQ+SQ/2,r*SQ+SQ/2,SQ/2);
+        grd.addColorStop(0,CHECK_CLR); grd.addColorStop(1,'transparent');
+        ctx.fillStyle=grd; ctx.fillRect(c*SQ,r*SQ,SQ,SQ);
+      }
+    }
+  }
+  // 합법 수 표시
+  for(const mv of legal){
+    if(state.board[mv.tr][mv.tc]!==0 || mv.ep){
+      ctx.fillStyle=LEGAL_CAP;
+      ctx.beginPath(); ctx.arc(mv.tc*SQ+SQ/2,mv.tr*SQ+SQ/2,SQ/2,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle=LEGAL_DOT;
+      ctx.beginPath(); ctx.arc(mv.tc*SQ+SQ/2,mv.tr*SQ+SQ/2,SQ*0.16,0,Math.PI*2); ctx.fill();
+    }
+  }
 }
 
-/* ── 시작 버튼 ── */
-startBtn.addEventListener('click', initGame);
+function drawPieces() {
+  const b = state ? state.board : new ChessState().board;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const pc=b[r][c]; if(!pc) continue;
+    const isWhite = pc>0;
+    const x=c*SQ+SQ/2, y=r*SQ+SQ/2;
 
-/* ── 초기 렌더 ── */
-ctx.clearRect(0, 0, CW, CH);
-drawBg();
-drawNet();
-drawPikachu(110, GROUND, 'yellow', 1, false);
-drawPikachu(370, GROUND, 'red', -1, true);
+    // 그림자
+    ctx.shadowColor = isWhite ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur  = 4; ctx.shadowOffsetX=1; ctx.shadowOffsetY=2;
+
+    ctx.font = `${SQ*0.72}px serif`;
+    // 아웃라인
+    ctx.strokeStyle = isWhite ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.15)';
+    ctx.lineWidth=1.5;
+    ctx.strokeText(GLYPHS[pc], x, y+1);
+    ctx.fillStyle = isWhite ? '#f8f0d8' : '#1a1a2e';
+    ctx.fillText(GLYPHS[pc], x, y+1);
+    ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+  }
+}
+
+/* ── 클릭 핸들러 ── */
+canvas.addEventListener('click', e => {
+  if(!gameActive || aiThinking || pendingPromo) return;
+  if(state.turn !== WHITE) return; // 플레이어는 백
+
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = 480 / rect.width;
+  const scaleY = 480 / rect.height;
+  const c = Math.floor((e.clientX - rect.left) * scaleX / SQ);
+  const r = Math.floor((e.clientY - rect.top)  * scaleY / SQ);
+  if(!inBounds(r,c)) return;
+
+  // 합법 수로 이동
+  if(selected){
+    const mv = legal.find(m=>m.tr===r&&m.tc===c);
+    if(mv){
+      if(mv.promo!==undefined && !mv.promo){
+        // 프로모션 선택 팝업
+        pendingPromo = mv;
+        promoPopup.classList.remove('hidden');
+        return;
+      }
+      doMove(mv);
+      return;
+    }
+  }
+
+  // 기물 선택
+  const pc = state.board[r][c];
+  if(pc && Math.sign(pc)===WHITE){
+    selected = {r,c};
+    legal = allLegal.filter(m=>m.fr===r&&m.fc===c);
+  } else {
+    selected=null; legal=[];
+  }
+  render();
+});
+
+/* ── 프로모션 선택 ── */
+promoPopup.querySelectorAll('.promo-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(!pendingPromo) return;
+    const piece = parseInt(btn.dataset.piece) * WHITE;
+    const mv = {...pendingPromo, promo:piece};
+    pendingPromo = null;
+    promoPopup.classList.add('hidden');
+    doMove(mv);
+  });
+});
+
+/* ── 수 실행 ── */
+function doMove(mv) {
+  savedSnap = state.snapshot();
+  const pieceType = Math.abs(state.board[mv.fr][mv.fc]);
+  mv.capture = state.board[mv.tr][mv.tc] !== 0 || mv.ep;
+  const cap = applyMove(state, mv);
+  if(cap) {
+    if(state.turn===WHITE) blackCaptured.push(cap); // BLACK이 방금 먹힘
+    else whiteCaptured.push(cap);
+    updateCaptured();
+  }
+  lastMove = mv;
+  selected=null; legal=[];
+  logMove(mv, pieceType, state.turn); // turn이 이미 바뀐 후
+  allLegal = legalMoves(state);
+  updateStatus();
+  render();
+
+  if(!gameActive) return;
+  // AI 차례
+  if(state.turn===BLACK){
+    requestAI();
+  }
+}
+
+/* ── AI 실행 ── */
+function requestAI() {
+  aiThinking = true;
+  setStatus('<span class="thinking-dot">●</span><span class="thinking-dot">●</span><span class="thinking-dot">●</span> 생각 중', '');
+  setTimeout(()=>{
+    const mv = bestAIMove(state, aiDepth);
+    if(!mv){ endGame(); return; }
+    const pieceType = Math.abs(state.board[mv.fr][mv.fc]);
+    mv.capture = state.board[mv.tr][mv.tc]!==0||mv.ep;
+    const cap = applyMove(state, mv);
+    if(cap){ whiteCaptured.push(cap); updateCaptured(); }
+    lastMove = mv;
+    selected=null; legal=[];
+    logMove(mv, pieceType, state.turn);
+    allLegal = legalMoves(state);
+    aiThinking = false;
+    updateStatus();
+    render();
+    if(!gameActive) return;
+    allLegal = legalMoves(state);
+    if(allLegal.length===0) endGame();
+  }, 50);
+}
+
+/* ── 기보 ── */
+function logMove(mv, type, nextTurn) {
+  const notation = toAlgebraic(mv, type*nextTurn) + (kingInCheck(state,nextTurn)?'+':'');
+  if(nextTurn===BLACK){ // 방금 백이 뒀음
+    state.moveLog.push({white:notation, black:''});
+  } else {
+    if(state.moveLog.length) state.moveLog[state.moveLog.length-1].black=notation;
+    else state.moveLog.push({white:'',black:notation});
+  }
+  renderHistory();
+}
+
+function renderHistory(){
+  histList.innerHTML='';
+  state.moveLog.forEach((row,i)=>{
+    const div=document.createElement('div');
+    div.className='hist-row';
+    div.innerHTML=`<span class="hist-num">${i+1}.</span><span class="hist-w">${row.white}</span><span class="hist-b">${row.black}</span>`;
+    histList.appendChild(div);
+  });
+  histList.scrollTop=histList.scrollHeight;
+}
+
+/* ── 잡은 기물 표시 ── */
+function updateCaptured(){
+  whiteCap.textContent = whiteCaptured.map(p=>GLYPHS[p]).join('');
+  blackCap.textContent = blackCaptured.map(p=>GLYPHS[-p]).join('');
+}
+
+/* ── 상태 업데이트 ── */
+function setStatus(text, cls=''){
+  statusBox.className='cs-status'+(cls?' '+cls:'');
+  statusText.innerHTML=text;
+}
+
+function updateStatus(){
+  const inCheck = kingInCheck(state, state.turn);
+  const noMoves = allLegal.length===0;
+  if(noMoves){
+    endGame(inCheck); return;
+  }
+  if(state.halfMove>=100){
+    endGame(false,true); return;
+  }
+  if(inCheck){
+    setStatus(state.turn===WHITE?'⚠️ 백 체크!':'⚠️ 흑 체크!','check');
+  } else {
+    setStatus(state.turn===WHITE?'⬜ 플레이어 차례':'⬛ AI 차례','');
+  }
+  // 차례 하이라이트
+  whitePanel.style.opacity = state.turn===WHITE?'1':'0.5';
+  blackPanel.style.opacity = state.turn===BLACK?'1':'0.5';
+}
+
+function endGame(isCheckmate=false, isDraw=false){
+  gameActive=false;
+  undoBtn.disabled=true;
+  if(isDraw){
+    overlayTitle.textContent='무승부';
+    overlayMsg.textContent='50수 규칙에 의한 무승부';
+    overlayIcon.textContent='🤝';
+  } else if(!isCheckmate){
+    overlayTitle.textContent='스테일메이트';
+    overlayMsg.textContent='무승부 (스테일메이트)';
+    overlayIcon.textContent='🤝';
+    setStatus('스테일메이트 — 무승부','draw');
+  } else if(state.turn===WHITE){
+    overlayTitle.textContent='패배';
+    overlayMsg.textContent='컴퓨터가 이겼습니다!\n포기하지 마세요 💪';
+    overlayIcon.textContent='♚';
+    setStatus('체크메이트 — AI 승!','check');
+  } else {
+    overlayTitle.textContent='승리! 🎉';
+    overlayMsg.textContent='플레이어가 이겼습니다!\n훌륭한 플레이!';
+    overlayIcon.textContent='♔';
+    setStatus('체크메이트 — 플레이어 승!','win');
+  }
+  overlayBtn.textContent='다시 하기';
+  overlay.classList.remove('hidden');
+}
+
+/* ── 무르기 ── */
+undoBtn.addEventListener('click', ()=>{
+  if(!savedSnap||!gameActive||aiThinking) return;
+  state.board = savedSnap.board;
+  state.turn  = savedSnap.turn;
+  state.castleRights = savedSnap.castleRights;
+  state.enPassant    = savedSnap.enPassant;
+  state.halfMove     = savedSnap.halfMove;
+  state.fullMove     = savedSnap.fullMove;
+  if(state.moveLog.length){
+    const last=state.moveLog[state.moveLog.length-1];
+    if(last.black){ last.black=''; } else { state.moveLog.pop(); }
+    if(state.moveLog.length){
+      const prev=state.moveLog[state.moveLog.length-1];
+      if(prev.black){ prev.black=''; } else { state.moveLog.pop(); }
+    }
+  }
+  savedSnap=null;
+  selected=null; legal=[]; lastMove=null;
+  whiteCaptured=[]; blackCaptured=[]; updateCaptured();
+  allLegal = legalMoves(state);
+  renderHistory(); updateStatus(); render();
+  undoBtn.disabled=true;
+});
+
+/* ── 난이도 버튼 ── */
+document.querySelectorAll('.diff-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    aiDepth = parseInt(btn.dataset.d);
+  });
+});
+
+/* ── 시작/재시작 ── */
+startBtn.addEventListener('click', startGame);
+overlayBtn.addEventListener('click', startGame);
+
+/* 초기 렌더 */
+state = new ChessState();
+render();
