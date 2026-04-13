@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>오목 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game23.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="gomoku-wrap">
+    <div class="gomoku-hud">
+      <div class="hud-item">
+        <span class="turn-dot" id="playerDot"></span>
+        <span class="hud-val" id="turnEl">내 차례</span>
+      </div>
+      <div class="hud-item hud-center">
+        <span class="score-me" id="scoreMe">0</span>
+        <span class="score-sep">:</span>
+        <span class="score-ai" id="scoreAi">0</span>
+        <span class="hud-lbl">나 : AI</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="moveEl">0</span>
+        <span class="hud-lbl">수</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">♟️</div>
+          <h2 id="ovTitle">오목</h2>
+          <p id="ovMsg">돌을 놓아 5개를 연속으로 이어라!<br>AI와 대결 · 먼저 가려면 클릭</p>
+          <div class="color-pick">
+            <button class="pick-btn active" data-stone="black">⚫ 흑 (선공)</button>
+            <button class="pick-btn" data-stone="white">⚪ 백 (후공)</button>
+          </div>
+          <button id="startBtn">대국 시작</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game23.js"></script>
+</body>
+</html>

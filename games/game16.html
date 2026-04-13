@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>과일 박스 — 나케이드</title>
+  <title>스페이스 슈터 — 나케이드</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../assets/css/game-base.css">
   <link rel="stylesheet" href="../assets/css/game16.css">
@@ -10,36 +10,37 @@
 <body>
   <a href="../index.html" class="back-btn">← 목록</a>
 
-  <div class="fruit-wrapper">
+  <div class="shooter-wrap">
     <div class="hud">
       <div class="hud-item">
-        <span class="hud-lbl">제거</span>
-        <span class="hud-val" id="score">0</span>
+        <span class="hud-lbl">SCORE</span>
+        <span class="hud-val" id="scoreEl">0</span>
       </div>
       <div class="hud-item">
-        <span class="hud-lbl">남은 시간</span>
-        <span class="hud-val timer-val" id="timer">2:00</span>
+        <span class="hud-lbl">WAVE</span>
+        <span class="hud-val" id="waveEl">1</span>
       </div>
       <div class="hud-item">
-        <span class="hud-lbl">최고</span>
-        <span class="hud-val best-val" id="best">0</span>
+        <span class="hud-lbl">LIVES</span>
+        <span class="hud-val hud-lives" id="livesEl">❤️❤️❤️</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">BEST</span>
+        <span class="hud-val" id="bestEl">0</span>
       </div>
     </div>
 
-    <div class="board-container">
-      <div class="board" id="board"></div>
-      <div class="selection-box" id="selBox"></div>
+    <div class="canvas-wrap">
+      <canvas id="c" width="360" height="560"></canvas>
       <div class="overlay" id="overlay">
-        <div class="overlay-inner">
-          <div class="overlay-emoji">🍎</div>
-          <h2 id="overlayTitle">과일 박스</h2>
-          <p id="overlayMsg">드래그로 사과를 감싸세요!<br>숫자 합이 <strong>10</strong>이면 제거됩니다.</p>
-          <button id="startBtn" class="start-btn">시작하기</button>
+        <div class="ov-inner">
+          <div class="ov-emoji">🚀</div>
+          <h2 id="ovTitle">스페이스 슈터</h2>
+          <p id="ovMsg">적 우주선을 격파하고 최고 기록을 세워라!<br>← → 혹은 A/D 키로 이동</p>
+          <button id="startBtn">시작하기</button>
         </div>
       </div>
     </div>
-
-    <div class="sum-indicator" id="sumIndicator">합: 0</div>
   </div>
 
   <script src="../assets/js/game16.js"></script>

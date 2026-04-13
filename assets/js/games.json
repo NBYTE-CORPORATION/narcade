@@ -1,11 +1,119 @@
 [
   {
-    "id": "game16",
+    "id": "game28",
     "emoji": "🍎",
     "title": "과일 박스",
-    "file": "game16.html",
+    "file": "game28.html",
     "category": "퍼즐",
     "desc": "드래그로 사과를 감싸 숫자 합이 10이 되면 제거! 2분 안에 최대한 많이 없애세요.",
+    "isNew": true
+  },
+  {
+    "id": "game27",
+    "emoji": "🪖",
+    "title": "메탈 슬러그",
+    "file": "game27.html",
+    "category": "아케이드",
+    "desc": "달려라 쏴라! 적 병사와 탱크를 처치하는 런앤건. 수류탄, 웨이브 시스템, 폭발 이펙트.",
+    "isNew": true
+  },
+  {
+    "id": "game26",
+    "emoji": "🍄",
+    "title": "슈퍼 마리오",
+    "file": "game26.html",
+    "category": "아케이드",
+    "desc": "달리고 점프하고 굼바를 밟아라! ? 블록, 코인, 파이프가 있는 클래식 플랫포머.",
+    "isNew": true
+  },
+  {
+    "id": "game25",
+    "emoji": "♟",
+    "title": "체스",
+    "file": "game25.html",
+    "category": "퍼즐",
+    "desc": "알파-베타 AI와 두뇌 대결! 캐슬링·앙파상·프로모션 완전 구현. 쉬움/보통/어려움 3단계.",
+    "isNew": true
+  },
+  {
+    "id": "game24",
+    "emoji": "🎱",
+    "title": "핀볼",
+    "file": "game24.html",
+    "category": "아케이드",
+    "desc": "플리퍼로 공을 튕겨라! 범퍼, 슬링샷, 플런저 발사 시스템의 완전한 핀볼.",
+    "isNew": true
+  },
+  {
+    "id": "game23",
+    "emoji": "♟️",
+    "title": "오목",
+    "file": "game23.html",
+    "category": "퍼즐",
+    "desc": "AI와 오목 대결! 5개를 연속으로 이어라. 휴리스틱 AI, 승리 라인 하이라이트.",
+    "isNew": true
+  },
+  {
+    "id": "game22",
+    "emoji": "🔢",
+    "title": "슬라이딩 퍼즐",
+    "file": "game22.html",
+    "category": "퍼즐",
+    "desc": "숫자 타일을 밀어 순서를 맞춰라! 3×3·4×4·5×5 난이도, 키보드 조작 지원.",
+    "isNew": true
+  },
+  {
+    "id": "game21",
+    "emoji": "🎯",
+    "title": "에임 트레이너",
+    "file": "game21.html",
+    "category": "반사",
+    "desc": "사라지기 전에 타깃을 클릭하라! 30초 정확도·콤보 도전, 에임 실력 측정.",
+    "isNew": true
+  },
+  {
+    "id": "game20",
+    "emoji": "🏃",
+    "title": "엔드리스 러너",
+    "file": "game20.html",
+    "category": "아케이드",
+    "desc": "장애물을 피해 달려라! 더블 점프, 파라렉스 배경, 속도 증가 시스템.",
+    "isNew": true
+  },
+  {
+    "id": "game19",
+    "emoji": "🃏",
+    "title": "카드 짝 맞추기",
+    "file": "game19.html",
+    "category": "퀴즈",
+    "desc": "같은 카드 쌍을 찾아라! 3D 플립 애니메이션, 콤보 시스템, 3가지 난이도.",
+    "isNew": true
+  },
+  {
+    "id": "game18",
+    "emoji": "🎵",
+    "title": "리듬 탭",
+    "file": "game18.html",
+    "category": "반사",
+    "desc": "D·F·J·K 키로 4레인 노트를 받아라! Perfect/Good 판정, 60초 도전.",
+    "isNew": true
+  },
+  {
+    "id": "game17",
+    "emoji": "💣",
+    "title": "지뢰 찾기",
+    "file": "game17.html",
+    "category": "퍼즐",
+    "desc": "숨겨진 지뢰를 피하며 모든 칸을 열어라! 3가지 난이도, 첫 클릭 안전 보장.",
+    "isNew": true
+  },
+  {
+    "id": "game16",
+    "emoji": "🚀",
+    "title": "스페이스 슈터",
+    "file": "game16.html",
+    "category": "아케이드",
+    "desc": "우주선을 조종해 적을 처치하라! 웨이브, 파티클 폭발, 파워업 시스템.",
     "isNew": true
   },
   {

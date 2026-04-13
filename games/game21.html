@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>에임 트레이너 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game21.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="aim-wrap">
+    <div class="aim-hud">
+      <div class="hud-item">
+        <span class="hud-val" id="scoreEl">0</span>
+        <span class="hud-lbl">SCORE</span>
+      </div>
+      <div class="hud-item hud-timer-wrap">
+        <span class="hud-val hud-timer" id="timerEl">30</span>
+        <span class="hud-lbl">TIME</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="comboEl">0</span>
+        <span class="hud-lbl">COMBO</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-val" id="accEl">—</span>
+        <span class="hud-lbl">ACC%</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c" width="500" height="420"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">🎯</div>
+          <h2 id="ovTitle">에임 트레이너</h2>
+          <p id="ovMsg">타깃을 최대한 빠르고 정확하게 클릭!<br>30초 안에 최고 점수 도전</p>
+          <button id="startBtn">시작하기</button>
+          <div class="best-info" id="bestInfo"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game21.js"></script>
+</body>
+</html>

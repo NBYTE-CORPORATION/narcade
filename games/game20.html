@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>엔드리스 러너 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game20.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="runner-wrap">
+    <div class="runner-hud">
+      <div class="hud-item">
+        <span class="hud-lbl">SCORE</span>
+        <span class="hud-val" id="scoreEl">0</span>
+      </div>
+      <div class="hud-item hud-center">
+        <span class="hud-val hud-best" id="bestEl">0</span>
+        <span class="hud-lbl">BEST</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">SPEED</span>
+        <span class="hud-val" id="speedEl">1x</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="c" width="520" height="300"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="ov-inner">
+          <div class="ov-emoji">🏃</div>
+          <h2 id="ovTitle">엔드리스 러너</h2>
+          <p id="ovMsg">스페이스바 또는 화면 탭으로 점프!<br>더블 점프 가능 · 장애물을 피하세요</p>
+          <button id="startBtn">시작하기</button>
+        </div>
+      </div>
+    </div>
+    <div class="jump-hint">SPACE / TAP — 점프 &nbsp;|&nbsp; 더블 점프 가능</div>
+  </div>
+
+  <script src="../assets/js/game20.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>카드 짝 맞추기 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game19.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="mem-container">
+    <div class="mem-header">
+      <h1>🃏 카드 짝 맞추기</h1>
+
+      <div class="mem-stats">
+        <div class="stat-item">
+          <span class="stat-val" id="timeEl">0:00</span>
+          <span class="stat-lbl">TIME</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="movesEl">0</span>
+          <span class="stat-lbl">MOVES</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val combo-val" id="comboEl">0</span>
+          <span class="stat-lbl">COMBO</span>
+        </div>
+      </div>
+
+      <div class="diff-btns">
+        <button class="diff-btn active" data-diff="easy">쉬움 3×4</button>
+        <button class="diff-btn" data-diff="normal">보통 4×4</button>
+        <button class="diff-btn" data-diff="hard">어려움 4×5</button>
+      </div>
+    </div>
+
+    <div class="mem-grid" id="cardGrid"></div>
+
+    <div class="mem-result" id="result" style="display:none">
+      <div class="result-icon" id="resultIcon">🎉</div>
+      <p id="resultMsg"></p>
+      <button id="retryBtn">다시 하기</button>
+    </div>
+
+    <div class="mem-start" id="startScreen">
+      <button id="startBtn">게임 시작</button>
+      <div class="best-row" id="bestRow"></div>
+    </div>
+  </div>
+
+  <script src="../assets/js/game19.js"></script>
+</body>
+</html>

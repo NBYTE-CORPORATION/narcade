@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>지뢰 찾기 — 나케이드</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/game-base.css">
+  <link rel="stylesheet" href="../assets/css/game17.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="ms-container">
+    <div class="ms-header">
+      <h1>💣 지뢰 찾기</h1>
+      <div class="ms-stats">
+        <div class="stat-item">
+          <span class="stat-val" id="mineCount">10</span>
+          <span class="stat-lbl">MINES</span>
+        </div>
+        <div class="ms-face" id="faceBtn">🙂</div>
+        <div class="stat-item">
+          <span class="stat-val" id="timerEl">000</span>
+          <span class="stat-lbl">TIME</span>
+        </div>
+      </div>
+      <div class="diff-btns">
+        <button class="diff-btn active" data-diff="easy">초급</button>
+        <button class="diff-btn" data-diff="medium">중급</button>
+        <button class="diff-btn" data-diff="hard">고급</button>
+      </div>
+    </div>
+
+    <div class="ms-grid" id="grid"></div>
+
+    <div class="ms-result" id="result" style="display:none">
+      <p id="resultMsg"></p>
+      <button id="retryBtn">다시 하기</button>
+    </div>
+  </div>
+
+  <script src="../assets/js/game17.js"></script>
+</body>
+</html>

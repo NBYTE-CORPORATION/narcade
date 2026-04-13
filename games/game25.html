@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>체스 — 나케이드</title>
+  <link rel="stylesheet" href="../assets/css/common.css">
+  <link rel="stylesheet" href="../assets/css/game25.css">
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← 목록</a>
+
+  <div class="chess-wrap">
+    <!-- 왼쪽 패널 -->
+    <aside class="chess-side">
+      <div class="cs-panel">
+        <div class="cs-player" id="blackPanel">
+          <div class="cs-avatar black-avatar">♚</div>
+          <div class="cs-info">
+            <span class="cs-name">컴퓨터</span>
+            <span class="cs-label">BLACK</span>
+          </div>
+        </div>
+        <div class="cs-captured" id="blackCaptured"></div>
+      </div>
+
+      <div class="cs-status" id="statusBox">
+        <span id="statusText">게임 시작을 눌러주세요</span>
+      </div>
+
+      <div class="cs-panel">
+        <div class="cs-player" id="whitePanel">
+          <div class="cs-avatar white-avatar">♔</div>
+          <div class="cs-info">
+            <span class="cs-name">플레이어</span>
+            <span class="cs-label">WHITE</span>
+          </div>
+        </div>
+        <div class="cs-captured" id="whiteCaptured"></div>
+      </div>
+
+      <div class="cs-controls">
+        <button id="startBtn" class="cs-btn primary">게임 시작</button>
+        <button id="undoBtn"  class="cs-btn" disabled>무르기</button>
+        <div class="cs-difficulty">
+          <span>난이도</span>
+          <div class="diff-btns">
+            <button class="diff-btn" data-d="2">쉬움</button>
+            <button class="diff-btn active" data-d="3">보통</button>
+            <button class="diff-btn" data-d="4">어려움</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 체스판 -->
+    <div class="chess-board-wrap">
+      <div class="board-ranks" id="boardRanks"></div>
+      <canvas id="chessCanvas" width="480" height="480"></canvas>
+      <div class="board-files" id="boardFiles"></div>
+
+      <!-- 프로모션 팝업 -->
+      <div class="promotion-popup hidden" id="promotionPopup">
+        <div class="promo-title">프로모션 선택</div>
+        <div class="promo-choices">
+          <button class="promo-btn" data-piece="5">♕</button>
+          <button class="promo-btn" data-piece="4">♖</button>
+          <button class="promo-btn" data-piece="3">♗</button>
+          <button class="promo-btn" data-piece="2">♘</button>
+        </div>
+      </div>
+
+      <!-- 게임 종료 오버레이 -->
+      <div class="chess-overlay" id="chessOverlay">
+        <div class="overlay-box">
+          <div class="overlay-icon" id="overlayIcon">♟</div>
+          <div class="overlay-title" id="overlayTitle">체스</div>
+          <div class="overlay-msg" id="overlayMsg">전략적 두뇌 대결<br>백(플레이어) vs 흑(AI)</div>
+          <button id="overlayBtn" class="cs-btn primary">게임 시작</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 기보 -->
+    <aside class="chess-history">
+      <div class="history-header">기보</div>
+      <div class="history-list" id="historyList"></div>
+    </aside>
+  </div>
+
+  <script src="../assets/js/game25.js"></script>
+</body>
+</html>
