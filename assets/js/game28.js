@@ -2,9 +2,15 @@
    과일 박스 (Fruit Box)
    ============================ */
 
-const COLS = 10;
-const ROWS = 17;
+const MODES = {
+  vertical:   { cols: 10, rows: 17 },
+  horizontal: { cols: 17, rows: 10 }
+};
 const TIME_LIMIT = 120; // 2분
+
+let COLS = 17;
+let ROWS = 10;
+let currentMode = 'horizontal';
 
 const board = document.getElementById('board');
 const selBox = document.getElementById('selBox');
@@ -16,6 +22,7 @@ const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
 const bestEl = document.getElementById('best');
 const sumIndicator = document.getElementById('sumIndicator');
+const modeSelect = document.getElementById('modeSelect');
 
 let grid = [];       // 2D array of numbers (0 = empty)
 let cells = [];      // 2D array of DOM elements
@@ -29,7 +36,31 @@ let running = false;
 
 bestEl.textContent = bestScore;
 
-board.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+/* ── Mode Selection ── */
+modeSelect.addEventListener('click', (e) => {
+  const btn = e.target.closest('.mode-btn');
+  if (!btn) return;
+  currentMode = btn.dataset.mode;
+  modeSelect.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyMode();
+  generateBoard();
+});
+
+function applyMode() {
+  COLS = MODES[currentMode].cols;
+  ROWS = MODES[currentMode].rows;
+  board.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+  if (currentMode === 'horizontal') {
+    board.style.setProperty('--cell-size', '32px');
+    board.style.setProperty('--cell-font', '0.95rem');
+  } else {
+    board.style.setProperty('--cell-size', '36px');
+    board.style.setProperty('--cell-font', '1.05rem');
+  }
+}
+
+applyMode();
 
 // Generate initial board so the container has size
 generateBoard();
@@ -261,6 +292,7 @@ function startGame() {
   scoreEl.textContent = '0';
   sumIndicator.textContent = '합: 0';
   sumIndicator.classList.remove('perfect', 'over');
+  applyMode();
   generateBoard();
   overlay.classList.add('hidden');
   running = true;
