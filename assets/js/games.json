@@ -1,5 +1,14 @@
 [
   {
+    "id": "game16",
+    "emoji": "🍎",
+    "title": "과일 박스",
+    "file": "game16.html",
+    "category": "퍼즐",
+    "desc": "드래그로 사과를 감싸 숫자 합이 10이 되면 제거! 2분 안에 최대한 많이 없애세요.",
+    "isNew": true
+  },
+  {
     "id": "game15",
     "emoji": "🏓",
     "title": "벽돌 깨기",
