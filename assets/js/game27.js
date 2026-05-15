@@ -496,7 +496,8 @@ function drawSoldier(sx, sy, color, e) {
   const w = e.w, h = e.h;
   const facingLeft = e.vx < 0;
 
-  if (!facingLeft) { ctx.translate(sx + w/2, 0); ctx.scale(-1,1); ctx.translate(-(sx + w/2), 0); }
+  // 기본 스프라이트는 오른쪽을 보고 있으므로, 왼쪽으로 이동할 때만 뒤집는다
+  if (facingLeft) { ctx.translate(sx + w/2, 0); ctx.scale(-1,1); ctx.translate(-(sx + w/2), 0); }
 
   const x = sx, y = sy;
   // 다리
@@ -528,6 +529,8 @@ function drawSoldier(sx, sy, color, e) {
 
 function drawTank(sx, sy, e) {
   const w = e.w, h = e.h;
+  // 탱크 포신/차체도 진행 방향(=공격 방향)에 맞춰 뒤집는다
+  if (e.vx < 0) { ctx.translate(sx + w/2, 0); ctx.scale(-1,1); ctx.translate(-(sx + w/2), 0); }
   const grd = ctx.createLinearGradient(sx, sy, sx, sy + h);
   grd.addColorStop(0, '#5a6a40'); grd.addColorStop(1, '#3a4a28');
   ctx.fillStyle = grd;
