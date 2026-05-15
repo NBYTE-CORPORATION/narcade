@@ -5,7 +5,7 @@
   <title>슈퍼 마리오 — 나케이드</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game26.css">
+  <link rel="stylesheet" href="../assets/css/game26.css?v=5">
 </head>
 <body>
   <a href="../index.html" class="back-btn">← 목록</a>
@@ -30,23 +30,38 @@
       </div>
     </div>
 
-    <div class="canvas-wrap">
-      <canvas id="c"></canvas>
+    <div class="game-area">
+      <div class="canvas-wrap">
+        <canvas id="c"></canvas>
+      </div>
       <div class="overlay" id="overlay">
         <div class="ov-inner">
           <div class="ov-emoji">🍄</div>
           <h2 id="ovTitle">슈퍼 마리오</h2>
-          <p id="ovMsg">← → 이동 &nbsp;|&nbsp; Z·Space·↑ 점프<br>굼바를 밟고 코인을 모아라!<br>깃발에 도달하면 클리어!</p>
+          <p id="ovMsg">
+            ← → 이동 &nbsp;|&nbsp; Z·Space·↑ 점프 &nbsp;|&nbsp; Shift 달리기<br>
+            🍄 버섯을 먹으면 슈퍼 마리오! &nbsp; ⭐ 별을 먹으면 무적!<br>
+            굼바·쿠파를 밟고 코인을 모아 깃발에 도달하라
+          </p>
           <button id="startBtn">게임 시작</button>
         </div>
       </div>
     </div>
 
-    <div class="mario-controls">
-      <kbd>← →</kbd> 이동 &nbsp;&nbsp; <kbd>Z</kbd> / <kbd>Space</kbd> 점프
+    <div class="mario-controls" id="touchControls">
+      <button class="t-btn t-left"  id="btnLeft"  aria-label="왼쪽">◀</button>
+      <button class="t-btn t-right" id="btnRight" aria-label="오른쪽">▶</button>
+      <button class="t-btn t-run"   id="btnRun"   aria-label="달리기">RUN</button>
+      <button class="t-btn t-jump"  id="btnJump"  aria-label="점프">JUMP</button>
+    </div>
+
+    <div class="mario-keys">
+      <kbd>← →</kbd> 이동 &nbsp;
+      <kbd>Z</kbd> / <kbd>Space</kbd> 점프 &nbsp;
+      <kbd>Shift</kbd> 달리기
     </div>
   </div>
 
-  <script src="../assets/js/game26.js"></script>
+  <script src="../assets/js/game26.js?v=9"></script>
 </body>
 </html>
