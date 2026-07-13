@@ -1,175 +1,212 @@
-const SIZE = 4;
-let board, score, best, moved;
+/* ============================================
+   game12 — 2048
+   타일을 밀어 합쳐 2048을 만드는 퍼즐.
+   ============================================ */
+(function () {
+  'use strict';
 
-function newGame() {
-  board = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
-  score = 0;
-  best = parseInt(localStorage.getItem('2048_best') || '0');
-  document.getElementById('resultOverlay').classList.add('hidden');
-  addTile();
-  addTile();
-  render();
-}
+  Arcade.init({ id: 'game12', title: '2048', emoji: '🧩', accent: 'amber' });
 
-function addTile() {
-  const empty = [];
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++)
-      if (board[r][c] === 0) empty.push([r, c]);
-  if (!empty.length) return;
-  const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-  board[r][c] = Math.random() < 0.85 ? 2 : 4;
-}
+  var GAME_ID = 'game12';
+  var SIZE = 4;
 
-function tileClass(val) {
-  if (val === 0) return '';
-  if (val <= 2048) return `t-${val}`;
-  return 't-high';
-}
+  var boardWrapEl = document.getElementById('boardWrap');
+  var boardEl = document.getElementById('board');
+  var scoreEl = document.getElementById('score');
+  var bestEl = document.getElementById('best');
+  var overlay = Arcade.overlay('#overlay');
 
-function render() {
-  const bw = document.querySelector('.board-wrap').offsetWidth;
-  const gap = 10;
-  const pad = 10;
-  const cellSize = (bw - pad * 2 - gap * (SIZE - 1)) / SIZE;
+  var board, score, won, over, baseline;
 
-  const bd = document.getElementById('board');
-  bd.innerHTML = '';
-
-  for (let r = 0; r < SIZE; r++) {
-    for (let c = 0; c < SIZE; c++) {
-      if (board[r][c] === 0) continue;
-      const tile = document.createElement('div');
-      tile.className = `tile ${tileClass(board[r][c])}`;
-      tile.textContent = board[r][c];
-      tile.style.width  = cellSize + 'px';
-      tile.style.height = cellSize + 'px';
-      tile.style.left   = (pad + c * (cellSize + gap)) + 'px';
-      tile.style.top    = (pad + r * (cellSize + gap)) + 'px';
-      bd.appendChild(tile);
-    }
+  function bestScore() {
+    return Arcade.best.score(GAME_ID) || 0;
   }
 
-  document.getElementById('score').textContent = score;
-  document.getElementById('best').textContent  = best;
-}
-
-// Slide one row/col left, return { row, gained, merged }
-function slideLeft(row) {
-  let arr = row.filter(v => v !== 0);
-  let gained = 0;
-  let merged = false;
-  for (let i = 0; i < arr.length - 1; i++) {
-    if (arr[i] === arr[i + 1]) {
-      arr[i] *= 2;
-      gained += arr[i];
-      arr.splice(i + 1, 1);
-      merged = true;
-    }
+  /* ── 보드 ── */
+  function newGame() {
+    board = [];
+    for (var r = 0; r < SIZE; r++) board.push([0, 0, 0, 0]);
+    score = 0;
+    won = false;
+    over = false;
+    baseline = bestScore();
+    overlay.hide();
+    addTile();
+    addTile();
+    render();
   }
-  while (arr.length < SIZE) arr.push(0);
-  return { arr, gained };
-}
 
-function move(dir) {
-  let changed = false;
-  let gained = 0;
+  function addTile() {
+    var empty = [];
+    for (var r = 0; r < SIZE; r++)
+      for (var c = 0; c < SIZE; c++)
+        if (board[r][c] === 0) empty.push([r, c]);
+    if (!empty.length) return;
+    var pick = empty[Arcade.rand(0, empty.length - 1)];
+    board[pick[0]][pick[1]] = Math.random() < 0.85 ? 2 : 4;
+  }
 
-  const rotate = (b) => b[0].map((_, c) => b.map(r => r[c]).reverse());
+  function tileClass(val) {
+    if (val === 0) return '';
+    if (val <= 2048) return 't-' + val;
+    return 't-high';
+  }
 
-  let b = board.map(r => [...r]);
+  function render() {
+    var bw = boardWrapEl.offsetWidth;
+    var gap = 10;
+    var pad = 10;
+    var cellSize = (bw - pad * 2 - gap * (SIZE - 1)) / SIZE;
 
-  if (dir === 'left') {
-    for (let r = 0; r < SIZE; r++) {
-      const res = slideLeft(b[r]);
+    boardEl.innerHTML = '';
+    for (var r = 0; r < SIZE; r++) {
+      for (var c = 0; c < SIZE; c++) {
+        if (board[r][c] === 0) continue;
+        var tile = document.createElement('div');
+        tile.className = 'tile ' + tileClass(board[r][c]);
+        tile.textContent = board[r][c];
+        tile.style.width = cellSize + 'px';
+        tile.style.height = cellSize + 'px';
+        tile.style.left = (pad + c * (cellSize + gap)) + 'px';
+        tile.style.top = (pad + r * (cellSize + gap)) + 'px';
+        boardEl.appendChild(tile);
+      }
+    }
+
+    scoreEl.textContent = score;
+    bestEl.textContent = Math.max(bestScore(), score);
+  }
+
+  /* ── 한 줄 왼쪽으로 밀기 ── */
+  function slideLeft(row) {
+    var arr = row.filter(function (v) { return v !== 0; });
+    var gained = 0;
+    for (var i = 0; i < arr.length - 1; i++) {
+      if (arr[i] === arr[i + 1]) {
+        arr[i] *= 2;
+        gained += arr[i];
+        arr.splice(i + 1, 1);
+      }
+    }
+    while (arr.length < SIZE) arr.push(0);
+    return { arr: arr, gained: gained };
+  }
+
+  function move(dir) {
+    if (over || Arcade.pause.active) return;
+
+    var changed = false;
+    var gained = 0;
+
+    function rotate(b) {
+      return b[0].map(function (_, c) {
+        return b.map(function (row) { return row[c]; }).reverse();
+      });
+    }
+
+    var b = board.map(function (r) { return r.slice(); });
+    var turns = { left: 0, up: 3, right: 2, down: 1 }[dir];
+    var i;
+
+    for (i = 0; i < turns; i++) b = rotate(b);
+    for (var r = 0; r < SIZE; r++) {
+      var res = slideLeft(b[r]);
       if (res.arr.join() !== b[r].join()) changed = true;
-      b[r] = res.arr; gained += res.gained;
+      b[r] = res.arr;
+      gained += res.gained;
     }
-  } else if (dir === 'right') {
-    for (let r = 0; r < SIZE; r++) {
-      const rev = [...b[r]].reverse();
-      const res = slideLeft(rev);
-      const final = res.arr.reverse();
-      if (final.join() !== b[r].join()) changed = true;
-      b[r] = final; gained += res.gained;
+    for (i = 0; i < (4 - turns) % 4; i++) b = rotate(b);
+
+    if (!changed) return;
+
+    board = b;
+    score += gained;
+    if (score > bestScore()) Arcade.best.submit(GAME_ID, score); // 진행 중에도 저장
+
+    Arcade.audio.play(gained > 0 ? 'coin' : 'pop'); // 이동당 1회
+
+    addTile();
+    render();
+
+    // 2048 달성 (최초 1회)
+    if (!won && board.some(function (row) { return row.indexOf(2048) !== -1; })) {
+      won = true;
+      Arcade.audio.play('win');
+      Arcade.best.submit(GAME_ID, score);
+      Arcade.Particles.domBurst(boardWrapEl, { count: 26, colors: ['#fbbf24', '#fcd34d', '#a78bfa', '#22d3ee'] });
+      overlay.show({
+        emoji: '🏆',
+        title: '2048 달성!',
+        isRecord: score > baseline,
+        msg: '대단해요! 계속해서 더 큰 타일에 도전할 수 있어요.',
+        stats: [
+          { label: '점수', value: score },
+          { label: '최고', value: bestScore() }
+        ],
+        btnText: '계속하기',
+        onStart: function () { render(); }
+      });
+      return;
     }
-  } else if (dir === 'up') {
-    b = rotate(rotate(rotate(b)));
-    for (let r = 0; r < SIZE; r++) {
-      const res = slideLeft(b[r]);
-      if (res.arr.join() !== b[r].join()) changed = true;
-      b[r] = res.arr; gained += res.gained;
+
+    // 게임 오버
+    if (!hasMove()) {
+      over = true;
+      Arcade.audio.play('lose');
+      Arcade.best.submit(GAME_ID, score);
+      render();
+      overlay.show({
+        emoji: '😢',
+        title: '게임 오버',
+        isRecord: score > baseline,
+        stats: [
+          { label: '점수', value: score },
+          { label: '최고', value: bestScore() }
+        ],
+        btnText: '다시하기',
+        onStart: newGame
+      });
     }
-    b = rotate(b);
-  } else if (dir === 'down') {
-    b = rotate(b);
-    for (let r = 0; r < SIZE; r++) {
-      const res = slideLeft(b[r]);
-      if (res.arr.join() !== b[r].join()) changed = true;
-      b[r] = res.arr; gained += res.gained;
-    }
-    b = rotate(rotate(rotate(b)));
   }
 
-  if (!changed) return;
-
-  board = b;
-  score += gained;
-  if (score > best) {
-    best = score;
-    localStorage.setItem('2048_best', best);
+  function hasMove() {
+    for (var r = 0; r < SIZE; r++)
+      for (var c = 0; c < SIZE; c++) {
+        if (board[r][c] === 0) return true;
+        if (r < SIZE - 1 && board[r][c] === board[r + 1][c]) return true;
+        if (c < SIZE - 1 && board[r][c] === board[r][c + 1]) return true;
+      }
+    return false;
   }
 
-  addTile();
-  render();
-
-  // Check 2048
-  if (board.some(r => r.includes(2048))) {
-    showResult('win');
-    return;
-  }
-
-  // Check game over
-  if (!hasMove()) showResult('lose');
-}
-
-function hasMove() {
-  for (let r = 0; r < SIZE; r++)
-    for (let c = 0; c < SIZE; c++) {
-      if (board[r][c] === 0) return true;
-      if (r < SIZE - 1 && board[r][c] === board[r+1][c]) return true;
-      if (c < SIZE - 1 && board[r][c] === board[r][c+1]) return true;
+  /* ── 입력 ── */
+  document.addEventListener('keydown', function (e) {
+    var map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
+    if (map[e.key]) {
+      e.preventDefault();
+      move(map[e.key]);
     }
-  return false;
-}
+  });
 
-function showResult(type) {
-  const overlay = document.getElementById('resultOverlay');
-  document.getElementById('resultEmoji').textContent  = type === 'win' ? '🏆' : '😢';
-  document.getElementById('resultTitle').textContent  = type === 'win' ? '2048 달성!' : '게임 오버';
-  document.getElementById('resultScore').textContent  = `점수: ${score}`;
-  overlay.classList.remove('hidden');
-}
+  // 보드 스와이프 (스크롤 방지 포함)
+  Arcade.touch.swipe(boardWrapEl, function (dir) { move(dir); }, { threshold: 24 });
 
-// Keyboard
-document.addEventListener('keydown', e => {
-  const map = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' };
-  if (map[e.key]) { e.preventDefault(); move(map[e.key]); }
-});
+  document.getElementById('newGameBtn').addEventListener('click', function () {
+    Arcade.audio.play('click');
+    newGame();
+  });
 
-// Touch swipe
-let tx, ty;
-document.addEventListener('touchstart', e => {
-  tx = e.touches[0].clientX;
-  ty = e.touches[0].clientY;
-});
-document.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - tx;
-  const dy = e.changedTouches[0].clientY - ty;
-  if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-  if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
-  else move(dy > 0 ? 'down' : 'up');
-});
+  window.addEventListener('resize', function () { if (board) render(); });
 
-newGame();
-window.addEventListener('resize', render);
+  /* ── 부트 ── */
+  newGame();
+  var b = bestScore();
+  overlay.show({
+    emoji: '🧩',
+    title: '2048',
+    msg: '방향키 또는 스와이프로 타일을 밀어\n같은 숫자를 합쳐 2048을 만들어 보세요!',
+    stats: b > 0 ? [{ label: '최고 점수', value: b }] : null,
+    btnText: '시작하기',
+    onStart: newGame
+  });
+})();

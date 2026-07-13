@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>주사위 게임 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game4.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game4.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="dice-layout">
 
     <!-- ── 왼쪽: 컨트롤 패널 ── -->
@@ -30,6 +29,11 @@
           <span class="sb-lbl">CPU</span>
           <span class="sb-num" id="scoreCpu">0</span>
         </div>
+      </div>
+
+      <div class="streak-row">
+        <span class="streak-item">🔥 연승 <b id="streakCur">0</b></span>
+        <span class="streak-item">🏆 최고 <b id="streakBest">0</b></span>
       </div>
 
       <div class="result-badge" id="resultBadge"></div>
@@ -84,6 +88,7 @@
 
   </div>
 
-  <script src="../assets/js/game4.js"></script>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game4.js?v=4"></script>
 </body>
 </html>

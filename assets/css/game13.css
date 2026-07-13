@@ -1,6 +1,10 @@
+/* ============================================
+   game13 — 두더지 잡기
+   game-base.css v3 토큰 기반 (accent: green)
+   ============================================ */
+
 body {
   justify-content: flex-start;
-  padding-top: 60px;
 }
 
 .mole-wrap {
@@ -17,7 +21,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .mole-header h1 {
@@ -25,75 +31,79 @@ body {
   margin: 0;
 }
 
-.stat-row {
+.hud-boxes {
   display: flex;
   gap: 10px;
 }
 
 .score-box {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   text-align: center;
-  min-width: 64px;
+  min-width: 60px;
 }
 
 .score-val {
   display: block;
   font-size: 1.5rem;
   font-weight: 900;
-  color: #ec4899;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
   line-height: 1;
 }
 
 .timer-box .score-val {
-  color: #06b6d4;
+  color: var(--amber);
 }
 
 .score-lbl {
   display: block;
   font-size: 0.65rem;
   letter-spacing: 0.1em;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 600;
   margin-top: 2px;
 }
 
-/* Grid */
+/* ── 그리드 ── */
 .mole-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   width: 100%;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  touch-action: manipulation;
 }
 
-/* Hole */
+/* ── 구멍 ── */
 .hole {
   aspect-ratio: 1;
-  background: #0e0e1a;
+  background: var(--bg);
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  border: 2px solid var(--border);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   overflow: hidden;
   position: relative;
   cursor: pointer;
-  transition: border-color 0.2s;
-  box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.2s, background 0.2s;
+  box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.55);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .hole:hover {
-  border-color: rgba(236, 72, 153, 0.3);
+  border-color: var(--border-strong);
 }
 
-/* Mole */
+/* ── 두더지 ── */
 .mole-char {
   font-size: 2.4rem;
   line-height: 1;
@@ -108,13 +118,25 @@ body {
   transform: translateY(0);
 }
 
-/* Hit flash */
+/* 명중 */
 .hole.hit {
-  background: rgba(236, 72, 153, 0.15);
-  border-color: rgba(236, 72, 153, 0.5);
+  background: var(--accent-glow);
+  border-color: var(--accent);
 }
 
-/* Score popup */
+/* 헛스윙 */
+.hole.miss {
+  border-color: var(--red);
+  animation: missWobble 0.26s ease;
+}
+
+@keyframes missWobble {
+  0%, 100% { transform: translateX(0); }
+  30%      { transform: translateX(-4px); }
+  65%      { transform: translateX(4px); }
+}
+
+/* 점수 팝업 */
 .score-pop {
   position: absolute;
   top: 10%;
@@ -122,7 +144,7 @@ body {
   transform: translateX(-50%);
   font-size: 1.2rem;
   font-weight: 900;
-  color: #f59e0b;
+  color: var(--accent-light);
   pointer-events: none;
   animation: popUp 0.6s ease forwards;
   z-index: 10;
@@ -133,54 +155,10 @@ body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
 }
 
-/* Overlay */
-.mole-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(7, 7, 15, 0.9);
-  backdrop-filter: blur(10px);
-  z-index: 50;
-  transition: opacity 0.3s;
-}
-
-.mole-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.overlay-inner {
-  text-align: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  max-width: 320px;
-  width: 90%;
-}
-
-.overlay-emoji {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
-
-.overlay-inner h2 {
-  font-size: 1.6rem;
-  font-weight: 900;
-  margin-bottom: 8px;
-}
-
-.overlay-inner p {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
-
+/* ── 소형 화면 ── */
 @media (max-width: 400px) {
-  .mole-char {
-    font-size: 1.8rem;
-  }
+  .mole-grid { gap: 12px; padding: 16px; }
+  .mole-char { font-size: 1.8rem; }
+  .score-box { padding: 7px 11px; min-width: 52px; }
+  .score-val { font-size: 1.25rem; }
 }

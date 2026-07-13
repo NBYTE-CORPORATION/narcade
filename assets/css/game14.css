@@ -1,12 +1,7 @@
-/* ── game14.css — 테트리스 ── */
-
-body {
-  padding: 60px 20px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
+/* ============================================
+   game14 — 테트리스
+   game-base.css v3 토큰 기반 (accent: cyan)
+   ============================================ */
 
 .tetris-wrapper {
   display: flex;
@@ -29,12 +24,11 @@ body {
   border-radius: 14px;
   padding: 14px 10px;
   text-align: center;
-  backdrop-filter: blur(12px);
   transition: border-color 0.3s;
 }
 
 .info-block:hover {
-  border-color: rgba(167, 139, 250, 0.3);
+  border-color: var(--border-strong);
 }
 
 .info-lbl {
@@ -44,6 +38,7 @@ body {
   color: var(--text-muted);
   text-transform: uppercase;
   margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .info-val {
@@ -55,15 +50,8 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.best-block {
-  border-color: rgba(167, 139, 250, 0.25);
-}
-
 .best-val {
-  background: linear-gradient(135deg, #a78bfa, #f59e0b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--amber);
 }
 
 /* ── Canvas ── */
@@ -71,82 +59,14 @@ body {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.08),
-    0 20px 60px rgba(0,0,0,0.6),
-    0 0 40px rgba(124,58,237,0.15);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
 }
 
 #tetrisCanvas {
   display: block;
-}
-
-/* ── Overlay ── */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(7, 7, 15, 0.88);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-}
-
-.overlay-inner {
-  text-align: center;
-  padding: 24px;
-}
-
-.overlay-emoji {
-  font-size: 52px;
-  margin-bottom: 12px;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.overlay-inner h2 {
-  font-size: 28px;
-  font-weight: 800;
-  margin: 0 0 10px;
-  background: linear-gradient(135deg, #a78bfa, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.overlay-inner p {
-  color: var(--text-dim);
-  font-size: 14px;
-  line-height: 1.8;
-  margin: 0 0 20px;
-}
-
-.overlay-inner strong {
-  color: var(--primary-light);
-}
-
-.start-btn {
-  background: linear-gradient(135deg, var(--primary), #5b21b6);
-  color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 20px rgba(124,58,237,0.4);
-}
-
-.start-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(124,58,237,0.5);
+  touch-action: none;
 }
 
 /* ── Next Piece Canvas ── */
@@ -156,14 +76,13 @@ body {
   border-radius: 14px;
   padding: 14px 10px;
   text-align: center;
-  backdrop-filter: blur(12px);
 }
 
 #nextCanvas {
   display: block;
   margin: 8px auto 0;
   border-radius: 8px;
-  background: rgba(0,0,0,0.3);
+  background: var(--bg);
   max-width: 100%;
   height: auto;
 }
@@ -174,7 +93,6 @@ body {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px 12px;
-  backdrop-filter: blur(12px);
 }
 
 .hint-row {
@@ -189,8 +107,8 @@ body {
 
 kbd {
   display: inline-block;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
   padding: 2px 6px;
   font-size: 11px;
@@ -199,38 +117,70 @@ kbd {
   white-space: nowrap;
 }
 
-/* ── Responsive ── */
-@media (max-width: 600px) {
+@media (pointer: coarse) {
+  .controls-hint { display: none; }
+}
+
+/* ── Responsive: 좁은 화면에서 패널을 가로줄로 재배치 ── */
+@media (max-width: 640px) {
   .tetris-wrapper {
-    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
   }
 
   .side-panel {
-    width: 80px;
+    flex-direction: row;
+    width: 100%;
+    max-width: 360px;
+    justify-content: center;
+    gap: 8px;
   }
 
-  .info-val {
-    font-size: 16px;
+  .left-panel { order: -1; }
+  .right-panel { order: 1; }
+
+  .info-block {
+    flex: 1;
+    padding: 8px 6px;
+    border-radius: 10px;
   }
 
   .info-lbl {
-    font-size: 10px;
+    font-size: 9px;
+    margin-bottom: 3px;
   }
 
-  /* max-width: 100% 로 자동 축소되므로 별도 지정 불필요 */
+  .info-val {
+    font-size: 15px;
+  }
+
+  .next-block {
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .next-block .info-lbl { margin-bottom: 0; }
+
+  #nextCanvas {
+    margin: 0;
+    width: 56px;
+    height: 56px;
+  }
+
+  .controls-hint { display: none; }
 }
 
 @media (max-width: 420px) {
   body {
-    padding: 50px 6px 20px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   .side-panel {
-    width: 64px;
-    gap: 8px;
-  }
-
-  .controls-hint {
-    display: none;
+    gap: 6px;
   }
 }

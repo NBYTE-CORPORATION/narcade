@@ -1,16 +1,18 @@
 /* ── game20.js — 엔드리스 러너 ── */
+'use strict';
+
+Arcade.init({ id: 'game20', title: '엔드리스 러너', emoji: '🏃', accent: 'cyan' });
 
 const canvas  = document.getElementById('c');
 const ctx     = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
-const scoreEl  = document.getElementById('scoreEl');
-const bestEl   = document.getElementById('bestEl');
-const speedEl  = document.getElementById('speedEl');
-const overlay  = document.getElementById('overlay');
-const ovTitle  = document.getElementById('ovTitle');
-const ovMsg    = document.getElementById('ovMsg');
-const startBtn = document.getElementById('startBtn');
+const scoreEl = document.getElementById('scoreEl');
+const bestEl  = document.getElementById('bestEl');
+const speedEl = document.getElementById('speedEl');
+
+const ov = Arcade.overlay('#overlay');
+Arcade.fitCanvas(canvas, { padding: 24, paddingV: 220 });
 
 const GROUND_Y   = H - 56;
 const GRAVITY    = 0.6;
@@ -19,9 +21,15 @@ const JUMP_FORCE = -13;
 /* ── 상태 ── */
 let player, obstacles, particles, bgLayers;
 let score, speed, animId, gameRunning, frame;
-let best = parseInt(localStorage.getItem('runner_best') || '0');
+let coinMilestone = 0;
+let best = Arcade.best.score('game20') || 0;
 
 bestEl.textContent = best;
+
+/* ── 일시정지 (Esc/탭 전환) ── */
+Arcade.pause.register({
+  isActive: function () { return gameRunning; }
+});
 
 /* ── 배경 레이어 ── */
 function initBg() {
@@ -57,12 +65,14 @@ function createPlayer() {
 }
 
 function playerJump() {
-  if (!gameRunning || player.jumps >= player.maxJumps) return;
+  if (!gameRunning || Arcade.pause.active) return;
+  if (player.jumps >= player.maxJumps) return;
   player.vy = JUMP_FORCE - (player.jumps * 1.5);
   player.jumps++;
   player.onGround = false;
   player.squash = 0.6;
   addDustParticles(player.x + player.w/2, player.y + player.h);
+  Arcade.audio.play('whoosh');
 }
 
 function updatePlayer() {
@@ -294,12 +304,21 @@ function checkCollision() {
 /* ── 게임 루프 ── */
 let lastObstacle = 0;
 function loop() {
+  animId = requestAnimationFrame(loop);
+  if (Arcade.pause.active) return; /* 일시정지: 프레임 스텝 정지 */
   frame++;
 
   /* 점수·속도 */
   score += speed * 0.1;
   speed = 5 + Math.floor(score / 200) * 0.4;
   speed = Math.min(speed, 14);
+
+  /* 100점마다 코인음 */
+  const milestone = Math.floor(score / 100);
+  if (milestone > coinMilestone) {
+    coinMilestone = milestone;
+    Arcade.audio.play('coin');
+  }
 
   scoreEl.textContent = Math.floor(score);
   speedEl.textContent = (speed / 5).toFixed(1) + 'x';
@@ -343,12 +362,10 @@ function loop() {
 
   /* 충돌 */
   if (checkCollision()) {
+    cancelAnimationFrame(animId);
     addExplosion(player.x + player.w/2, player.y + player.h/2);
     endGame();
-    return;
   }
-
-  animId = requestAnimationFrame(loop);
 }
 
 /* ── 시작 / 종료 ── */
@@ -356,16 +373,23 @@ function startGame() {
   if (animId) cancelAnimationFrame(animId);
   player = createPlayer();
   obstacles = []; particles = [];
-  score = 0; speed = 5; frame = 0; lastObstacle = 0;
+  score = 0; speed = 5; frame = 0; lastObstacle = 0; coinMilestone = 0;
+  best = Arcade.best.score('game20') || 0;
   gameRunning = true;
   initBg();
-  overlay.style.display = 'none';
+  updateHudBest();
   animId = requestAnimationFrame(loop);
+}
+
+function updateHudBest() {
+  bestEl.textContent = Math.max(best, Math.floor(score || 0));
 }
 
 function endGame() {
   gameRunning = false;
-  cancelAnimationFrame(animId);
+  Arcade.audio.play('explosion');
+  Arcade.audio.play('lose');
+
   /* draw final explosion */
   function drawExplosionFrame() {
     particles = particles.filter(p => {
@@ -385,20 +409,54 @@ function endGame() {
 
 function showGameOver() {
   const s = Math.floor(score);
-  if (s > best) { best = s; localStorage.setItem('runner_best', best); bestEl.textContent = best; }
-  ovTitle.textContent = '게임 오버';
-  ovMsg.innerHTML = `점수: <strong>${s.toLocaleString()}</strong><br>최고기록: <strong>${best.toLocaleString()}</strong>`;
-  startBtn.textContent = '다시 하기';
-  overlay.style.display = 'flex';
+  const res = Arcade.best.submit('game20', s);
+  best = Arcade.best.score('game20') || 0;
+  bestEl.textContent = best;
+
+  ov.show({
+    emoji: res.isRecord ? '🏆' : '💥',
+    title: '게임 오버',
+    isRecord: res.isRecord,
+    stats: [
+      { label: '점수', value: s.toLocaleString() },
+      { label: '최고 기록', value: best.toLocaleString() }
+    ],
+    btnText: '다시 하기',
+    onStart: startGame
+  });
 }
 
-/* ── 입력 ── */
+/* ── 입력: 탭 = 점프, 공중 탭 = 더블 점프 ── */
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space') { e.preventDefault(); gameRunning ? playerJump() : null; }
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (gameRunning) playerJump();
+  }
 });
-canvas.addEventListener('touchstart', e => {
+canvas.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
   e.preventDefault();
   if (gameRunning) playerJump();
-}, { passive: false });
-canvas.addEventListener('mousedown', () => { if (gameRunning) playerJump(); });
-startBtn.addEventListener('click', startGame);
+});
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+/* ── 초기 화면 ── */
+function showStart() {
+  ov.show({
+    emoji: '🏃',
+    title: '엔드리스 러너',
+    msg: '스페이스바 또는 화면 탭으로 점프!\n공중에서 한 번 더 탭하면 더블 점프.\n장애물을 피해 최대한 멀리 달리세요.',
+    stats: best > 0 ? [{ label: '최고 기록', value: best.toLocaleString() }] : [],
+    btnText: '시작하기',
+    onStart: startGame
+  });
+}
+
+player = createPlayer();
+obstacles = []; particles = [];
+score = 0; speed = 5; frame = 0;
+initBg();
+drawBg();
+drawGround();
+drawPlayer();
+showStart();

@@ -1,31 +1,277 @@
-body {
-  overflow: hidden; /* 세로 스크롤 방지 */
+/* ============================================
+   기억력 게임 (game3) — 라운드제 숫자 기억
+   game-base.css v3 토큰 위에서 동작
+   ============================================ */
+
+.game-container {
+  max-width: 440px;
+  padding: 26px 20px 22px;
+}
+
+/* ── HUD ── */
+.hud {
   display: flex;
-  flex-direction: column;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #222;
-  color: white;
-  font-family: sans-serif;
-  padding: 20px;
+  gap: 30px;
+  margin-bottom: 12px;
+}
+
+.hud-item {
   text-align: center;
 }
 
-input {
-  padding: 10px;
-  font-size: 16px;
-  margin: 10px 0;
+.hud-val {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--accent-light);
+  text-shadow: 0 0 12px var(--accent-glow);
+  min-height: 1.4em;
 }
 
-.button-group {
+.hud-lbl {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* ── 상태 메시지 ── */
+.status {
+  min-height: 1.5em;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.status.success { color: var(--green); text-shadow: 0 0 12px var(--green-glow); }
+.status.danger  { color: var(--red);   text-shadow: 0 0 12px var(--red-glow); }
+.status.warn    { color: var(--amber); }
+
+/* ── 숫자 무대 ── */
+.digit-stage {
+  min-height: 128px;
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 18px;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+.digit-row,
+.slot-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+/* 보여주는 숫자: 모노스페이스 셀 */
+.digit-cell {
+  width: clamp(30px, 9vw, 44px);
+  height: clamp(46px, 12vw, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(1.5rem, 6.5vw, 2.2rem);
+  font-weight: 900;
+  color: var(--accent-light);
+  text-shadow: 0 0 12px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  visibility: hidden;
+}
+
+.digit-cell.on {
+  visibility: visible;
+  animation: digitPop 0.32s cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+@keyframes digitPop {
+  0%   { transform: scale(0.2); opacity: 0; filter: brightness(3); }
+  60%  { transform: scale(1.18); filter: brightness(1.6); }
+  100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+}
+
+/* 입력 슬롯 */
+.slot {
+  width: clamp(28px, 8.5vw, 40px);
+  height: clamp(42px, 11vw, 54px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(1.2rem, 5vw, 1.6rem);
+  font-weight: 800;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+}
+
+.slot.filled {
+  border-color: var(--accent);
+  color: var(--accent-light);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.slot.next {
+  border-color: var(--accent-light);
+  animation: slotBlink 0.9s ease-in-out infinite;
+}
+
+@keyframes slotBlink {
+  0%, 100% { box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+  50%      { box-shadow: 0 0 14px var(--accent-glow); }
+}
+
+.slot-row.good .slot {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 10px var(--green-glow);
+}
+
+.slot-row.shake {
+  animation: rowShake 0.35s ease-in-out;
+}
+
+@keyframes rowShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(8px); }
+  60%      { transform: translateX(-5px); }
+  80%      { transform: translateX(5px); }
+}
+
+/* 오답 비교 (정답 vs 입력) */
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.cmp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cmp-lbl {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+  width: 30px;
+  text-align: right;
+}
+
+.cmp-digits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+  font-weight: 900;
+  color: var(--text-dim);
+}
+
+.cmp-digits span {
+  min-width: 0.75em;
+  text-align: center;
+}
+
+.cmp-row.answer .cmp-digits {
+  color: var(--accent-light);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.cmp-digits span.bad {
+  color: var(--red);
+  text-shadow: 0 0 10px var(--red-glow);
+}
+
+/* ── 숫자 키패드 ── */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 290px;
+  margin: 0 auto;
+  transition: opacity 0.2s;
+}
+
+.keypad button {
+  min-height: 54px;
+  padding: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.keypad button:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--surface-hover);
+}
+
+.keypad button:active,
+.keypad button.pressed {
+  background: var(--accent);
+  border-color: var(--accent-light);
+  box-shadow: 0 0 18px var(--accent-glow);
+  transform: scale(0.96);
+}
+
+.keypad .key-back {
+  color: var(--text-dim);
+  font-size: 1.4rem;
+}
+
+.keypad .key-ok {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--accent-ink);
+  font-size: 1.05rem;
+}
+
+.keypad.locked {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 22px 14px 18px;
+  }
+
+  .hud {
+    gap: 22px;
+  }
+
+  .digit-row,
+  .slot-row {
+    gap: 6px;
+  }
+
+  .keypad {
+    max-width: 270px;
+  }
+
+  .keypad button {
+    min-height: 52px;
+  }
 }

@@ -1,25 +1,27 @@
 /* ── game15.js — 벽돌 깨기 ── */
+'use strict';
+
+Arcade.init({ id: 'game15', title: '벽돌 깨기', emoji: '🏓', accent: 'pink' });
 
 const canvas = document.getElementById('breakoutCanvas');
 const ctx    = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
 /* ── UI 요소 ── */
-const scoreEl  = document.getElementById('score');
-const levelEl  = document.getElementById('level');
-const livesEl  = document.getElementById('lives');
-const bestEl   = document.getElementById('best');
-const overlay  = document.getElementById('overlay');
-const overlayTitle = document.getElementById('overlayTitle');
-const overlayMsg   = document.getElementById('overlayMsg');
-const startBtn     = document.getElementById('startBtn');
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const livesEl = document.getElementById('lives');
+const bestEl  = document.getElementById('best');
+
+const ov  = Arcade.overlay('#overlay');
+const fit = Arcade.fitCanvas(canvas, { padding: 28, paddingV: 200 });
 
 /* ── 벽돌 설정 ── */
-const BRICK_COLS   = 8;
-const BRICK_ROWS   = 6;
-const BRICK_W      = 52;
-const BRICK_H      = 20;
-const BRICK_PAD    = 5;
+const BRICK_COLS = 8;
+const BRICK_ROWS = 6;
+const BRICK_W    = 52;
+const BRICK_H    = 20;
+const BRICK_PAD  = 5;
 const BRICK_OFFSET_X = (W - (BRICK_COLS * (BRICK_W + BRICK_PAD) - BRICK_PAD)) / 2;
 const BRICK_OFFSET_Y = 50;
 
@@ -32,6 +34,15 @@ const ROW_DEFS = [
   { color: '#06b6d4', hp: 1 }, // 청록 (1hit)
   { color: '#a78bfa', hp: 1 }, // 보라 (1hit)
 ];
+
+/* ── 파워업 ── */
+const POWERUPS = [
+  { type: 'multi',  emoji: '🟣', color: '#a78bfa' }, // 멀티볼
+  { type: 'wide',   emoji: '🟦', color: '#06b6d4' }, // 넓은 패들
+  { type: 'life',   emoji: '💗', color: '#ec4899' }, // 목숨 +1
+];
+let drops = []; // 떨어지는 파워업 {x,y,vy,def}
+let wideUntilFrames = 0; // 남은 프레임 수
 
 /* ── 파티클 ── */
 let particles = [];
@@ -75,34 +86,50 @@ function drawParticles() {
 
 /* ── 게임 상태 ── */
 let paddle, balls, bricks;
-let score, lives, level, bestScore;
+let score = 0, lives = 3, level = 1;
+let bestScore = Arcade.best.score('game15') || 0;
 let gameRunning = false;
-let animId;
-let mouseX = W / 2;
+let animId = 0;
+let pointerX = W / 2;
+
+/* ── 일시정지 (Esc/탭 전환) ── */
+Arcade.pause.register({
+  isActive: function () { return gameRunning; }
+});
 
 /* ── 초기화 ── */
+function basePaddleW() {
+  return 80 + Math.max(0, (3 - level) * 10);
+}
+
 function createPaddle() {
-  const pw = 80 + Math.max(0, (3 - level) * 10);
+  const pw = basePaddleW();
   return { x: W / 2 - pw / 2, y: H - 30, w: pw, h: 12 };
 }
 
-function createBalls() {
+function makeBall(x, y, angleJitter) {
   const speed = 4 + (level - 1) * 0.5;
-  return [{
-    x: W / 2, y: H - 50,
-    vx: (Math.random() > 0.5 ? 1 : -1) * speed * 0.7,
-    vy: -speed,
+  const a = (angleJitter || 0) + (Math.random() > 0.5 ? 1 : -1) * 0.6;
+  return {
+    x: x !== undefined ? x : W / 2,
+    y: y !== undefined ? y : H - 50,
+    vx: speed * Math.sin(a),
+    vy: -Math.abs(speed * Math.cos(a)),
     r: 8,
     trail: [],
-  }];
+  };
+}
+
+function createBalls() {
+  return [makeBall()];
 }
 
 function createBricks() {
-  const bricks = [];
+  const list = [];
   for (let r = 0; r < BRICK_ROWS; r++) {
     const def = ROW_DEFS[r];
     for (let c = 0; c < BRICK_COLS; c++) {
-      bricks.push({
+      list.push({
         x:   BRICK_OFFSET_X + c * (BRICK_W + BRICK_PAD),
         y:   BRICK_OFFSET_Y + r * (BRICK_H + BRICK_PAD),
         w:   BRICK_W,
@@ -114,25 +141,28 @@ function createBricks() {
       });
     }
   }
-  return bricks;
+  return list;
 }
 
 function startGame() {
   if (animId) cancelAnimationFrame(animId);
   particles = [];
-  bestScore = parseInt(localStorage.getItem('breakout_best') || '0');
+  drops = [];
+  floatingScores = [];
+  wideUntilFrames = 0;
+  bestScore = Arcade.best.score('game15') || 0;
 
   score = 0;
   lives = 3;
   level = 1;
 
-  paddle     = createPaddle();
-  balls      = createBalls();
-  bricks     = createBricks();
+  paddle      = createPaddle();
+  balls       = createBalls();
+  bricks      = createBricks();
+  pointerX    = W / 2;
   gameRunning = true;
 
   updateUI();
-  overlay.style.display = 'none';
   animId = requestAnimationFrame(gameLoop);
 }
 
@@ -140,7 +170,45 @@ function updateUI() {
   scoreEl.textContent = score;
   levelEl.textContent = level;
   livesEl.textContent = '❤️'.repeat(lives) || '💀';
-  bestEl.textContent  = bestScore;
+  bestEl.textContent  = Math.max(bestScore, score);
+}
+
+/* ── 파워업 ── */
+function maybeDropPowerup(x, y) {
+  if (Math.random() > 0.12) return;
+  const roll = Math.random();
+  const def = roll < 0.45 ? POWERUPS[0] : roll < 0.9 ? POWERUPS[1] : POWERUPS[2];
+  drops.push({ x, y, vy: 2, def });
+}
+
+function applyPowerup(def) {
+  Arcade.audio.play('powerup');
+  if (def.type === 'multi') {
+    const src = balls[0] || makeBall();
+    balls.push(makeBall(src.x, src.y, 0.9), makeBall(src.x, src.y, -0.9));
+  } else if (def.type === 'wide') {
+    wideUntilFrames = 60 * 10; // 약 10초
+    paddle.w = basePaddleW() * 1.5;
+    paddle.x = Math.max(0, Math.min(W - paddle.w, paddle.x - basePaddleW() * 0.25));
+  } else if (def.type === 'life') {
+    lives = Math.min(5, lives + 1);
+  }
+  updateUI();
+}
+
+function updateDrops() {
+  drops = drops.filter(d => {
+    d.y += d.vy;
+    if (
+      d.y >= paddle.y - 8 && d.y <= paddle.y + paddle.h + 10 &&
+      d.x >= paddle.x - 10 && d.x <= paddle.x + paddle.w + 10
+    ) {
+      applyPowerup(d.def);
+      spawnParticles(d.x, d.y, d.def.color, 10);
+      return false;
+    }
+    return d.y < H + 20;
+  });
 }
 
 /* ── 충돌 판정 ── */
@@ -171,14 +239,13 @@ function ballBrickCollision(ball) {
       score += pts;
       spawnParticles(b.x + b.w / 2, b.y + b.h / 2, b.color, 14);
       showFloatingScore(b.x + b.w / 2, b.y + b.h / 2, pts);
+      maybeDropPowerup(b.x + b.w / 2, b.y + b.h / 2);
+      Arcade.audio.play('pop');
     } else {
       spawnParticles(b.x + b.w / 2, b.y + b.h / 2, b.color, 5);
+      Arcade.audio.tone(500, 40, { type: 'sine', gain: 0.07, endFreq: 700 });
     }
 
-    if (score > bestScore) {
-      bestScore = score;
-      localStorage.setItem('breakout_best', bestScore);
-    }
     updateUI();
     break;
   }
@@ -218,29 +285,43 @@ function updateBall(ball) {
     ball.vx = speed * Math.sin(angle);
     ball.vy = -Math.abs(speed * Math.cos(angle));
     ball.y  = paddle.y - ball.r;
+    Arcade.audio.tone(330, 45, { type: 'square', gain: 0.06 }); // 낮은 클릭
   }
 }
 
 /* ── 메인 루프 ── */
 function gameLoop() {
+  animId = requestAnimationFrame(gameLoop);
+  if (Arcade.pause.active) return; // 일시정지: 프레임 스텝 정지
   update();
   draw();
-  animId = requestAnimationFrame(gameLoop);
 }
 
 function update() {
   if (!gameRunning) return;
 
-  // 패들 이동 (마우스/터치 따라가기)
-  const target = mouseX - paddle.w / 2;
+  // 패들 이동 (포인터 따라가기)
+  const target = pointerX - paddle.w / 2;
   paddle.x += (target - paddle.x) * 0.18;
   paddle.x  = Math.max(0, Math.min(W - paddle.w, paddle.x));
+
+  // 넓은 패들 지속시간
+  if (wideUntilFrames > 0) {
+    wideUntilFrames--;
+    if (wideUntilFrames === 0) {
+      paddle.w = basePaddleW();
+      paddle.x = Math.min(W - paddle.w, paddle.x);
+    }
+  }
 
   // 공 업데이트
   balls.forEach(updateBall);
 
   // 벽돌 충돌
   balls.forEach(ballBrickCollision);
+
+  // 파워업 낙하
+  updateDrops();
 
   // 공 아래로 빠짐
   balls = balls.filter(ball => {
@@ -253,6 +334,7 @@ function update() {
 
   if (balls.length === 0) {
     lives--;
+    Arcade.audio.play('hit');
     updateUI();
     if (lives <= 0) {
       endGame(false);
@@ -270,12 +352,15 @@ function update() {
 
   // 모든 벽돌 클리어 → 다음 레벨
   if (bricks.every(b => !b.alive)) {
+    Arcade.audio.play('win');
     level++;
-    levelEl.textContent = level;
     paddle = createPaddle();
     balls  = createBalls();
     bricks = createBricks();
     particles = [];
+    drops = [];
+    wideUntilFrames = 0;
+    updateUI();
   }
 }
 
@@ -324,6 +409,16 @@ function draw() {
     ctx.globalAlpha = 1;
   });
 
+  /* 파워업 드롭 */
+  drops.forEach(d => {
+    ctx.font = '16px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(d.def.emoji, d.x, d.y);
+  });
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+
   /* 공 트레일 & 공 */
   balls.forEach(ball => {
     ball.trail.forEach((t, i) => {
@@ -365,16 +460,6 @@ function draw() {
   ctx.roundRect(paddle.x + 4, paddle.y + 2, paddle.w - 8, 4, 4);
   ctx.fill();
 
-  /* 패들 글로우 */
-  ctx.shadowColor  = '#ec4899';
-  ctx.shadowBlur   = 18;
-  ctx.strokeStyle  = 'rgba(236,72,153,0.6)';
-  ctx.lineWidth    = 1;
-  ctx.beginPath();
-  ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 6);
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-
   /* 파티클 */
   drawParticles();
 
@@ -401,13 +486,28 @@ function draw() {
 }
 
 /* ── 종료 ── */
-function endGame(win = false) {
+function endGame() {
   gameRunning = false;
   cancelAnimationFrame(animId);
-  overlayTitle.textContent = win ? '클리어! 🎉' : '게임 오버';
-  overlayMsg.innerHTML = `점수: <strong>${score}</strong><br>최고기록: <strong>${bestScore}</strong>`;
-  startBtn.textContent = '다시 하기';
-  overlay.style.display = 'flex';
+  animId = 0;
+  Arcade.audio.play('lose');
+
+  const res = Arcade.best.submit('game15', score);
+  bestScore = Arcade.best.score('game15') || 0;
+  updateUI();
+
+  ov.show({
+    emoji: res.isRecord ? '🏆' : '🧱',
+    title: '게임 오버',
+    isRecord: res.isRecord,
+    stats: [
+      { label: '점수', value: score.toLocaleString() },
+      { label: '레벨', value: level },
+      { label: '최고 기록', value: bestScore.toLocaleString() }
+    ],
+    btnText: '다시 하기',
+    onStart: startGame
+  });
 }
 
 /* ── 유틸 ── */
@@ -419,21 +519,32 @@ function lighten(hex, amt) {
   return `rgb(${r},${g},${b})`;
 }
 
-/* ── 입력 ── */
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = W / rect.width;
-  mouseX = (e.clientX - rect.left) * scaleX;
+/* ── 입력 (pointer 통합: 마우스/터치/펜) ── */
+function onPointer(e) {
+  pointerX = fit.toCanvasXY(e).x;
+}
+canvas.addEventListener('pointermove', onPointer);
+canvas.addEventListener('pointerdown', function (e) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  onPointer(e);
 });
+canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-canvas.addEventListener('touchmove', e => {
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = W / rect.width;
-  mouseX = (e.touches[0].clientX - rect.left) * scaleX;
-}, { passive: false });
+/* ── 시작 오버레이 ── */
+function showStart() {
+  bestEl.textContent = bestScore;
+  ov.show({
+    emoji: '🧱',
+    title: '벽돌 깨기',
+    msg: '마우스 / 터치로 패들을 움직여\n모든 벽돌을 부수세요!\n파워업을 먹으면 유리해집니다.',
+    stats: bestScore > 0 ? [{ label: '최고 기록', value: bestScore.toLocaleString() }] : [],
+    btnText: '시작하기',
+    onStart: startGame
+  });
+}
 
-startBtn.addEventListener('click', startGame);
-
-/* ── 초기 최고기록 ── */
-bestEl.textContent = localStorage.getItem('breakout_best') || 0;
+paddle = createPaddle();
+balls = [];
+bricks = createBricks();
+draw();
+showStart();

@@ -1,140 +1,174 @@
-/* ── Minesweeper styles ── */
-body {
-  padding: 60px 16px 40px;
-}
+/* ── game17.css — 지뢰 찾기 (v3 미니멀) ── */
 
 .ms-container {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 28px 24px;
-  max-width: 520px;
+  border-radius: 16px;
+  padding: 24px 20px;
+  max-width: 560px;
   width: 100%;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
-.ms-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-h1 {
-  font-size: 1.6rem;
-  margin-bottom: 14px;
-}
-
+/* ── 상단 스탯 바 ── */
 .ms-stats {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 12px;
-  padding: 10px 20px;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
   margin-bottom: 14px;
 }
 
+.ms-stats .stat-item { min-width: 64px; }
+
 .ms-stats .stat-val {
-  font-size: 1.6rem;
-  font-weight: 900;
-  font-family: monospace;
-  color: var(--red);
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
   display: block;
-  -webkit-text-fill-color: var(--red);
-  background: none;
 }
 
 .ms-stats .stat-lbl {
   font-size: 9px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--text-muted);
-  font-weight: 700;
+  font-weight: 600;
   display: block;
+  margin-top: 2px;
 }
 
 .ms-face {
-  font-size: 28px;
-  cursor: pointer;
-  transition: transform 0.15s;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  font-size: 24px;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   user-select: none;
 }
 
 .ms-face:hover {
-  transform: scale(1.15);
+  transform: none;
+  filter: none;
+  box-shadow: none;
+  background: var(--surface-hover);
 }
 
-.diff-btns {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.diff-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  padding: 6px 18px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.diff-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  box-shadow: 0 4px 16px var(--primary-glow);
-}
-
-.diff-btn:hover:not(.active) {
-  border-color: rgba(124, 58, 237, 0.5);
-  color: white;
-}
-
-.ms-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2px;
-  margin: 0 auto;
-}
-
-.ms-cell {
-  width: 32px;
-  height: 32px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.06);
+/* ── 컨트롤 (난이도 + 깃발 모드) ── */
+.ms-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.ms-controls .diff-pills { margin: 0; }
+
+.flag-mode-btn {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flag-mode-btn:hover {
+  transform: none;
+  filter: none;
+  box-shadow: none;
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.flag-mode-btn.active {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #1e1403;
+}
+
+/* ── 보드 ── */
+.ms-board {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.ms-board.shake {
+  animation: msShake 0.45s ease-in-out;
+}
+
+@keyframes msShake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-6px, 2px); }
+  30% { transform: translate(5px, -3px); }
+  45% { transform: translate(-4px, 3px); }
+  60% { transform: translate(4px, -2px); }
+  75% { transform: translate(-3px, 1px); }
+  90% { transform: translate(2px, -1px); }
+}
+
+.ms-grid {
+  --cell: 36px;
+  display: grid;
+  gap: 2px;
+  justify-content: center;
+  margin: 0 auto;
+  width: max-content;
+}
+
+.ms-grid.compact { --cell: 30px; }
+
+.ms-cell {
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--cell) * 0.42);
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   transition: background 0.15s, transform 0.1s;
 }
 
 .ms-cell:hover:not(.revealed):not(.flagged) {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--border);
   transform: scale(0.95);
 }
 
 .ms-cell.revealed {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg);
   cursor: default;
   border-color: transparent;
 }
 
 .ms-cell.flagged {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.4);
+  background: var(--amber-glow);
+  border-color: var(--amber);
 }
 
 .ms-cell.mine-hit {
-  background: rgba(239, 68, 68, 0.4) !important;
+  background: var(--red-glow) !important;
   border-color: var(--red) !important;
 }
 
@@ -147,34 +181,28 @@ h1 {
   to   { transform: scale(1);   opacity: 1; }
 }
 
-.num-1 { color: #06b6d4; }
-.num-2 { color: #10b981; }
-.num-3 { color: #ef4444; }
-.num-4 { color: #7c3aed; }
-.num-5 { color: #f59e0b; }
-.num-6 { color: #ec4899; }
-.num-7 { color: #f1f5f9; }
-.num-8 { color: #64748b; }
+.num-1 { color: var(--cyan); }
+.num-2 { color: var(--green); }
+.num-3 { color: var(--red); }
+.num-4 { color: #a78bfa; }
+.num-5 { color: var(--amber); }
+.num-6 { color: var(--pink); }
+.num-7 { color: var(--text); }
+.num-8 { color: var(--text-dim); }
 
-.ms-result {
-  margin-top: 20px;
+/* ── 힌트 ── */
+.ms-hint {
+  margin-top: 14px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
-.ms-result p {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
+/* ── Responsive ── */
 @media (max-width: 480px) {
-  .ms-cell {
-    width: 26px;
-    height: 26px;
-    font-size: 11px;
-    border-radius: 5px;
-  }
+  .ms-container { padding: 18px 10px; }
+  .ms-grid { --cell: 34px; }
+  .ms-grid.compact { --cell: 28px; }
+  .ms-stats { padding: 8px 10px; }
+  .ms-stats .stat-val { font-size: 1.25rem; }
 }

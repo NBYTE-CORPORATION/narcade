@@ -1,125 +1,206 @@
-const HOLES = 9;
-const GAME_TIME = 30;
-const MOLES = ['🐹', '🐭', '🐻'];
+/* ============================================
+   game13 — 두더지 잡기
+   30초 안에 튀어나오는 두더지를 최대한 많이 잡기.
+   ============================================ */
+(function () {
+  'use strict';
 
-let score, timeLeft, running;
-let showTimers = [];
-let countdownTimer;
-let activeHoles = new Set();
+  Arcade.init({ id: 'game13', title: '두더지 잡기', emoji: '🔨', accent: 'green' });
 
-function buildGrid() {
-  const grid = document.getElementById('moleGrid');
-  grid.innerHTML = '';
-  for (let i = 0; i < HOLES; i++) {
-    const hole = document.createElement('div');
-    hole.className = 'hole';
-    hole.dataset.idx = i;
+  var GAME_ID = 'game13';
+  var HOLES = 9;
+  var GAME_TIME = 30000; // ms
+  var MOLES = ['🐹', '🐭', '🐻'];
 
-    const mole = document.createElement('div');
-    mole.className = 'mole-char';
-    mole.textContent = MOLES[Math.floor(Math.random() * MOLES.length)];
+  var gridEl = document.getElementById('moleGrid');
+  var scoreEl = document.getElementById('score');
+  var timerEl = document.getElementById('timer');
+  var bestEl = document.getElementById('best');
+  var overlay = Arcade.overlay('#overlay');
 
-    hole.appendChild(mole);
-    hole.addEventListener('click', () => whack(hole, i));
-    grid.appendChild(hole);
+  var score = 0;
+  var whacks = 0;
+  var running = false;
+  var lastTickSec = 0;
+  var holeEls = [];
+  var active = {};      // idx -> true
+  var hideScheds = {};  // idx -> Arcade.schedule 핸들
+  var nextSched = null;
+
+  /* ── 30초 카운트다운 (Esc/탭 전환 시 자동 일시정지) ── */
+  var timer = new Arcade.Timer({
+    duration: GAME_TIME,
+    onTick: function (left) {
+      var sec = Math.ceil(left / 1000);
+      timerEl.textContent = sec;
+      if (left <= 5000 && sec !== lastTickSec) { // 마지막 5초
+        lastTickSec = sec;
+        Arcade.audio.play('tick');
+      }
+    },
+    onEnd: endGame
+  });
+
+  Arcade.pause.register({
+    isActive: function () { return running; }
+  });
+
+  function bestScore() {
+    return Arcade.best.score(GAME_ID) || 0;
   }
-}
 
-function whack(hole, idx) {
-  if (!running || !activeHoles.has(idx)) return;
-
-  activeHoles.delete(idx);
-  hole.classList.remove('active');
-  hole.classList.add('hit');
-  setTimeout(() => hole.classList.remove('hit'), 300);
-
-  score += 10;
-  document.getElementById('score').textContent = score;
-
-  // Score popup
-  const pop = document.createElement('div');
-  pop.className = 'score-pop';
-  pop.textContent = '+10';
-  hole.appendChild(pop);
-  setTimeout(() => pop.remove(), 600);
-
-  // Clear scheduled hide
-  clearTimeout(showTimers[idx]);
-  showTimers[idx] = null;
-}
-
-function peekMole() {
-  if (!running) return;
-
-  // Pick a random hole that isn't already active
-  const inactive = [];
-  for (let i = 0; i < HOLES; i++) {
-    if (!activeHoles.has(i)) inactive.push(i);
+  function renderHud() {
+    scoreEl.textContent = score;
+    bestEl.textContent = bestScore();
   }
-  if (!inactive.length) return;
 
-  const idx = inactive[Math.floor(Math.random() * inactive.length)];
-  const hole = document.querySelector(`.hole[data-idx="${idx}"]`);
-  if (!hole) return;
+  /* ── 그리드 ── */
+  function buildGrid() {
+    gridEl.innerHTML = '';
+    holeEls = [];
+    for (var i = 0; i < HOLES; i++) {
+      (function (idx) {
+        var hole = document.createElement('div');
+        hole.className = 'hole';
 
-  // Randomize mole emoji
-  hole.querySelector('.mole-char').textContent = MOLES[Math.floor(Math.random() * MOLES.length)];
+        var mole = document.createElement('div');
+        mole.className = 'mole-char';
+        mole.textContent = MOLES[Arcade.rand(0, MOLES.length - 1)];
+        hole.appendChild(mole);
 
-  activeHoles.add(idx);
-  hole.classList.add('active');
+        hole.addEventListener('pointerdown', function (e) {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          e.preventDefault();
+          whack(idx);
+        });
 
-  const peekDuration = 800 + Math.random() * 700;
-  showTimers[idx] = setTimeout(() => {
-    if (activeHoles.has(idx)) {
-      activeHoles.delete(idx);
-      hole.classList.remove('active');
+        gridEl.appendChild(hole);
+        holeEls.push(hole);
+      })(i);
     }
-  }, peekDuration);
+  }
 
-  // Next mole
-  const nextDelay = 500 + Math.random() * 600;
-  setTimeout(peekMole, nextDelay);
-}
+  /* ── 두더지 등장/퇴장 (일시정지 인지 스케줄) ── */
+  function hideMole(idx) {
+    if (!active[idx]) return;
+    delete active[idx];
+    holeEls[idx].classList.remove('active');
+    if (hideScheds[idx]) { hideScheds[idx].cancel(); delete hideScheds[idx]; }
+  }
 
-function startGame() {
+  function peekMole() {
+    if (!running) return;
+
+    var inactive = [];
+    for (var i = 0; i < HOLES; i++) if (!active[i]) inactive.push(i);
+
+    if (inactive.length) {
+      var idx = inactive[Arcade.rand(0, inactive.length - 1)];
+      var hole = holeEls[idx];
+      hole.querySelector('.mole-char').textContent = MOLES[Arcade.rand(0, MOLES.length - 1)];
+      active[idx] = true;
+      hole.classList.add('active');
+
+      // 시간이 갈수록 살짝 빨라짐
+      var frac = Math.max(0, 1 - timer.elapsed / GAME_TIME);
+      var peekDur = 620 + frac * 700 + Math.random() * 300;
+      hideScheds[idx] = Arcade.schedule(function () { hideMole(idx); }, peekDur);
+    }
+
+    var nextDelay = 380 + Math.random() * 520;
+    nextSched = Arcade.schedule(peekMole, nextDelay);
+  }
+
+  /* ── 타격 ── */
+  function whack(idx) {
+    if (!running || Arcade.pause.active) return;
+    var hole = holeEls[idx];
+
+    if (!active[idx]) { // 빈 구멍
+      Arcade.audio.play('hit');
+      hole.classList.remove('miss');
+      void hole.offsetWidth;
+      hole.classList.add('miss');
+      setTimeout(function () { hole.classList.remove('miss'); }, 260);
+      return;
+    }
+
+    hideMole(idx);
+    whacks++;
+    score += 10;
+    renderHud();
+
+    Arcade.audio.play('pop');
+    hole.classList.add('hit');
+    setTimeout(function () { hole.classList.remove('hit'); }, 300);
+    Arcade.Particles.domBurst(hole, { count: 8, colors: ['#34d399', '#6ee7b7', '#fbbf24'] });
+
+    var pop = document.createElement('div');
+    pop.className = 'score-pop';
+    pop.textContent = '+10';
+    hole.appendChild(pop);
+    setTimeout(function () { if (pop.parentNode) pop.parentNode.removeChild(pop); }, 600);
+  }
+
+  /* ── 시작/종료 ── */
+  function clearScheds() {
+    if (nextSched) { nextSched.cancel(); nextSched = null; }
+    Object.keys(hideScheds).forEach(function (k) { hideScheds[k].cancel(); });
+    hideScheds = {};
+  }
+
+  function startGame() {
+    clearScheds();
+    buildGrid();
+    score = 0;
+    whacks = 0;
+    active = {};
+    lastTickSec = 0;
+    running = true;
+    timerEl.textContent = GAME_TIME / 1000;
+    renderHud();
+    timer.start();
+    nextSched = Arcade.schedule(peekMole, 400);
+  }
+
+  function endGame() {
+    running = false;
+    timer.stop();
+    clearScheds();
+    Object.keys(active).forEach(function (k) {
+      holeEls[k].classList.remove('active');
+    });
+    active = {};
+    timerEl.textContent = '0';
+
+    var res = Arcade.best.submit(GAME_ID, score);
+    renderHud();
+    Arcade.audio.play('win');
+
+    overlay.show({
+      emoji: '🔨',
+      title: '게임 종료!',
+      isRecord: res.isRecord,
+      stats: [
+        { label: '점수', value: score },
+        { label: '잡은 두더지', value: whacks },
+        { label: '최고 점수', value: bestScore() }
+      ],
+      btnText: '다시 하기',
+      onStart: startGame
+    });
+  }
+
+  /* ── 부트 ── */
   buildGrid();
-  score = 0;
-  timeLeft = GAME_TIME;
-  running = true;
-  activeHoles.clear();
-  showTimers = Array(HOLES).fill(null);
-
-  document.getElementById('score').textContent = 0;
-  document.getElementById('timer').textContent = GAME_TIME;
-  document.getElementById('overlay').classList.add('hidden');
-
-  // Start mole peeking
-  setTimeout(peekMole, 300);
-  setTimeout(peekMole, 700);
-
-  // Countdown
-  countdownTimer = setInterval(() => {
-    timeLeft--;
-    document.getElementById('timer').textContent = timeLeft;
-    if (timeLeft <= 0) endGame();
-  }, 1000);
-}
-
-function endGame() {
-  running = false;
-  clearInterval(countdownTimer);
-  showTimers.forEach(t => clearTimeout(t));
-  activeHoles.clear();
-
-  // Hide all moles
-  document.querySelectorAll('.hole').forEach(h => h.classList.remove('active'));
-
-  const overlay = document.getElementById('overlay');
-  document.getElementById('overlayTitle').textContent = '게임 종료!';
-  document.getElementById('overlayMsg').textContent = `최종 점수: ${score}점`;
-  document.querySelector('#overlay button').textContent = '다시 하기';
-  overlay.classList.remove('hidden');
-}
-
-// Init
-buildGrid();
+  renderHud();
+  var b = bestScore();
+  overlay.show({
+    emoji: '🔨',
+    title: '두더지 잡기',
+    msg: '30초 안에 튀어나오는 두더지를 잡으세요!\n한 마리에 10점 — 빈 구멍을 치면 시간만 낭비돼요.',
+    stats: b > 0 ? [{ label: '최고 점수', value: b }] : null,
+    btnText: '시작하기',
+    onStart: startGame
+  });
+})();

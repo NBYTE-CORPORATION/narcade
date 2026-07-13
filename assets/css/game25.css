@@ -1,29 +1,18 @@
-/* ── game25.css — 체스 ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: #0d0d1a;
-  color: #e2e8f0;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 54px 16px 24px;
-}
+/* ── game25.css — 체스 (v3 미니멀 크롬 · 보드 아트는 클래식 유지) ── */
 
 /* ── 전체 레이아웃 ── */
 .chess-wrap {
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  justify-content: center;
   width: 100%;
-  max-width: 860px;
+  max-width: 880px;
 }
 
 /* ── 사이드 패널 ── */
 .chess-side {
-  width: 170px;
+  width: 176px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -31,8 +20,8 @@ body {
 }
 
 .cs-panel {
-  background: #1a1a2e;
-  border: 1px solid #2d2d4e;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
 }
@@ -41,164 +30,201 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: opacity 0.2s;
 }
 
 .cs-avatar {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 20px;
   flex-shrink: 0;
 }
-.white-avatar { background: #f1f5f9; color: #1e1e2e; box-shadow: 0 0 10px rgba(241,245,249,0.3); }
-.black-avatar { background: #1e1e2e; color: #e2e8f0; border: 1px solid #3d3d5e; }
+.white-avatar { background: #f1f5f9; color: #18181b; }
+.black-avatar { background: var(--bg); color: var(--text); border: 1px solid var(--border-strong); }
 
 .cs-info { display: flex; flex-direction: column; flex: 1; }
 .cs-name { font-size: 13px; font-weight: 600; }
-.cs-label { font-size: 10px; color: #64748b; letter-spacing: 1px; }
+.cs-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
 
 .cs-captured {
   margin-top: 8px;
   min-height: 20px;
-  font-size: 11px;
-  line-height: 1.6;
-  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-dim);
   word-break: break-all;
 }
 
 /* ── 상태 박스 ── */
 .cs-status {
-  background: #1a1a2e;
-  border: 1px solid #2d2d4e;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
   text-align: center;
   font-size: 12px;
-  color: #a78bfa;
+  font-weight: 600;
+  color: var(--accent);
   min-height: 40px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1.4;
 }
-.cs-status.check  { border-color: #f43f5e; color: #f43f5e; }
-.cs-status.win    { border-color: #22c55e; color: #22c55e; }
-.cs-status.draw   { border-color: #f59e0b; color: #f59e0b; }
+.cs-status.check { border-color: var(--red);   color: var(--red); }
+.cs-status.win   { border-color: var(--green); color: var(--green); }
+.cs-status.draw  { border-color: var(--amber); color: var(--amber); }
 
 /* ── 컨트롤 ── */
 .cs-controls { display: flex; flex-direction: column; gap: 8px; }
 
-.cs-btn {
-  width: 100%; padding: 9px 12px;
-  border: 1px solid #3d3d5e; border-radius: 8px;
-  background: #1a1a2e; color: #e2e8f0;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  transition: all .15s;
+.cs-controls button {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
 }
-.cs-btn:hover:not(:disabled) { background: #2d2d4e; border-color: #a78bfa; }
-.cs-btn.primary { background: #7c3aed; border-color: #7c3aed; color: #fff; }
-.cs-btn.primary:hover { background: #6d28d9; }
-.cs-btn:disabled { opacity: .35; cursor: not-allowed; }
 
-.cs-difficulty { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: #64748b; }
-.diff-btns { display: flex; gap: 4px; }
-.diff-btn {
-  flex: 1; padding: 5px 0;
-  border: 1px solid #2d2d4e; border-radius: 6px;
-  background: #131320; color: #64748b;
-  font-size: 10px; cursor: pointer; transition: all .15s;
+.cs-difficulty {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
 }
-.diff-btn.active { border-color: #7c3aed; color: #a78bfa; background: #1a1a2e; }
-.diff-btn:hover { border-color: #4d4d7e; color: #94a3b8; }
+
+.cs-difficulty .diff-pills {
+  display: flex;
+  margin: 0;
+  width: 100%;
+}
+.cs-difficulty .diff-pill { flex: 1; padding: 7px 0; font-size: 12px; }
+
+.cs-wins {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.cs-wins span { color: var(--accent); font-weight: 700; }
 
 /* ── 체스판 영역 ── */
 .chess-board-wrap {
   position: relative;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 480px;
+  width: 100%;
 }
 
 #chessCanvas {
   display: block;
-  border-radius: 4px;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--border);
   cursor: pointer;
-  box-shadow: 0 0 40px rgba(124,58,237,0.2), 0 8px 32px rgba(0,0,0,0.5);
+  touch-action: manipulation;
 }
 
 .board-ranks {
   position: absolute;
-  left: -18px; top: 0;
-  height: 480px;
-  display: flex; flex-direction: column;
+  left: -18px;
+  top: 0;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
 }
 .board-ranks span {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: #64748b; font-weight: 600;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 .board-files {
   display: flex;
-  width: 480px;
+  width: 100%;
+  max-width: 480px;
   margin-top: 4px;
 }
 .board-files span {
-  flex: 1; text-align: center;
-  font-size: 11px; color: #64748b; font-weight: 600;
+  flex: 1;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 /* ── 프로모션 팝업 ── */
 .promotion-popup {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  background: #1a1a2e;
-  border: 2px solid #7c3aed;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
   border-radius: 16px;
-  padding: 20px;
+  padding: 18px;
   text-align: center;
   z-index: 50;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 .promotion-popup.hidden { display: none; }
-.promo-title { font-size: 14px; color: #a78bfa; font-weight: 700; margin-bottom: 12px; }
-.promo-choices { display: flex; gap: 10px; }
+.promo-title { font-size: 14px; color: var(--text); font-weight: 700; margin-bottom: 12px; }
+.promo-choices { display: flex; gap: 8px; }
 .promo-btn {
-  width: 56px; height: 56px;
-  border: 2px solid #3d3d5e; border-radius: 10px;
-  background: #0d0d1a; color: #f1f5f9;
-  font-size: 28px; cursor: pointer; transition: all .15s;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg);
+  color: #f1f5f9;
+  font-size: 28px;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
 }
-.promo-btn:hover { border-color: #a78bfa; background: #1a1a2e; transform: scale(1.08); }
-
-/* ── 오버레이 ── */
-.chess-overlay {
-  position: absolute; inset: 0;
-  background: rgba(8,8,22,0.88);
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 4px;
-  z-index: 40;
-  backdrop-filter: blur(4px);
+.promo-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: scale(1.06);
+  box-shadow: none;
+  filter: none;
 }
-.chess-overlay.hidden { display: none; }
-
-.overlay-box { text-align: center; padding: 32px 24px; }
-.overlay-icon { font-size: 52px; margin-bottom: 10px; filter: drop-shadow(0 0 18px rgba(167,139,250,.7)); }
-.overlay-title { font-size: 28px; font-weight: 800; color: #a78bfa; margin-bottom: 8px; letter-spacing: 1px; }
-.overlay-msg { font-size: 14px; color: #94a3b8; margin-bottom: 22px; line-height: 1.6; }
 
 /* ── 기보 ── */
 .chess-history {
-  width: 130px;
+  width: 132px;
   flex-shrink: 0;
-  background: #1a1a2e;
-  border: 1px solid #2d2d4e;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   max-height: 520px;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .history-header {
   padding: 10px 12px;
-  font-size: 12px; font-weight: 700;
-  color: #a78bfa;
-  border-bottom: 1px solid #2d2d4e;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .history-list {
@@ -208,33 +234,39 @@ body {
 }
 .history-list::-webkit-scrollbar { width: 4px; }
 .history-list::-webkit-scrollbar-track { background: transparent; }
-.history-list::-webkit-scrollbar-thumb { background: #2d2d4e; border-radius: 2px; }
+.history-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
 
 .hist-row {
   display: flex;
   gap: 4px;
   padding: 2px 10px;
+  font-family: var(--mono);
   font-size: 11px;
 }
-.hist-row:nth-child(even) { background: rgba(255,255,255,0.02); }
-.hist-num { color: #475569; min-width: 20px; }
-.hist-w   { color: #f1f5f9; flex: 1; }
-.hist-b   { color: #94a3b8; flex: 1; }
+.hist-row:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+.hist-num { color: var(--text-muted); min-width: 20px; }
+.hist-w   { color: var(--text); flex: 1; }
+.hist-b   { color: var(--text-dim); flex: 1; }
 
 /* ── AI 생각 중 ── */
 .thinking-dot {
   display: inline-block;
   animation: tdot 1.2s ease-in-out infinite;
 }
-.thinking-dot:nth-child(2) { animation-delay: .2s; }
-.thinking-dot:nth-child(3) { animation-delay: .4s; }
-@keyframes tdot { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tdot { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
 
 /* ── 반응형 ── */
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .chess-wrap { flex-direction: column; align-items: center; }
-  .chess-side, .chess-history { width: 100%; max-width: 480px; flex-direction: row; }
-  .chess-side { flex-wrap: wrap; }
-  .chess-history { max-height: 120px; }
+  .chess-board-wrap { order: -1; }
+  .chess-side, .chess-history { width: 100%; max-width: 480px; }
+  .chess-side { gap: 8px; }
+  .cs-controls { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .cs-controls button { width: auto; flex: 1; min-width: 110px; }
+  .cs-difficulty { flex: 1 1 100%; }
+  .cs-wins { flex: 1 1 100%; }
+  .chess-history { max-height: 140px; }
   .board-ranks { display: none; }
 }

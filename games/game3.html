@@ -3,22 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <title>기억력 게임 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game3.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game3.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
   <div class="game-container">
-    <h1>🧠 기억력 테스트</h1>
-    <p id="display">잠시 후 숫자가 나옵니다...</p>
-    <input type="text" id="userInput" placeholder="숫자를 입력하세요" disabled>
-    <div class="button-group">
-      <button onclick="checkAnswer()">확인</button>
-      <button class="btn-secondary" onclick="startGame()">다시 시작</button>
+    <div class="hud">
+      <div class="hud-item"><span class="hud-val" id="roundVal">1</span><span class="hud-lbl">라운드</span></div>
+      <div class="hud-item"><span class="hud-val" id="livesVal">❤️❤️❤️</span><span class="hud-lbl">목숨</span></div>
+      <div class="hud-item"><span class="hud-val" id="bestVal">-</span><span class="hud-lbl">최고 자릿수</span></div>
     </div>
-    <p id="result"></p>
+
+    <p class="status" id="status">숫자를 기억하세요</p>
+
+    <div class="digit-stage" id="stage">
+      <div class="digit-row" id="digitRow"></div>
+      <div class="slot-row" id="slotRow" hidden></div>
+      <div class="compare" id="compare" hidden></div>
+    </div>
+
+    <div class="keypad locked" id="keypad">
+      <button type="button" data-key="1">1</button>
+      <button type="button" data-key="2">2</button>
+      <button type="button" data-key="3">3</button>
+      <button type="button" data-key="4">4</button>
+      <button type="button" data-key="5">5</button>
+      <button type="button" data-key="6">6</button>
+      <button type="button" data-key="7">7</button>
+      <button type="button" data-key="8">8</button>
+      <button type="button" data-key="9">9</button>
+      <button type="button" data-key="back" class="key-back" aria-label="지우기">←</button>
+      <button type="button" data-key="0">0</button>
+      <button type="button" data-key="ok" class="key-ok">확인</button>
+    </div>
   </div>
-  <script src="../assets/js/game3.js"></script>
+
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game3.js?v=4"></script>
 </body>
 </html>

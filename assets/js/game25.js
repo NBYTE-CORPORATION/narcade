@@ -1,5 +1,7 @@
-/* ── game25.js — 체스 (알파-베타 AI) ── */
+/* ── game25.js — 체스 (알파-베타 AI · v3 Arcade 통합) ── */
 'use strict';
+
+Arcade.init({ id: 'game25', title: '체스', emoji: '♟', accent: 'amber' });
 
 /* ══ 상수 ══ */
 const EMPTY=0, PAWN=1, KNIGHT=2, BISHOP=3, ROOK=4, QUEEN=5, KING=6;
@@ -423,10 +425,6 @@ function toAlgebraic(mv, type) {
 ══════════════════════════ */
 const canvas    = document.getElementById('chessCanvas');
 const ctx       = canvas.getContext('2d');
-const overlay   = document.getElementById('chessOverlay');
-const overlayBtn= document.getElementById('overlayBtn');
-const overlayTitle = document.getElementById('overlayTitle');
-const overlayMsg   = document.getElementById('overlayMsg');
 const statusBox = document.getElementById('statusBox');
 const statusText= document.getElementById('statusText');
 const histList  = document.getElementById('historyList');
@@ -437,6 +435,18 @@ const undoBtn   = document.getElementById('undoBtn');
 const promoPopup= document.getElementById('promotionPopup');
 const whitePanel= document.getElementById('whitePanel');
 const blackPanel= document.getElementById('blackPanel');
+const winsEl    = document.getElementById('winsEl');
+
+const ov = Arcade.overlay('#overlay');
+
+const DIFF_LABELS_25 = { '2': '쉬움', '3': '보통', '4': '어려움' };
+
+function winsFor(d) {
+  return Arcade.best.score('game25', { suffix: String(d) }) || 0;
+}
+function updateWins() {
+  winsEl.textContent = winsFor(aiDepth);
+}
 
 /* 좌표 라벨 */
 const ranksEl = document.getElementById('boardRanks');
@@ -477,10 +487,11 @@ function startGame() {
   whiteCap.textContent = '';
   blackCap.textContent = '';
   histList.innerHTML = '';
-  overlay.classList.add('hidden');
+  ov.hide();
   promoPopup.classList.add('hidden');
   undoBtn.disabled = false;
   allLegal = legalMoves(state);
+  updateWins();
   updateStatus();
   render();
 }
@@ -574,8 +585,8 @@ canvas.addEventListener('click', e => {
   if(selected){
     const mv = legal.find(m=>m.tr===r&&m.tc===c);
     if(mv){
-      if(mv.promo!==undefined && !mv.promo){
-        // 프로모션 선택 팝업
+      if(mv.promo!==undefined){
+        // 프로모션 선택 팝업 (같은 칸의 4가지 승격 수 중 선택)
         pendingPromo = mv;
         promoPopup.classList.remove('hidden');
         return;
@@ -590,6 +601,7 @@ canvas.addEventListener('click', e => {
   if(pc && Math.sign(pc)===WHITE){
     selected = {r,c};
     legal = allLegal.filter(m=>m.fr===r&&m.fc===c);
+    Arcade.audio.play('click');
   } else {
     selected=null; legal=[];
   }
@@ -608,6 +620,17 @@ promoPopup.querySelectorAll('.promo-btn').forEach(btn=>{
   });
 });
 
+/* ── 이동 사운드 ── */
+function moveSfx(mv, captured) {
+  if (mv.castle) Arcade.audio.play('whoosh');
+  else if (captured) Arcade.audio.play('hit');
+  else Arcade.audio.play('pop');
+  /* 상대가 체크에 걸렸으면 경고음 */
+  if (gameActive && kingInCheck(state, state.turn)) {
+    Arcade.audio.tone(880, 120, { type: 'sine', gain: 0.1 });
+  }
+}
+
 /* ── 수 실행 ── */
 function doMove(mv) {
   savedSnap = state.snapshot();
@@ -623,6 +646,7 @@ function doMove(mv) {
   selected=null; legal=[];
   logMove(mv, pieceType, state.turn); // turn이 이미 바뀐 후
   allLegal = legalMoves(state);
+  moveSfx(mv, cap || mv.ep);
   updateStatus();
   render();
 
@@ -637,9 +661,9 @@ function doMove(mv) {
 function requestAI() {
   aiThinking = true;
   setStatus('<span class="thinking-dot">●</span><span class="thinking-dot">●</span><span class="thinking-dot">●</span> 생각 중', '');
-  setTimeout(()=>{
+  Arcade.schedule(()=>{
     const mv = bestAIMove(state, aiDepth);
-    if(!mv){ endGame(); return; }
+    if(!mv){ aiThinking=false; updateStatus(); return; }
     const pieceType = Math.abs(state.board[mv.fr][mv.fc]);
     mv.capture = state.board[mv.tr][mv.tc]!==0||mv.ep;
     const cap = applyMove(state, mv);
@@ -649,12 +673,10 @@ function requestAI() {
     logMove(mv, pieceType, state.turn);
     allLegal = legalMoves(state);
     aiThinking = false;
+    moveSfx(mv, cap || mv.ep);
     updateStatus();
     render();
-    if(!gameActive) return;
-    allLegal = legalMoves(state);
-    if(allLegal.length===0) endGame();
-  }, 50);
+  }, 300);
 }
 
 /* ── 기보 ── */
@@ -714,28 +736,47 @@ function updateStatus(){
 function endGame(isCheckmate=false, isDraw=false){
   gameActive=false;
   undoBtn.disabled=true;
+
+  let emoji, title, msg;
+  const playerWon = isCheckmate && state.turn===BLACK;
+
   if(isDraw){
-    overlayTitle.textContent='무승부';
-    overlayMsg.textContent='50수 규칙에 의한 무승부';
-    overlayIcon.textContent='🤝';
+    emoji='🤝'; title='무승부'; msg='50수 규칙에 의한 무승부';
+    setStatus('무승부 (50수 규칙)','draw');
+    Arcade.audio.tone(440, 250, { type: 'sine', gain: 0.1 });
   } else if(!isCheckmate){
-    overlayTitle.textContent='스테일메이트';
-    overlayMsg.textContent='무승부 (스테일메이트)';
-    overlayIcon.textContent='🤝';
+    emoji='🤝'; title='스테일메이트'; msg='무승부 (스테일메이트)';
     setStatus('스테일메이트 — 무승부','draw');
+    Arcade.audio.tone(440, 250, { type: 'sine', gain: 0.1 });
   } else if(state.turn===WHITE){
-    overlayTitle.textContent='패배';
-    overlayMsg.textContent='컴퓨터가 이겼습니다!\n포기하지 마세요 💪';
-    overlayIcon.textContent='♚';
+    emoji='♚'; title='패배'; msg='컴퓨터가 이겼습니다!\n포기하지 마세요 💪';
     setStatus('체크메이트 — AI 승!','check');
+    Arcade.audio.play('lose');
   } else {
-    overlayTitle.textContent='승리! 🎉';
-    overlayMsg.textContent='플레이어가 이겼습니다!\n훌륭한 플레이!';
-    overlayIcon.textContent='♔';
+    emoji='🏆'; title='승리!'; msg='플레이어가 이겼습니다!\n훌륭한 플레이!';
     setStatus('체크메이트 — 플레이어 승!','win');
+    Arcade.audio.play('win');
+    Arcade.best.submit('game25', winsFor(aiDepth)+1, { suffix: String(aiDepth) });
+    updateWins();
+    Arcade.Particles.domBurst(canvas, { count: 26 });
   }
-  overlayBtn.textContent='다시 하기';
-  overlay.classList.remove('hidden');
+
+  const moveCnt = state.moveLog.length;
+  const diffLabel = DIFF_LABELS_25[String(aiDepth)] || aiDepth;
+  Arcade.schedule(()=>{
+    ov.show({
+      emoji: emoji,
+      title: title,
+      msg: msg,
+      stats: [
+        { label: '수', value: moveCnt },
+        { label: '난이도', value: diffLabel },
+        { label: '누적 승리', value: winsFor(aiDepth) }
+      ],
+      btnText: '다시 하기',
+      onStart: startGame
+    });
+  }, playerWon ? 900 : 600);
 }
 
 /* ── 무르기 ── */
@@ -761,21 +802,32 @@ undoBtn.addEventListener('click', ()=>{
   allLegal = legalMoves(state);
   renderHistory(); updateStatus(); render();
   undoBtn.disabled=true;
+  Arcade.audio.play('whoosh');
 });
 
-/* ── 난이도 버튼 ── */
-document.querySelectorAll('.diff-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    aiDepth = parseInt(btn.dataset.d);
-  });
-});
+/* ── 난이도 (기존 id 2/3/4 유지) ── */
+const savedDiff = Arcade.difficulty(
+  document.getElementById('diffPills'),
+  [{ id: '2', label: '쉬움' }, { id: '3', label: '보통' }, { id: '4', label: '어려움' }],
+  d => { aiDepth = parseInt(d, 10); updateWins(); },
+  { gameId: 'game25' }
+);
+aiDepth = parseInt(savedDiff, 10);
 
 /* ── 시작/재시작 ── */
-startBtn.addEventListener('click', startGame);
-overlayBtn.addEventListener('click', startGame);
+startBtn.addEventListener('click', () => {
+  Arcade.audio.play('click');
+  startGame();
+});
 
-/* 초기 렌더 */
+/* 초기 렌더 + 시작 오버레이 */
 state = new ChessState();
 render();
+updateWins();
+ov.show({
+  emoji: '♟',
+  title: '체스',
+  msg: '전략적 두뇌 대결 — 백(플레이어) vs 흑(AI)\n기물을 눌러 이동할 칸을 선택하세요.',
+  btnText: '게임 시작',
+  onStart: startGame
+});

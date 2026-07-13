@@ -18,10 +18,8 @@
   font-size: 2.4rem;
   font-weight: 900;
   line-height: 1;
-  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: -0.02em;
+  color: var(--accent);
 }
 
 .click-stat-lbl {
@@ -49,19 +47,22 @@
   font-size: 1.15rem;
   font-weight: 900;
   padding: 0;
-  background: linear-gradient(135deg, var(--primary), #5b21b6);
-  box-shadow: 0 6px 28px var(--primary-glow);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 4px 18px var(--accent-glow);
   transition: transform 0.08s, box-shadow 0.1s, opacity 0.2s;
   letter-spacing: 0.02em;
 }
 
 #clickBtn:active:not(:disabled) {
   transform: scale(0.90) !important;
-  box-shadow: 0 2px 14px var(--primary-glow);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
 #clickBtn:disabled {
-  background: linear-gradient(135deg, #374151, #1f2937);
+  background: var(--surface-hover);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
   box-shadow: none;
 }
 
@@ -74,10 +75,3 @@
   font-weight: 600;
 }
 
-/* 다시 하기 버튼 */
-.retry-btn {
-  margin-top: 10px;
-  padding: 10px 32px;
-  font-size: 0.9rem;
-  border-radius: 12px;
-}

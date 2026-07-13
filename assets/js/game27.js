@@ -1,19 +1,34 @@
-/* ── game27.js — 메탈 슬러그 ── */
+/* ── game27.js — 메탈 슬러그 (Arcade 통합 리워크) ── */
 'use strict';
+
+Arcade.init({ id: 'game27', title: '메탈 슬러그', emoji: '🪖', accent: 'green' });
 
 const canvas  = document.getElementById('c');
 const ctx     = canvas.getContext('2d');
-const overlay = document.getElementById('overlay');
-const ovTitle = document.getElementById('ovTitle');
-const ovMsg   = document.getElementById('ovMsg');
-const startBtn = document.getElementById('startBtn');
 const scoreEl = document.getElementById('scoreEl');
 const livesEl = document.getElementById('livesEl');
-const ammoEl  = document.getElementById('ammoEl');
+const bestEl  = document.getElementById('bestEl');
 const waveEl  = document.getElementById('waveEl');
 
 const CW = 560, CH = 320;
 canvas.width = CW; canvas.height = CH;
+
+const IS_TOUCH = Arcade.touch.isCoarse();
+
+/* ── 캔버스 스케일링 (헤더 + 터치패드 고려) ── */
+const fit = Arcade.fitCanvas(canvas, { paddingV: IS_TOUCH ? 250 : 150 });
+
+/* ── 오버레이 ── */
+const ov = Arcade.overlay('#overlay');
+
+/* ── 가로 모드 힌트 (좁은 세로 화면) ── */
+(() => {
+  const hint = document.getElementById('rotateHint');
+  const close = document.getElementById('rotateHintClose');
+  if (hint && close) {
+    close.addEventListener('click', () => hint.classList.add('dismissed'));
+  }
+})();
 
 /* ── 지형 상수 ── */
 const GROUND_Y  = CH - 60;
@@ -31,14 +46,18 @@ const PLATFORMS = [
 ];
 
 /* ── 게임 상태 ── */
-let score, lives, wave, gameRunning;
+let score, lives, wave, gameRunning = false;
 let camX = 0;
-let bullets = [], grenades = [], explosions = [], particles = [], popups = [];
+let bullets = [], grenades = [], explosions = [], popups = [];
 let enemies = [];
 let shootCooldown = 0, grenadeCooldown = 0;
 let hurtTimer = 0;
 let waveTimer = 0, waveClear = false;
 let totalKills = 0;
+let shotSoundToggle = false;
+
+/* ── 파티클 (Arcade.Particles — 월드 좌표로 분출, 렌더 시 카메라 보정) ── */
+const fx = new Arcade.Particles(ctx);
 
 /* ── 플레이어 ── */
 let hero = {};
@@ -48,18 +67,40 @@ const keys = {};
 document.addEventListener('keydown', e => {
   keys[e.key] = true;
   if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
-  if ((e.key === 'z' || e.key === 'Z' || e.key === ' ') && gameRunning) {
+  if ((e.key === 'z' || e.key === 'Z' || e.key === ' ') && gameRunning && !Arcade.pause.active) {
     if (hero.onGround) { hero.vy = -13; hero.onGround = false; }
   }
-  if ((e.key === 'x' || e.key === 'X' || e.key === 'ArrowUp') && gameRunning) { shoot(); }
-  if ((e.key === 'c' || e.key === 'C') && gameRunning) { throwGrenade(); }
+  if ((e.key === 'c' || e.key === 'C') && gameRunning && !Arcade.pause.active) { throwGrenade(); }
 });
 document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+/* ── 가상 게임패드 (좌: 이동 / 우: 점프·사격·수류탄) ──
+   합성 keydown/keyup으로 기존 키보드 핸들러를 그대로 재사용.
+   사격은 keys['x'] 홀드 플래그 기반 자동 연사라 홀드 지원. */
+Arcade.touch.buttons(null, [
+  { id: 'left',    label: '◀',  key: 'ArrowLeft' },
+  { id: 'right',   label: '▶',  key: 'ArrowRight' },
+  { id: 'jump',    label: '점프', key: 'z', code: 'KeyZ', wide: true },
+  { id: 'shoot',   label: '🔫', key: 'x', code: 'KeyX' },
+  { id: 'grenade', label: '💣', key: 'c', code: 'KeyC' },
+], { className: 'ms-pad' });
+
+/* ── 일시정지 연동 (프레임 기반 루프 — 재개 시 시간 점프 없음) ── */
+Arcade.pause.register({
+  isActive: () => gameRunning,
+  onPause() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  },
+  onResume() {
+    if (gameRunning && !rafId) rafId = requestAnimationFrame(loop);
+  }
+});
 
 /* ── 초기화 ── */
 function initGame() {
   score = 0; lives = 3; wave = 1; gameRunning = true;
-  camX = 0; bullets = []; grenades = []; explosions = []; particles = []; popups = [];
+  camX = 0; bullets = []; grenades = []; explosions = []; popups = [];
+  fx.clear();
   shootCooldown = 0; grenadeCooldown = 0; hurtTimer = 0;
   waveClear = false; totalKills = 0;
 
@@ -68,15 +109,21 @@ function initGame() {
 
   spawnWave(wave);
   updateHUD();
-  overlay.style.display = 'none';
+  playWaveFanfare();
   if (!rafId) loop();
 }
 
 function updateHUD() {
   scoreEl.textContent = score.toLocaleString();
   livesEl.textContent = '❤️'.repeat(Math.max(0, lives));
-  ammoEl.textContent  = '∞';
+  bestEl.textContent  = (Arcade.best.score('game27') || 0).toLocaleString();
   waveEl.textContent  = wave;
+}
+
+/* ── 웨이브 팡파르 (두 음) ── */
+function playWaveFanfare() {
+  Arcade.audio.tone(523, 110, { type: 'square', gain: 0.12 });
+  Arcade.audio.tone(784, 190, { type: 'square', gain: 0.12, delay: 110 });
 }
 
 /* ── 웨이브 생성 ── */
@@ -120,9 +167,17 @@ function shoot() {
   bullets.push({ x: hero.x + (hero.dir > 0 ? hero.w : 0), y: hero.y + hero.h * 0.35,
                  vx: 14 * hero.dir, vy: 0, owner: 'hero' });
   shootCooldown = 8;
-  // 연사 파티클
-  particles.push({ x: hero.x + (hero.dir > 0 ? hero.w + 10 : -10), y: hero.y + hero.h * 0.35,
-                   vx: hero.dir * 4, vy: -1, life: 0.6, decay: 0.15, size: 4, color: '#fde68a' });
+  // 총성 (연사가 잦으니 한 발 걸러 낮은 게인으로)
+  shotSoundToggle = !shotSoundToggle;
+  if (shotSoundToggle) {
+    Arcade.audio.tone(240, 60, { type: 'square', gain: 0.06, endFreq: 100 });
+  }
+  // 총구 화염
+  fx.burst(hero.x + (hero.dir > 0 ? hero.w + 12 : -12), hero.y + hero.h * 0.35, {
+    count: 4, colors: ['#fde68a', '#fff7cc', '#f97316'],
+    speed: 3, angle: hero.dir > 0 ? 0 : Math.PI, spread: 0.7,
+    size: 1.6, decay: 0.12, gravity: 0.02
+  });
 }
 
 function throwGrenade() {
@@ -130,17 +185,17 @@ function throwGrenade() {
   grenades.push({ x: hero.x + hero.w/2, y: hero.y,
                   vx: 6 * hero.dir, vy: -10, bounces: 0 });
   grenadeCooldown = 45;
+  Arcade.audio.play('whoosh');
 }
 
 /* ── 폭발 ── */
 function explode(x, y, r = 55) {
   explosions.push({ x, y, r, maxR: r, life: 1 });
-  for (let i = 0; i < 18; i++) {
-    const a = Math.random() * Math.PI * 2, s = 3 + Math.random() * 7;
-    particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 3,
-                     life: 1, decay: 0.025, size: 4+Math.random()*5,
-                     color: Math.random() > 0.5 ? '#f97316' : '#fde68a' });
-  }
+  Arcade.audio.play('explosion');
+  fx.burst(x, y, {
+    count: 30, colors: ['#fff7aa', '#f97316', '#ef4444', '#fbbf24'],
+    speed: 6, size: 2.4, decay: 0.02, gravity: 0.1
+  });
   // 범위 내 적 피해
   for (const e of enemies) {
     const dx = (e.x + e.w/2) - x, dy = (e.y + e.h/2) - y;
@@ -162,11 +217,19 @@ function damageEnemy(e, dmg = 1) {
 
 function explodeEnemy(e) {
   const cx = e.x + e.w/2, cy = e.y + e.h/2;
-  for (let i = 0; i < 12; i++) {
-    const a = Math.random() * Math.PI * 2, s = 2 + Math.random() * 5;
-    particles.push({ x: cx, y: cy, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 2,
-                     life: 1, decay: 0.03, size: 3+Math.random()*4,
-                     color: Math.random() > 0.4 ? '#ef4444' : '#f97316' });
+  if (e.type === 'tank') {
+    Arcade.audio.play('explosion');
+    explosions.push({ x: cx, y: cy, r: 50, maxR: 50, life: 1 });
+    fx.burst(cx, cy, {
+      count: 26, colors: ['#fff7aa', '#f97316', '#ef4444', '#94a3b8'],
+      speed: 5.5, size: 2.4, decay: 0.02, gravity: 0.1
+    });
+  } else {
+    Arcade.audio.noise(180, { freq: 700, endFreq: 80, gain: 0.18 });
+    fx.burst(cx, cy, {
+      count: 14, colors: ['#ef4444', '#f97316', '#fde68a'],
+      speed: 4, size: 1.9, decay: 0.03, gravity: 0.12
+    });
   }
   popups.push({ x: cx - camX, y: cy - 10, text: e.type === 'tank' ? '1000!' : e.type === 'heavy' ? '400!' : '200!', life: 1, vy: -1.2 });
 }
@@ -213,7 +276,7 @@ function updateEnemies() {
                      vx: bvx, vy: bvy, owner: 'enemy' });
     }
 
-    // 마리오(히어로)와 접촉
+    // 히어로와 접촉
     if (rectsOverlap(hero, e)) hurtHero();
 
     // 방향 전환
@@ -231,6 +294,7 @@ function updateEnemies() {
   if (enemies.length === 0 && !waveClear) {
     waveClear = true;
     waveTimer = 120;
+    Arcade.audio.play('powerup');
   }
   if (waveClear) {
     waveTimer--;
@@ -242,6 +306,7 @@ function updateEnemies() {
       }
       waveEl.textContent = wave;
       spawnWave(wave);
+      playWaveFanfare();
       popups.push({ x: CW/2, y: CH/2 - 30, text: `WAVE ${wave}!`, life: 1.5, vy: -0.5 });
     }
   }
@@ -270,8 +335,10 @@ function updateBullets() {
           damageEnemy(e, 1);
           hit = true;
           // 히트 스파크
-          particles.push({ x: b.x, y: b.y, vx: (Math.random()-0.5)*4, vy: -2-Math.random()*2,
-                           life: 0.7, decay: 0.1, size: 3, color: '#fde68a' });
+          fx.burst(b.x, b.y, {
+            count: 6, colors: ['#fde68a', '#fca5a5', '#fff'],
+            speed: 2.5, size: 1.4, decay: 0.08, gravity: 0.08
+          });
           break;
         }
       }
@@ -312,27 +379,52 @@ function hurtHero() {
   lives--;
   updateHUD();
   hurtTimer = 100;
+  Arcade.audio.play('hit');
+  fx.burst(hero.x + hero.w/2, hero.y + hero.h/2, {
+    count: 10, colors: ['#ef4444', '#fca5a5'],
+    speed: 3.5, size: 1.8, decay: 0.04, gravity: 0.1
+  });
   if (lives <= 0) { gameRunning = false; setTimeout(doGameOver, 400); }
 }
 
 /* ── 종료 ── */
+function endStats() {
+  return [
+    { label: '점수', value: score.toLocaleString() },
+    { label: '도달 웨이브', value: wave },
+    { label: '처치', value: totalKills }
+  ];
+}
+
 function doGameOver() {
-  setTimeout(() => {
-    ovTitle.textContent = 'MISSION FAILED';
-    ovMsg.innerHTML = `스코어: <strong>${score.toLocaleString()}</strong><br>웨이브 ${wave} 도달 · 처치: ${totalKills}명`;
-    startBtn.textContent = '다시 시작';
-    overlay.style.display = 'flex';
-  }, 300);
+  Arcade.audio.play('lose');
+  const res = Arcade.best.submit('game27', score);
+  updateHUD();
+  ov.show({
+    emoji: '💀',
+    title: 'MISSION FAILED',
+    isRecord: res.isRecord,
+    msg: '전장에서 쓰러졌다…',
+    stats: endStats(),
+    btnText: '다시하기',
+    onStart: initGame
+  });
 }
 
 function doVictory() {
   gameRunning = false;
-  setTimeout(() => {
-    ovTitle.textContent = '🏆 MISSION COMPLETE!';
-    ovMsg.innerHTML = `최종 스코어: <strong>${score.toLocaleString()}</strong><br>총 처치: ${totalKills}명`;
-    startBtn.textContent = '다시 시작';
-    overlay.style.display = 'flex';
-  }, 400);
+  Arcade.audio.play('win');
+  const res = Arcade.best.submit('game27', score);
+  updateHUD();
+  ov.show({
+    emoji: '🏆',
+    title: 'MISSION COMPLETE!',
+    isRecord: res.isRecord,
+    msg: '모든 웨이브를 격파했다!',
+    stats: endStats(),
+    btnText: '다시하기',
+    onStart: initGame
+  });
 }
 
 /* ══════════════════════════════════
@@ -606,15 +698,7 @@ function drawExplosions() {
   }
 }
 
-function drawParticles() {
-  for (const p of particles) {
-    ctx.save();
-    ctx.globalAlpha = p.life;
-    ctx.fillStyle = p.color;
-    ctx.shadowBlur = 4; ctx.shadowColor = p.color;
-    ctx.beginPath(); ctx.arc(p.x - camX, p.y, p.size * p.life, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
+function drawPopups() {
   for (const p of popups) {
     ctx.save();
     ctx.globalAlpha = Math.min(1, p.life);
@@ -640,17 +724,18 @@ function drawWaveMsg() {
   ctx.restore();
 }
 
-/* ── 메인 루프 ── */
+/* ── 메인 루프 (프레임 기반 60fps) ── */
 let rafId = null;
 
 function loop() {
-  if (!gameRunning) { rafId = null; return; }
+  if (!gameRunning || Arcade.pause.active) { rafId = null; return; }
 
   /* 입력 */
   if (keys['ArrowLeft'])  { hero.vx = -4; hero.dir = -1; }
   else if (keys['ArrowRight']) { hero.vx = 4; hero.dir = 1; }
   else hero.vx *= 0.7;
 
+  // 홀드 자동 연사 (키보드·가상 패드 공용 — keys 플래그 기반)
   if ((keys['x'] || keys['X'] || keys['ArrowUp']) && shootCooldown <= 0) shoot();
 
   /* 쿨다운 */
@@ -672,11 +757,8 @@ function loop() {
   updateBullets();
   updateGrenades();
 
-  /* 파티클 */
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.life -= p.decay;
-    if (p.life <= 0) particles.splice(i, 1);
-  }
+  /* 파티클 & 팝업 */
+  fx.update();
   for (let i = popups.length - 1; i >= 0; i--) {
     const p = popups[i]; p.y += p.vy; p.life -= 0.018;
     if (p.life <= 0) popups.splice(i, 1);
@@ -687,23 +769,36 @@ function loop() {
   drawBg();
   drawPlatforms();
   drawExplosions();
-  drawParticles();
+  // 파티클은 월드 좌표 — 카메라 보정 후 렌더
+  ctx.save();
+  ctx.translate(-camX, 0);
+  fx.draw();
+  ctx.restore();
   drawGrenades();
   drawBullets();
   drawEnemies();
   drawHero();
+  drawPopups();
   drawWaveMsg();
 
   rafId = requestAnimationFrame(loop);
 }
 
-/* ── 시작 버튼 ── */
-startBtn.addEventListener('click', initGame);
-
-/* ── 초기 렌더 ── */
+/* ── 초기 렌더 & 시작 오버레이 ── */
 ctx.clearRect(0, 0, CW, CH);
 (()=>{
   const sky = ctx.createLinearGradient(0, 0, 0, CH);
   sky.addColorStop(0, '#1a1a2e'); sky.addColorStop(1, '#4a6741');
   ctx.fillStyle = sky; ctx.fillRect(0, 0, CW, CH);
 })();
+
+ov.show({
+  emoji: '🪖',
+  title: '메탈 슬러그',
+  msg: IS_TOUCH
+    ? '적 부대를 격파하고 웨이브 8까지 살아남아라!\n◀ ▶ 이동 · 점프 버튼 점프\n🔫 사격(꾹 누르면 연사) · 💣 수류탄'
+    : '적 부대를 격파하고 웨이브 8까지 살아남아라!\n← → 이동 | Z·Space 점프\nX·↑ 사격(꾹 누르면 연사) | C 수류탄',
+  btnText: '게임 시작',
+  onStart: initGame
+});
+updateHUD();

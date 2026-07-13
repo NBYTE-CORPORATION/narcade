@@ -2,24 +2,32 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>퀵 타이핑 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game7.css">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game7.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-  <div class="game-container">
-    <h1>⌨️ 퀵 타이핑</h1>
-    <p>아래 문장을 최대한 빠르게 입력하세요!</p>
-    <p id="targetText"></p>
-    <input type="text" id="userInput" placeholder="여기에 입력" />
-    <div class="button-group">
-      <button onclick="checkTyping()">확인</button>
-      <button class="btn-secondary" onclick="startGame()">다시 시작</button>
+  <div class="game-container qt-container">
+    <div class="qt-hud">
+      <div class="qt-stat" id="timeStat"><span class="qt-val" id="timeVal">60.0</span><span class="qt-lbl">남은 시간</span></div>
+      <div class="qt-stat"><span class="qt-val" id="cpmVal">0</span><span class="qt-lbl">타/분</span></div>
+      <div class="qt-stat"><span class="qt-val" id="accVal">100%</span><span class="qt-lbl">정확도</span></div>
+      <div class="qt-stat"><span class="qt-val" id="doneVal">0</span><span class="qt-lbl">완성 문장</span></div>
     </div>
-    <p id="result"></p>
+
+    <div class="qt-target" id="targetText" aria-live="polite"></div>
+
+    <input type="text" id="userInput" placeholder="시작하면 여기에 입력하세요"
+           autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" disabled>
+
+    <p class="qt-note" id="coarseNote" hidden>📱 물리 키보드 환경에서 플레이를 권장해요</p>
   </div>
-  <script src="../assets/js/game7.js"></script>
+
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game7.js?v=4"></script>
 </body>
 </html>

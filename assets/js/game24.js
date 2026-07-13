@@ -1,21 +1,23 @@
-/* ── game24.js — 핀볼 (v2 · 버그픽스 + 난이도 강화) ── */
+/* ── game24.js — 핀볼 (v3 · Arcade 통합) ── */
 'use strict';
+
+Arcade.init({ id: 'game24', title: '핀볼', emoji: '🎱', accent: 'pink' });
 
 const canvas   = document.getElementById('c');
 const ctx      = canvas.getContext('2d');
-const overlay  = document.getElementById('overlay');
-const ovTitle  = document.getElementById('ovTitle');
-const ovMsg    = document.getElementById('ovMsg');
-const startBtn = document.getElementById('startBtn');
 const scoreEl  = document.getElementById('scoreEl');
 const bestEl   = document.getElementById('bestEl');
 const ballsEl  = document.getElementById('ballsEl');
 const multEl   = document.getElementById('multEl');
-const bestInfo = document.getElementById('bestInfo');
+
+const ov = Arcade.overlay('#overlay');
 
 /* ── 캔버스 ── */
 const CW = 360, CH = 640;
 canvas.width = CW; canvas.height = CH;
+
+/* 세로로 긴 캔버스: 모바일에서도 전체가 보이도록 CSS 스케일 */
+const fit = Arcade.fitCanvas(canvas, { paddingV: 120 });
 
 /* ── 물리 상수 ── */
 const GRAVITY_BASE = 0.24;
@@ -92,15 +94,17 @@ let ball = { x: 0, y: 0, vx: 0, vy: 0, active: false };
 let flipState = { L: false, R: false };
 let flipAngle  = { L: FLIP.L.restAngle, R: FLIP.R.restAngle };
 
-/* ── localStorage ── */
-function loadBest() { const v = localStorage.getItem('pinball_best'); return v ? parseInt(v) : 0; }
-function saveBest(v) { localStorage.setItem('pinball_best', v); }
+/* ── 최고 기록 (pinball_best 레거시는 arcade.js가 자동 마이그레이션) ── */
+function loadBest() { return Arcade.best.score('game24') || 0; }
+
+let startBest = 0; // 판 시작 시점의 최고 기록 (신기록 판정용)
 
 /* ══════════════════════════════════
    초기화
 ══════════════════════════════════ */
 function initGame() {
   score = 0; best = loadBest();
+  startBest = best;
   balls = 3; multiplier = 1;
   gravity = GRAVITY_BASE;
   gameRunning = true;
@@ -114,7 +118,7 @@ function initGame() {
   flipState.L = false; flipState.R = false;
   updateHUD();
   spawnBall();
-  overlay.style.display = 'none';
+  ov.hide();
   if (!rafId) loop();
 }
 
@@ -144,12 +148,13 @@ function addScore(pts) {
   multDecayTimer = 0;   // 점수 획득 시 타이머 리셋
   const newMult = Math.min(6, 1 + Math.floor(score / 1800));
   if (newMult !== multiplier) {
+    if (newMult > multiplier) Arcade.audio.play('powerup');
     multiplier = newMult;
     spawnPopup(CW / 2, 280, '×' + multiplier + ' MULTI!');
   }
   // 점수 올라갈수록 중력 강해짐 (최대 0.58)
   gravity = Math.min(0.38, GRAVITY_BASE + score / 50000);
-  if (score > best) { best = score; saveBest(best); }
+  if (score > best) { best = score; Arcade.best.submit('game24', score); }
   updateHUD();
 }
 
@@ -158,19 +163,25 @@ function loseBall() {
   ball.active = false;
   balls--;
   updateHUD();
+  Arcade.audio.play('lose');
   if (balls <= 0) {
     gameRunning = false;
-    setTimeout(() => {
-      ovTitle.textContent = 'GAME OVER';
-      ovMsg.innerHTML = `최종 점수: <strong>${score.toLocaleString()}</strong><br>`
-        + (score >= best ? '<span style="color:#f59e0b">🏆 베스트 스코어!</span>'
-                         : `베스트: ${best.toLocaleString()}`);
-      bestInfo.textContent = best > 0 ? `최고 기록: ${best.toLocaleString()}` : '';
-      startBtn.textContent = '다시 시작';
-      overlay.style.display = 'flex';
+    Arcade.best.submit('game24', score);
+    Arcade.schedule(() => {
+      ov.show({
+        emoji: '🎱',
+        title: 'GAME OVER',
+        isRecord: score > startBest && score > 0,
+        stats: [
+          { label: '점수', value: score.toLocaleString() },
+          { label: '최고 기록', value: (Arcade.best.score('game24') || 0).toLocaleString() }
+        ],
+        btnText: '다시 시작',
+        onStart: initGame
+      });
     }, 500);
   } else {
-    setTimeout(spawnBall, 700);
+    Arcade.schedule(spawnBall, 700);
   }
 }
 
@@ -391,6 +402,8 @@ function bumperCollisions() {
     ball.vy = ny * spd;
 
     addScore(b.pts);
+    /* 범퍼 팝: 멀티플라이어가 오를수록 음이 높아진다 */
+    Arcade.audio.tone(440 + multiplier * 90, 50, { type: 'sine', gain: 0.1, endFreq: 900 + multiplier * 120 });
     bumperFlash[i] = 10;
     spawnParticles(ball.x, ball.y, b.color, 12);
     spawnPopup(b.x, b.y - b.r - 12, '+' + (b.pts * multiplier), b.color);
@@ -403,6 +416,7 @@ function slingCollisions() {
     const hit = collideSeg(sl.x1, sl.y1, sl.x2, sl.y2, 1.15, 5);
     if (hit) {
       addScore(sl.pts);
+      Arcade.audio.play('hit');
       spawnParticles(ball.x, ball.y, '#f59e0b', 8);
       spawnPopup(ball.x, ball.y - 12, '+' + (sl.pts * multiplier));
     }
@@ -422,14 +436,16 @@ function targetCollisions() {
       t.hit = true;
       ball.vy = -Math.abs(ball.vy) * 0.85;
       addScore(t.pts);
+      Arcade.audio.play('coin');
       spawnParticles(t.x, t.y, t.color, 10);
       spawnPopup(t.x, t.y - 16, '+' + (t.pts * multiplier), t.color);
 
       if (targets.every(tt => tt.hit) && !targetsAllHit) {
         targetsAllHit = true;
         addScore(1500);
+        Arcade.audio.play('powerup');
         spawnPopup(CW / 2, CH / 2, 'BONUS +1500!');
-        setTimeout(() => { targets.forEach(tt => tt.hit = false); targetsAllHit = false; }, 1800);
+        Arcade.schedule(() => { targets.forEach(tt => tt.hit = false); targetsAllHit = false; }, 1800);
       }
     }
   }
@@ -709,6 +725,12 @@ let frameCount = 0;
 function loop() {
   if (!gameRunning) { rafId = null; return; }
 
+  /* 일시정지 중에는 물리/렌더 정지 (프레임 기반 물리라 델타 보정 불필요) */
+  if (Arcade.pause.active) {
+    rafId = requestAnimationFrame(loop);
+    return;
+  }
+
   frameCount++;
 
   /* 멀티플라이어 자동 감소 (10초 이상 점수 없으면) */
@@ -761,14 +783,22 @@ function releasePlunger() {
     ball.vx = 0;      // 곧장 위로 → 상단 곡선 벽에서 꺾여 메인 필드 진입
     plungerCharging = false;
     plungerCharge = 0;
+    Arcade.audio.play('whoosh');
   }
 }
 
+function setFlip(side, on) {
+  if (flipState[side] === on) return;
+  flipState[side] = on;
+  if (on && gameRunning && !Arcade.pause.active) Arcade.audio.play('click');
+}
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'z' || e.key === 'Z') flipState.L = true;
-  if (e.key === 'x' || e.key === 'X') flipState.R = true;
-  if (e.key === 'ArrowLeft')  { e.preventDefault(); flipState.L = true; }
-  if (e.key === 'ArrowRight') { e.preventDefault(); flipState.R = true; }
+  if (Arcade.pause.active) return;
+  if (e.key === 'z' || e.key === 'Z') setFlip('L', true);
+  if (e.key === 'x' || e.key === 'X') setFlip('R', true);
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); setFlip('L', true); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); setFlip('R', true); }
   if (e.key === 'ArrowDown' || e.key === ' ') {
     e.preventDefault();
     startPlunger();
@@ -776,57 +806,69 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keyup', e => {
-  if (e.key === 'z' || e.key === 'Z') flipState.L = false;
-  if (e.key === 'x' || e.key === 'X') flipState.R = false;
-  if (e.key === 'ArrowLeft')  flipState.L = false;
-  if (e.key === 'ArrowRight') flipState.R = false;
+  if (e.key === 'z' || e.key === 'Z') setFlip('L', false);
+  if (e.key === 'x' || e.key === 'X') setFlip('R', false);
+  if (e.key === 'ArrowLeft')  setFlip('L', false);
+  if (e.key === 'ArrowRight') setFlip('R', false);
   if (e.key === 'ArrowDown' || e.key === ' ') {
     e.preventDefault();
     releasePlunger();
   }
 });
 
-/* 모바일 터치 */
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const scaleY = CH / rect.height;
-  for (const t of e.changedTouches) {
-    const tx = (t.clientX - rect.left) * (CW / rect.width);
-    const ty = (t.clientY - rect.top)  * scaleY;
-    if (ty > CH * 0.55) {
-      if (tx < CW / 2) flipState.L = true;
-      else              flipState.R = true;
-    } else if (ty > CH * 0.7 && ball.active && !plungerCharging && ball.y > CH - 130) {
-      plungerCharging = true;
-    }
-  }
-}, { passive: false });
+/* ── 터치/포인터: 좌우 절반 = 플리퍼, 발사 레인·대기 상태 = 플런저 홀드 ── */
+const pointerZones = {}; // pointerId → 'L' | 'R' | 'P'
 
-canvas.addEventListener('touchend', e => {
+canvas.addEventListener('pointerdown', e => {
   e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  for (const t of e.changedTouches) {
-    const tx = (t.clientX - rect.left) * (CW / rect.width);
-    if (tx < CW / 2) flipState.L = false;
-    else              flipState.R = false;
+  if (!gameRunning || Arcade.pause.active) return;
+  const p = fit.toCanvasXY(e);
+  let zone;
+  if (waitingToLaunch || plungerCharging ||
+      (p.x > LANE_W - 14 && ball.active && ball.x > LANE_W - BALL_R)) {
+    zone = 'P';
+    startPlunger();
+  } else if (p.x < CW / 2) {
+    zone = 'L';
+    setFlip('L', true);
+  } else {
+    zone = 'R';
+    setFlip('R', true);
   }
-  if (plungerCharging) {
-    ball.vy = -(plungerCharge * 13 + 5);
-    ball.vx = 0;
-    plungerCharging = false;
-    plungerCharge = 0;
-  }
-}, { passive: false });
+  pointerZones[e.pointerId] = zone;
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+});
+
+function pointerEnd(e) {
+  const zone = pointerZones[e.pointerId];
+  if (!zone) return;
+  delete pointerZones[e.pointerId];
+  if (zone === 'P') releasePlunger();
+  else setFlip(zone, false);
+}
+canvas.addEventListener('pointerup', pointerEnd);
+canvas.addEventListener('pointercancel', pointerEnd);
+
+/* ── 일시정지 연동 (Esc / 탭 전환) ── */
+Arcade.pause.register({
+  isActive: () => gameRunning && !ov.el.classList.contains('show'),
+  onPause: () => { setFlip('L', false); setFlip('R', false); }
+});
 
 /* ── 시작 ── */
-startBtn.addEventListener('click', initGame);
-
 best = loadBest();
 bestEl.textContent  = best.toLocaleString();
-bestInfo.textContent = best > 0 ? `최고 기록: ${best.toLocaleString()}` : '';
 scoreEl.textContent = '0';
 multEl.textContent  = '×1';
 
 ctx.clearRect(0, 0, CW, CH);
 drawBackground(); drawWalls(); drawBumpers(); drawTargets(); drawGuidePins();
+
+ov.show({
+  emoji: '🎱',
+  title: '핀볼',
+  msg: 'Space를 누르고 있다가 놓으면 발사!\nZ · X (또는 ← →) 로 플리퍼 조작\n모바일: 화면 좌/우 터치로 플리퍼, 발사 레인을 길게 눌러 발사',
+  stats: best > 0 ? [{ label: '최고 기록', value: best.toLocaleString() }] : null,
+  btnText: '게임 시작',
+  onStart: initGame
+});

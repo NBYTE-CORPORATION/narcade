@@ -1,7 +1,10 @@
 /* game4.js — 3D 주사위 게임 */
 
+Arcade.init({ id: 'game4', title: '주사위 게임', emoji: '🎲', accent: 'amber' });
+
 // ── 상태 ──
 let scorePlayer = 0, scoreCpu = 0, rolling = false;
+let streak = 0;
 
 // ── DOM ──
 const cubePlayer  = document.getElementById('cubePlayer');
@@ -13,6 +16,14 @@ const scoreC      = document.getElementById('scoreCpu');
 const resultBadge = document.getElementById('resultBadge');
 const roundText   = document.getElementById('roundText');
 const rollBtn     = document.getElementById('rollBtn');
+const streakCur   = document.getElementById('streakCur');
+const streakBest  = document.getElementById('streakBest');
+
+// ── 연승 표시 ──
+function renderStreak() {
+  streakCur.textContent  = streak;
+  streakBest.textContent = Arcade.best.score('game4') || 0;
+}
 
 // ── 각 면의 점 배치 (3×3 그리드, 1~9 위치) ──
 // 1=상좌, 2=상중, 3=상우, 4=중좌, 5=중중, 6=중우, 7=하좌, 8=하중, 9=하우
@@ -98,6 +109,7 @@ async function rollDice() {
   rolling = true;
   rollBtn.disabled = true;
 
+  Arcade.audio.play('whoosh');
   resultBadge.textContent = '';
   resultBadge.className   = 'result-badge';
   numPlayer.textContent   = '?';
@@ -122,22 +134,30 @@ async function rollDice() {
     // 점수 팝 애니메이션
     scoreP.style.transform = 'scale(1.4)';
     setTimeout(() => scoreP.style.transform = '', 250);
-    resultBadge.textContent = '🎉 승리!';
+    streak++;
+    const { isRecord } = Arcade.best.submit('game4', streak);
+    Arcade.audio.play('coin');
+    resultBadge.textContent = streak >= 2 ? `🎉 승리! 🔥 ${streak}연승` : '🎉 승리!';
     resultBadge.className   = 'result-badge win';
-    roundText.textContent   = `${pVal} vs ${cVal} — 당신이 이겼습니다!`;
+    roundText.textContent   = `${pVal} vs ${cVal} — 당신이 이겼습니다!` + (isRecord && streak >= 2 ? ' 🏆 신기록!' : '');
+    if (isRecord && streak >= 3) Arcade.Particles.domBurst(resultBadge, { count: 16 });
   } else if (pVal < cVal) {
     scoreCpu++;
     scoreC.textContent = scoreCpu;
     scoreC.style.transform = 'scale(1.4)';
     setTimeout(() => scoreC.style.transform = '', 250);
+    streak = 0;
+    Arcade.audio.play('hit');
     resultBadge.textContent = '😢 패배';
     resultBadge.className   = 'result-badge lose';
     roundText.textContent   = `${pVal} vs ${cVal} — CPU가 이겼습니다`;
   } else {
+    Arcade.audio.play('pop');
     resultBadge.textContent = '🤝 무승부';
     resultBadge.className   = 'result-badge draw';
     roundText.textContent   = `${pVal} vs ${cVal} — 무승부!`;
   }
+  renderStreak();
 
   rolling = false;
   rollBtn.disabled = false;
@@ -145,7 +165,10 @@ async function rollDice() {
 
 function resetGame() {
   if (rolling) return;
+  Arcade.audio.play('click');
   scorePlayer = 0; scoreCpu = 0;
+  streak = 0;
+  renderStreak();
   scoreP.textContent = '0'; scoreC.textContent = '0';
   numPlayer.textContent = '—'; numCpu.textContent = '—';
   resultBadge.textContent = '';
@@ -163,3 +186,4 @@ document.getElementById('resetBtn').addEventListener('click', resetGame);
 
 // ── 시작 ──
 initDice();
+renderStreak();

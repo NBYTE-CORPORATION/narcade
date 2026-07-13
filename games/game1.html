@@ -2,23 +2,37 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>숫자 맞추기 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game1.css">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game1.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
   <div class="game-container">
-    <h1>🎯 숫자 맞추기</h1>
-    <p>1부터 100 사이의 숫자를 맞춰보세요!</p>
-    <input type="number" id="guess" placeholder="숫자를 입력하세요">
-    <div class="button-group">
-      <button onclick="checkGuess()">확인</button>
-      <button class="btn-secondary" onclick="resetGame()">다시 시작</button>
+    <p class="game-desc">1부터 100 사이의 숫자를 <strong>8번</strong> 안에 맞춰보세요!</p>
+
+    <div class="tries-row" id="tries" aria-label="남은 기회"></div>
+
+    <div class="guess-display empty" id="display" aria-live="polite">?</div>
+
+    <div class="temp-wrap">
+      <div class="temp-gauge">
+        <div class="temp-cover" id="tempCover"></div>
+        <div class="temp-needle" id="tempNeedle"></div>
+      </div>
+      <div class="temp-labels"><span>❄️ 차가움</span><span>뜨거움 🔥</span></div>
     </div>
-    <p id="result"></p>
+
+    <p class="hint-text" id="hint">숫자를 입력하고 확인을 눌러요</p>
+
+    <div class="history" id="history" aria-live="polite"></div>
+
+    <div class="keypad" id="keypad" aria-label="숫자 키패드"></div>
   </div>
-  <script src="../assets/js/game1.js"></script>
+
+  <div class="overlay" id="overlay"></div>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game1.js?v=4"></script>
 </body>
 </html>

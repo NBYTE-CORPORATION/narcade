@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>엔드리스 러너 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game20.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game20.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="runner-wrap">
     <div class="runner-hud">
       <div class="hud-item">
@@ -28,18 +27,13 @@
 
     <div class="canvas-wrap">
       <canvas id="c" width="520" height="300"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="ov-inner">
-          <div class="ov-emoji">🏃</div>
-          <h2 id="ovTitle">엔드리스 러너</h2>
-          <p id="ovMsg">스페이스바 또는 화면 탭으로 점프!<br>더블 점프 가능 · 장애물을 피하세요</p>
-          <button id="startBtn">시작하기</button>
-        </div>
-      </div>
     </div>
     <div class="jump-hint">SPACE / TAP — 점프 &nbsp;|&nbsp; 더블 점프 가능</div>
   </div>
 
-  <script src="../assets/js/game20.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game20.js?v=4"></script>
 </body>
 </html>

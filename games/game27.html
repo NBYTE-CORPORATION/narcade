@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>메탈 슬러그 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game27.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game27.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="ms-wrap">
+    <div class="rotate-hint" id="rotateHint">
+      <span>가로 모드 권장 📱↔️</span>
+      <button type="button" id="rotateHintClose" aria-label="닫기">✕</button>
+    </div>
+
     <div class="ms-hud">
       <div class="hud-item">
         <span class="hud-val" id="scoreEl">0</span>
@@ -21,8 +25,8 @@
         <span class="hud-lbl">LIVES</span>
       </div>
       <div class="hud-item">
-        <span class="hud-val" id="ammoEl">∞</span>
-        <span class="hud-lbl">AMMO</span>
+        <span class="hud-val" id="bestEl">0</span>
+        <span class="hud-lbl">BEST</span>
       </div>
       <div class="hud-item">
         <span class="hud-val" id="waveEl">1</span>
@@ -32,21 +36,16 @@
 
     <div class="canvas-wrap">
       <canvas id="c"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="ov-inner">
-          <div class="ov-emoji">🪖</div>
-          <h2 id="ovTitle">메탈 슬러그</h2>
-          <p id="ovMsg">← → 이동 &nbsp;|&nbsp; Z·Space 점프<br>X·↑ 사격 &nbsp;|&nbsp; C 수류탄<br>적을 처치하고 살아남아라!</p>
-          <button id="startBtn">게임 시작</button>
-        </div>
-      </div>
     </div>
 
     <div class="ms-controls">
-      <kbd>← →</kbd> 이동 &nbsp; <kbd>Z</kbd> 점프 &nbsp; <kbd>X</kbd> 사격 &nbsp; <kbd>C</kbd> 수류탄
+      <kbd>← →</kbd> 이동 &nbsp; <kbd>Z</kbd>·<kbd>Space</kbd> 점프 &nbsp; <kbd>X</kbd>·<kbd>↑</kbd> 사격 &nbsp; <kbd>C</kbd> 수류탄
     </div>
   </div>
 
-  <script src="../assets/js/game27.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game27.js?v=4"></script>
 </body>
 </html>

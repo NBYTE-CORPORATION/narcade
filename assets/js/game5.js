@@ -1,7 +1,10 @@
 /* game5.js — 동전 던지기 (짝수/홀수) */
 
+Arcade.init({ id: 'game5', title: '짝수/홀수', emoji: '🪙', accent: 'amber' });
+
 // ── 상태 ──
 let wins = 0, losses = 0, total = 0;
+let streak = 0;
 let flipping = false;
 
 // ── DOM ──
@@ -14,6 +17,8 @@ const btnOdd     = document.getElementById('btnOdd');
 const statWin    = document.getElementById('statWin');
 const statLose   = document.getElementById('statLose');
 const statTotal  = document.getElementById('statTotal');
+const streakCur  = document.getElementById('streakCur');
+const streakBest = document.getElementById('streakBest');
 
 // ── UI 헬퍼 ──
 function setButtons(enabled) {
@@ -21,11 +26,17 @@ function setButtons(enabled) {
   btnOdd.disabled  = !enabled;
 }
 
+function renderStreak() {
+  streakCur.textContent  = streak;
+  streakBest.textContent = Arcade.best.score('game5') || 0;
+}
+
 // ── 동전 던지기 ──
 function flipCoin(choice) {
   if (flipping) return;
   flipping = true;
   setButtons(false);
+  Arcade.audio.play('whoosh');
 
   // 유휴 애니메이션 중지
   coin.classList.remove('idle');
@@ -84,14 +95,23 @@ function flipCoin(choice) {
     if (correct) {
       wins++;
       statWin.textContent = wins;
-      resultZone.textContent = `🎉 정답! ${num}은(는) ${label}`;
+      streak++;
+      const { isRecord } = Arcade.best.submit('game5', streak);
+      Arcade.audio.play('coin');
+      resultZone.textContent = `🎉 정답! ${num}은(는) ${label}` +
+        (streak >= 2 ? ` · 🔥 ${streak}연승` : '') +
+        (isRecord && streak >= 2 ? ' 🏆 신기록!' : '');
       resultZone.className   = 'result-zone correct';
+      if (isRecord && streak >= 3) Arcade.Particles.domBurst(resultZone, { count: 16 });
     } else {
       losses++;
       statLose.textContent = losses;
+      streak = 0;
+      Arcade.audio.play('hit');
       resultZone.textContent = `😢 틀렸어요! ${num}은(는) ${label}`;
       resultZone.className   = 'result-zone wrong';
     }
+    renderStreak();
 
     flipping = false;
     replayBtn.style.display = 'inline-block';
@@ -100,6 +120,7 @@ function flipCoin(choice) {
 
 // ── 다시 던지기 ──
 function replay() {
+  Arcade.audio.play('click');
   // 모든 Web Animation 취소 후 초기 상태 복원
   coin.getAnimations().forEach(a => a.cancel());
   shadow.getAnimations().forEach(a => a.cancel());
@@ -126,3 +147,4 @@ replayBtn.addEventListener('click', replay);
 // ── 초기 상태 ──
 coin.classList.add('idle');
 setButtons(true);
+renderStreak();

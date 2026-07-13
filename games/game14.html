@@ -2,14 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>테트리스 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game14.css">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game14.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="tetris-wrapper">
     <!-- Left Panel -->
     <div class="side-panel left-panel">
@@ -34,14 +33,6 @@
     <!-- Canvas -->
     <div class="canvas-wrap">
       <canvas id="tetrisCanvas" width="300" height="600"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="overlay-inner">
-          <div class="overlay-emoji">🧱</div>
-          <h2 id="overlayTitle">테트리스</h2>
-          <p id="overlayMsg">방향키로 이동<br>↑ 또는 X 로 회전<br>스페이스바로 즉시 낙하</p>
-          <button id="startBtn" class="start-btn">시작하기</button>
-        </div>
-      </div>
     </div>
 
     <!-- Right Panel -->
@@ -55,10 +46,13 @@
         <div class="hint-row"><kbd>↑</kbd> 회전</div>
         <div class="hint-row"><kbd>↓</kbd> 빠르게</div>
         <div class="hint-row"><kbd>Space</kbd> 낙하</div>
+        <div class="hint-row"><kbd>Esc</kbd> 일시정지</div>
       </div>
     </div>
   </div>
 
-  <script src="../assets/js/game14.js"></script>
+  <div class="overlay" id="overlay"></div>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game14.js?v=4"></script>
 </body>
 </html>

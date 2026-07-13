@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>과일 박스 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game28.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game28.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="fruit-wrapper">
     <div class="hud">
       <div class="hud-item">
-        <span class="hud-lbl">제거</span>
+        <span class="hud-lbl">점수</span>
         <span class="hud-val" id="score">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-lbl">콤보</span>
+        <span class="hud-val combo-val" id="combo">-</span>
       </div>
       <div class="hud-item">
         <span class="hud-lbl">남은 시간</span>
@@ -26,26 +29,19 @@
       </div>
     </div>
 
-    <div class="board-container">
+    <div class="time-bar"><div class="time-fill" id="timeFill"></div></div>
+
+    <div class="board-container" id="boardContainer">
       <div class="board" id="board"></div>
-      <div class="selection-box" id="selBox"></div>
-      <div class="overlay" id="overlay">
-        <div class="overlay-inner">
-          <div class="overlay-emoji">🍎</div>
-          <h2 id="overlayTitle">과일 박스</h2>
-          <p id="overlayMsg">드래그로 사과를 감싸세요!<br>숫자 합이 <strong>10</strong>이면 제거됩니다.</p>
-          <div class="mode-select" id="modeSelect">
-            <button class="mode-btn active" data-mode="horizontal">가로 (17x10)</button>
-            <button class="mode-btn" data-mode="vertical">세로 (10x17)</button>
-          </div>
-          <button id="startBtn" class="start-btn">시작하기</button>
-        </div>
-      </div>
+      <div class="selection-box" id="selBox"><span class="sel-sum" id="selSum">0</span></div>
     </div>
 
     <div class="sum-indicator" id="sumIndicator">합: 0</div>
   </div>
 
-  <script src="../assets/js/game28.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game28.js?v=4"></script>
 </body>
 </html>

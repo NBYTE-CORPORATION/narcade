@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>오목 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game23.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game23.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="gomoku-wrap">
     <div class="gomoku-hud">
       <div class="hud-item">
@@ -26,25 +25,26 @@
         <span class="hud-val" id="moveEl">0</span>
         <span class="hud-lbl">수</span>
       </div>
+      <div class="hud-item">
+        <span class="hud-val hud-wins" id="winsEl">0</span>
+        <span class="hud-lbl">전적(승)</span>
+      </div>
     </div>
 
     <div class="canvas-wrap">
       <canvas id="c"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="ov-inner">
-          <div class="ov-emoji">♟️</div>
-          <h2 id="ovTitle">오목</h2>
-          <p id="ovMsg">돌을 놓아 5개를 연속으로 이어라!<br>AI와 대결 · 먼저 가려면 클릭</p>
-          <div class="color-pick">
-            <button class="pick-btn active" data-stone="black">⚫ 흑 (선공)</button>
-            <button class="pick-btn" data-stone="white">⚪ 백 (후공)</button>
-          </div>
-          <button id="startBtn">대국 시작</button>
-        </div>
-      </div>
     </div>
+
+    <div class="gomoku-controls">
+      <button type="button" id="undoBtn" class="btn-secondary" disabled>↩ 무르기</button>
+      <button type="button" id="newBtn" class="btn-secondary">새 대국</button>
+    </div>
+    <p class="touch-hint" id="touchHint">첫 탭으로 자리 확인, 같은 자리를 한 번 더 탭하면 착수!</p>
   </div>
 
-  <script src="../assets/js/game23.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game23.js?v=4"></script>
 </body>
 </html>

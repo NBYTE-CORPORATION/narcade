@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>벽돌 깨기 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game15.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game15.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="breakout-wrapper">
     <div class="hud">
       <div class="hud-item">
@@ -32,17 +31,12 @@
 
     <div class="canvas-wrap">
       <canvas id="breakoutCanvas" width="480" height="520"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="overlay-inner">
-          <div class="overlay-emoji">🧱</div>
-          <h2 id="overlayTitle">벽돌 깨기</h2>
-          <p id="overlayMsg">마우스 / 터치로 패들을 움직여<br>모든 벽돌을 부수세요!</p>
-          <button id="startBtn" class="start-btn">시작하기</button>
-        </div>
-      </div>
     </div>
   </div>
 
-  <script src="../assets/js/game15.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game15.js?v=4"></script>
 </body>
 </html>

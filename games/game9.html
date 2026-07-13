@@ -2,23 +2,47 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>색상 기억 게임 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game9.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>사이먼 — 색상 기억 — 나케이드</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game9.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-  <div class="game-container">
-    <h1>🎨 색상 기억 게임</h1>
-    <p>순서를 기억하세요!</p>
-    <div id="colorSequence"></div>
-    <div id="colorOptions"></div>
-    <div class="button-group">
-      <button onclick="startGame()">다시 시작</button>
+  <main class="game-shell" id="shell">
+    <div class="stat-row hud">
+      <div class="stat-item">
+        <span class="stat-val" id="round">0</span>
+        <span class="stat-lbl">라운드</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val" id="best">0</span>
+        <span class="stat-lbl">최고 라운드</span>
+      </div>
     </div>
-    <p id="result"></p>
-  </div>
-  <script src="../assets/js/game9.js"></script>
+
+    <p class="status" id="status">준비되면 시작을 눌러 주세요</p>
+
+    <div class="pad-grid" id="padGrid">
+      <button type="button" class="pad pad-cyan" data-pad="0" aria-label="하늘색 패드">
+        <span class="key-hint">Q</span>
+      </button>
+      <button type="button" class="pad pad-pink" data-pad="1" aria-label="분홍색 패드">
+        <span class="key-hint">W</span>
+      </button>
+      <button type="button" class="pad pad-amber" data-pad="2" aria-label="주황색 패드">
+        <span class="key-hint">A</span>
+      </button>
+      <button type="button" class="pad pad-purple" data-pad="3" aria-label="보라색 패드">
+        <span class="key-hint">S</span>
+      </button>
+    </div>
+
+    <p class="key-guide">키보드 Q · W · A · S 로도 누를 수 있어요</p>
+  </main>
+
+  <div class="overlay" id="overlay"></div>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game9.js?v=4"></script>
 </body>
 </html>

@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>클릭 게임 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game2.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game2.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="game-container">
     <h1>🖱️ 클릭 게임</h1>
     <p>10초 안에 최대한 많이 클릭하세요!</p>
@@ -23,6 +22,10 @@
         <span class="click-stat-val" id="timer">10</span>
         <span class="click-stat-lbl">초</span>
       </div>
+      <div class="click-stat">
+        <span class="click-stat-val" id="best">-</span>
+        <span class="click-stat-lbl">최고</span>
+      </div>
     </div>
 
     <div class="click-area">
@@ -30,11 +33,10 @@
     </div>
 
     <p id="finalMsg" class="final-msg"></p>
-    <button id="retryBtn" style="display:none" class="btn-secondary retry-btn">
-      다시 하기
-    </button>
   </div>
 
-  <script src="../assets/js/game2.js"></script>
+  <div class="overlay" id="overlay"></div>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game2.js?v=4"></script>
 </body>
 </html>

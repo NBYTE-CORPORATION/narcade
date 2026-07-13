@@ -1,12 +1,14 @@
-/* ── game18.css — 리듬 탭 ── */
+/* ── game18.css — 리듬 탭 (비트 싱크 리워크) ── */
 
 body {
-  padding: 60px 10px 20px;
+  padding: 74px 12px 24px;
+  padding-top: calc(74px + env(safe-area-inset-top, 0px));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .rhythm-wrap {
@@ -14,6 +16,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  max-width: 400px;
 }
 
 /* ── HUD ── */
@@ -21,12 +25,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 400px;
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 12px 24px;
+  padding: 10px 22px;
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .hud-item {
@@ -49,10 +54,33 @@ body {
 
 .hud-timer {
   font-size: 2rem;
-  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent);
+}
+
+/* 콤보 글로우 단계 (10/20/30+) */
+.hud-combo {
+  transition: text-shadow 0.25s, color 0.25s;
+}
+
+.hud-combo.glow1 {
+  color: var(--accent-light);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.hud-combo.glow2 {
+  color: var(--accent-light);
+  text-shadow: 0 0 14px var(--accent), 0 0 30px var(--accent-glow);
+}
+
+.hud-combo.glow3 {
+  color: #fff;
+  text-shadow: 0 0 10px #fff, 0 0 22px var(--accent), 0 0 44px var(--accent);
+  animation: comboPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes comboPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
 }
 
 .hud-lbl {
@@ -67,73 +95,24 @@ body {
 /* ── Canvas ── */
 .canvas-wrap {
   position: relative;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 20px 60px rgba(0, 0, 0, 0.6),
-    0 0 50px rgba(124, 58, 237, 0.15);
+  line-height: 0;
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 canvas {
   display: block;
+  touch-action: none;
 }
 
-/* ── Overlay ── */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(7, 7, 15, 0.92);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-}
-
-.ov-inner {
-  text-align: center;
-  padding: 28px 24px;
-}
-
-.ov-emoji {
-  font-size: 54px;
-  margin-bottom: 14px;
-  animation: float 3s ease-in-out infinite;
-  display: block;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
-}
-
-.ov-inner h2 {
-  font-size: 26px;
-  font-weight: 900;
-  margin: 0 0 10px;
-  background: linear-gradient(135deg, #a78bfa, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.ov-inner p {
-  color: var(--text-dim);
-  font-size: 14px;
-  line-height: 1.8;
-  margin: 0 0 18px;
-}
-
-.ov-inner strong {
-  color: var(--primary-light);
-}
-
+/* ── 시작/종료 오버레이 내부 요소 ── */
 .key-guide {
   display: flex;
   gap: 10px;
   justify-content: center;
-  margin-bottom: 20px;
+  margin: 4px 0 16px;
 }
 
 .key-chip {
@@ -145,31 +124,105 @@ canvas {
   border-radius: 10px;
   font-size: 15px;
   font-weight: 800;
-  letter-spacing: 0;
 }
 
-.key-chip[data-color="cyan"]   { background: rgba(6,182,212,0.2);  border: 1px solid rgba(6,182,212,0.5);  color: #06b6d4; }
+.key-chip[data-color="cyan"]   { background: rgba(6,182,212,0.2);  border: 1px solid rgba(6,182,212,0.5);  color: #67e8f9; }
 .key-chip[data-color="purple"] { background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.5); color: #a78bfa; }
-.key-chip[data-color="pink"]   { background: rgba(236,72,153,0.2); border: 1px solid rgba(236,72,153,0.5); color: #ec4899; }
-.key-chip[data-color="amber"]  { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.5); color: #f59e0b; }
+.key-chip[data-color="pink"]   { background: rgba(236,72,153,0.2); border: 1px solid rgba(236,72,153,0.5); color: #f9a8d4; }
+.key-chip[data-color="amber"]  { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.5); color: #fcd34d; }
 
 .best-info {
-  margin-top: 14px;
+  margin-bottom: 16px;
   font-size: 13px;
   color: var(--text-muted);
-  min-height: 18px;
+}
+
+/* ══════════ 하단 4레인 터치존 (모바일) ══════════ */
+.touch-zones {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 25vh;
+  height: 25dvh;
+  display: none;
+  z-index: 250;
+  background: rgba(7, 7, 15, 0.55);
+  border-top: 1px solid var(--border-strong);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.touch-zone {
+  flex: 1 1 0;
+  height: 100%;
+  border-radius: 0;
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: linear-gradient(to top, color-mix(in srgb, var(--zone-color, #ec4899) 18%, transparent), transparent 70%);
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--zone-color, #ec4899);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-zone:first-child {
+  border-left: none;
+}
+
+.touch-zone:hover,
+.touch-zone:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.touch-zone.pressed {
+  background: linear-gradient(to top, color-mix(in srgb, var(--zone-color, #ec4899) 45%, transparent), color-mix(in srgb, var(--zone-color, #ec4899) 10%, transparent));
+  color: #fff;
+  text-shadow: 0 0 14px var(--zone-color, #ec4899);
+}
+
+@supports not (background: color-mix(in srgb, red, blue)) {
+  .touch-zone { background: rgba(236, 72, 153, 0.12); }
+  .touch-zone.pressed { background: rgba(236, 72, 153, 0.38); }
+}
+
+/* 터치 기기에서만 터치존 표시 + 겹침 방지 여백 */
+@media (pointer: coarse) {
+  .touch-zones {
+    display: flex;
+  }
+
+  body {
+    padding-bottom: calc(25vh + 16px);
+    padding-bottom: calc(25dvh + 16px);
+  }
 }
 
 /* ── Responsive ── */
 @media (max-width: 440px) {
-  .rhythm-hud {
-    width: 100%;
-    max-width: 400px;
+  body {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
-  canvas {
-    width: 100%;
-    height: auto;
-    max-width: 400px;
+  .rhythm-hud {
+    padding: 8px 16px;
+  }
+
+  .hud-val {
+    font-size: 1.3rem;
+  }
+
+  .hud-timer {
+    font-size: 1.7rem;
   }
 }

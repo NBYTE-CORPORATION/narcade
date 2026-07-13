@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>핀볼 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game24.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game24.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="pb-wrap">
 
     <!-- 사이드 HUD -->
@@ -44,19 +43,13 @@
     <!-- 캔버스 -->
     <div class="canvas-wrap">
       <canvas id="c"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="ov-inner">
-          <div class="ov-emoji">🎱</div>
-          <h2 id="ovTitle">핀볼</h2>
-          <p id="ovMsg">Space 누르고 있다가 놓으면 발사!<br>Z · X (또는 ← →) 로 플리퍼 조작<br>모바일: 좌/우 탭으로 플리퍼</p>
-          <button id="startBtn">게임 시작</button>
-          <div class="pb-best-info" id="bestInfo"></div>
-        </div>
-      </div>
     </div>
 
   </div>
 
-  <script src="../assets/js/game24.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game24.js?v=4"></script>
 </body>
 </html>

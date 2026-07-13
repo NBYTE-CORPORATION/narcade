@@ -1,30 +1,171 @@
-body {
-  overflow: hidden; /* 세로 스크롤 방지 */
+/* ============================================================
+   game7 — 퀵 타이핑 (60초 타임어택)
+   game-base.css v3 토큰 위에 얹는 게임 전용 스타일
+   ============================================================ */
+
+.qt-container {
+  max-width: 560px;
+}
+
+/* ── 상단 HUD ── */
+.qt-hud {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.qt-stat {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 4px;
+}
+
+.qt-val {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--accent-light);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.qt-lbl {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-top: 3px;
+}
+
+.qt-stat.urgent {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
+}
+
+.qt-stat.urgent .qt-val {
+  color: var(--red);
+  animation: qtUrgent 1s ease-in-out infinite;
+}
+
+@keyframes qtUrgent {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
+/* ── 목표 문장 ── */
+.qt-target {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 16px;
+  min-height: 92px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #1e1e1e;
-  color: white;
-  font-family: sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.9;
+  white-space: pre-wrap;
   text-align: center;
-  padding: 20px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input {
-  width: 80%;
-  padding: 10px;
-  font-size: 16px;
-  margin: 10px 0;
+.qt-target:empty::before {
+  content: '시작하면 문장이 나타나요';
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-.button-group {
-  display: flex;
-  gap: 10px;
+.qt-target.overflow {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
+.qt-char {
+  border-bottom: 2px solid transparent;
+  border-radius: 3px;
+  transition: color 0.08s;
+}
+
+.qt-char.ok {
+  color: var(--green);
+}
+
+.qt-char.bad {
+  color: var(--red);
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.qt-char.cur {
+  animation: qtCaret 1s steps(1) infinite;
+}
+
+.qt-char.compose {
+  color: var(--text);
+  border-bottom: 2px dashed var(--accent-light);
+}
+
+@keyframes qtCaret {
+  0%, 100% { border-bottom-color: var(--accent-light); }
+  50%      { border-bottom-color: transparent; }
+}
+
+/* ── 입력 필드 (iOS 확대 방지: 16px 이상) ── */
+#userInput {
+  max-width: 100%;
+  font-size: 17px;
+  text-align: left;
+  padding: 14px 18px;
+}
+
+#userInput:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── 안내 문구 ── */
+.qt-note {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── 오버레이 내 언어 선택 (diff-pills 래퍼) ── */
+.qt-lang {
+  margin-bottom: 4px;
+}
+
+/* ── 375px 대응 ── */
+@media (max-width: 420px) {
+  .qt-hud {
+    gap: 6px;
+  }
+
+  .qt-stat {
+    padding: 8px 2px;
+    border-radius: 12px;
+  }
+
+  .qt-val {
+    font-size: 1.05rem;
+  }
+
+  .qt-lbl {
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
+  }
+
+  .qt-target {
+    font-size: 1.1rem;
+    padding: 14px 12px;
+    min-height: 84px;
+  }
 }

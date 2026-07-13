@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>짝수/홀수 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game5.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game5.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="coin-layout">
 
     <!-- 타이틀 & 스탯 -->
@@ -30,6 +29,10 @@
           <span class="stat-num" id="statLose">0</span>
           <span class="stat-lbl">패</span>
         </div>
+      </div>
+      <div class="streak-row">
+        <span class="streak-item">🔥 연승 <b id="streakCur">0</b></span>
+        <span class="streak-item">🏆 최고 <b id="streakBest">0</b></span>
       </div>
     </div>
 
@@ -81,6 +84,7 @@
 
   </div>
 
-  <script src="../assets/js/game5.js"></script>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game5.js?v=4"></script>
 </body>
 </html>

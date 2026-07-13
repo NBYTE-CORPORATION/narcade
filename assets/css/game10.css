@@ -1,23 +1,102 @@
-body {
-  overflow: hidden; /* 세로 스크롤 방지 */
-  background: #222;
-  color: white;
-  font-family: sans-serif;
-  text-align: center;
-  padding: 20px;
+/* ============================================
+   game10 — 숫자 순서 클릭
+   game-base.css v3 토큰 기반 (accent: cyan)
+   ============================================ */
+
+.game-container {
+  max-width: 420px;
+  padding: 28px 24px 24px;
 }
 
-#grid {
+.stat-row.hud {
+  margin: 0 0 20px;
+  gap: 30px;
+}
+
+.stat-row.hud .stat-val {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+}
+
+#time { color: var(--text); }
+#best { color: var(--amber); }
+
+/* ── 3×3 숫자 그리드 ── */
+.num-grid {
   display: grid;
-  grid-template-columns: repeat(3, 80px);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  justify-content: center;
-  margin: 20px auto;
+  max-width: 300px;
+  margin: 0 auto;
+  touch-action: manipulation;
 }
 
-.grid-btn {
-  width: 80px;
-  height: 80px;
-  font-size: 24px;
-  cursor: pointer;
+.num-btn {
+  aspect-ratio: 1;
+  width: 100%;
+  padding: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  transition: transform 0.12s, background 0.12s, border-color 0.12s, opacity 0.2s;
+}
+
+.num-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: none;
+  filter: none;
+}
+
+.num-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* 정답 처리된 버튼 */
+.num-btn.done:disabled {
+  opacity: 1;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: numPop 0.22s ease;
+}
+
+@keyframes numPop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* 오답 순간 빨간 플래시 */
+.num-btn.miss {
+  color: #1e0505;
+  background: var(--red);
+  border-color: var(--red);
+  animation: missShake 0.3s ease;
+}
+
+@keyframes missShake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  50%      { transform: translateX(5px); }
+  75%      { transform: translateX(-3px); }
+}
+
+.hint {
+  margin-top: 16px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+/* ── 소형 화면 ── */
+@media (max-width: 480px) {
+  .stat-row.hud { gap: 20px; }
+  .stat-row.hud .stat-val { font-size: 1.3rem; }
+  .num-grid { gap: 8px; }
+  .num-btn { font-size: 1.4rem; border-radius: 12px; }
 }

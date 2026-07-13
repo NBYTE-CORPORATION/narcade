@@ -1,30 +1,317 @@
-body {
-  overflow: hidden; /* 세로 스크롤 방지 */
+/* ============================================
+   산수 스트릭 — game8 전용 스타일
+   game-base.css v3 토큰 기반 (accent: amber)
+   ============================================ */
+
+.game-container {
+  max-width: 420px;
+  padding: 24px 20px 20px;
+}
+
+/* ── HUD (목숨 / 점수 / 콤보) ── */
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.lives {
+  display: flex;
+  gap: 3px;
+  font-size: 1.05rem;
+  min-width: 72px;
+  justify-content: flex-start;
+}
+
+.lives .lost {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.hud-score {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #222;
-  color: white;
-  font-family: sans-serif;
-  text-align: center;
+  line-height: 1.1;
 }
 
-input {
-  padding: 10px;
-  font-size: 16px;
-  margin: 10px 0;
-  width: 150px;
+.hud-score-val {
+  font-size: 1.55rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
 }
 
-.button-group {
+.hud-score-val.bump {
+  animation: scoreBump 0.3s ease;
+}
+
+@keyframes scoreBump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.hud-score-lbl {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* ── 콤보 미터 (글로우 단계 상승) ── */
+.combo-meter {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  min-width: 72px;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
+.combo-mult {
+  font-size: 1.2rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.combo-mult.bump {
+  animation: comboBump 0.32s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+@keyframes comboBump {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.4) rotate(-4deg); }
+  100% { transform: scale(1); }
+}
+
+.combo-meter[data-glow="1"] .combo-mult {
+  color: var(--text);
+}
+
+.combo-meter[data-glow="2"] .combo-mult {
+  color: var(--accent);
+}
+
+.combo-meter[data-glow="3"] .combo-mult {
+  color: var(--accent-light);
+}
+
+.combo-meter[data-glow="4"] .combo-mult {
+  color: var(--accent-light);
+  animation: comboBlaze 0.7s ease-in-out infinite;
+}
+
+@keyframes comboBlaze {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
+.combo-pips {
+  display: flex;
+  gap: 4px;
+}
+
+.combo-pips i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  transition: background 0.2s;
+}
+
+.combo-pips i.on {
+  background: var(--accent);
+}
+
+.combo-lbl {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* ── 레벨 태그 ── */
+.level-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid var(--border);
+  padding: 3px 12px;
+  border-radius: 999px;
+  margin: 4px 0 2px;
+}
+
+/* ── 문제 표시 ── */
+.problem {
+  font-size: clamp(1.8rem, 8.5vw, 2.5rem);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  margin: 10px 0 16px;
+  min-height: 1.25em;
+  white-space: nowrap;
+}
+
+.problem.pop {
+  animation: probPop 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes probPop {
+  from { transform: scale(0.82); opacity: 0.2; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── 카운트다운 바 ── */
+.timebar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.timebar-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.timebar.low .timebar-fill {
+  background: var(--red);
+  animation: barBlink 0.45s steps(2, jump-none) infinite;
+}
+
+@keyframes barBlink {
+  0%   { opacity: 1; }
+  100% { opacity: 0.55; }
+}
+
+/* ── 4지선다 (2×2) ── */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice {
+  position: relative;
+  min-height: 60px;
+  padding: 8px 10px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.choice::before {
+  content: attr(data-key);
+  position: absolute;
+  top: 6px;
+  left: 9px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.choice:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.choice:disabled {
+  opacity: 0.45;
+}
+
+.choice.correct:disabled {
+  opacity: 1;
+  color: #03160e;
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.choice.wrong:disabled {
+  opacity: 1;
+  color: #1e0505;
+  background: var(--red);
+  border-color: var(--red);
+  animation: choiceShake 0.35s ease;
+}
+
+@keyframes choiceShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* 오답/시간초과 시 정답 공개 */
+.choice.reveal:disabled {
+  opacity: 1;
+  color: var(--green);
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+  animation: revealPulse 0.55s ease-in-out 2;
+}
+
+@keyframes revealPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+/* ── 목숨 잃을 때 컨테이너 플래시 ── */
+.game-container.hurt {
+  animation: hurtFlash 0.45s ease;
+}
+
+@keyframes hurtFlash {
+  0% {
+    border-color: var(--red);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--red);
+  }
+  100% {
+    border-color: var(--border);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* ── 키보드 힌트 ── */
+.key-hint {
+  margin-top: 14px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+@media (pointer: coarse) {
+  .key-hint { display: none; }
+  .choice::before { display: none; }
+}
+
+/* ── 소형 화면 (375px) ── */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 22px 16px 18px;
+  }
+
+  .hud-score-val { font-size: 1.4rem; }
+  .combo-mult { font-size: 1.1rem; }
+  .lives { font-size: 0.95rem; min-width: 62px; }
+  .combo-meter { min-width: 62px; }
+
+  .choice {
+    min-height: 56px;
+    font-size: 1.2rem;
+  }
 }

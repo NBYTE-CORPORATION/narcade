@@ -2,22 +2,36 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>숫자 순서 클릭 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game10.css">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game10.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
   <div class="game-container">
-    <h1>🔢 숫자 순서 클릭</h1>
-    <p>1부터 9까지 순서대로 클릭하세요!</p>
-    <div id="grid"></div>
-    <div class="button-group">
-      <button onclick="startGame()">다시 시작</button>
+    <div class="stat-row hud">
+      <div class="stat-item">
+        <span class="stat-val" id="nextNum">1</span>
+        <span class="stat-lbl">다음 숫자</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val" id="time">0.0초</span>
+        <span class="stat-lbl">시간</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val" id="best">—</span>
+        <span class="stat-lbl">최고 기록</span>
+      </div>
     </div>
-    <p id="result"></p>
+
+    <div id="grid" class="num-grid" aria-label="숫자 그리드"></div>
+
+    <p class="hint">1을 누르는 순간부터 시간이 측정돼요</p>
   </div>
-  <script src="../assets/js/game10.js"></script>
+
+  <div class="overlay" id="overlay"></div>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game10.js?v=4"></script>
 </body>
 </html>

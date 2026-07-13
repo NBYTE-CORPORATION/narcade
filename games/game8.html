@@ -2,23 +2,43 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>산수 퀴즈 — 나케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="../assets/css/game-base.css">
-  <link rel="stylesheet" href="../assets/css/game8.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>산수 스트릭 — 나케이드</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game8.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
   <div class="game-container">
-    <h1>➕ 산수 퀴즈</h1>
-    <p id="question"></p>
-    <input type="number" id="answer" placeholder="답 입력">
-    <div class="button-group">
-      <button onclick="checkAnswer()">확인</button>
-      <button class="btn-secondary" onclick="newQuestion()">다시 시작</button>
+    <div class="hud">
+      <div class="lives" id="lives" aria-label="남은 목숨"></div>
+      <div class="hud-score">
+        <span class="hud-score-val" id="score">0</span>
+        <span class="hud-score-lbl">점수</span>
+      </div>
+      <div class="combo-meter" id="comboMeter" data-glow="0">
+        <span class="combo-mult" id="comboMult">×1</span>
+        <span class="combo-pips" id="comboPips"><i></i><i></i><i></i><i></i></span>
+        <span class="combo-lbl">콤보</span>
+      </div>
     </div>
-    <p id="result"></p>
+
+    <div class="level-tag" id="levelTag">LV.1</div>
+    <div class="problem" id="problem">? + ? = ?</div>
+    <div class="timebar" id="timebar"><div class="timebar-fill" id="timebarFill"></div></div>
+
+    <div class="choices" id="choices">
+      <button type="button" class="choice" data-key="1" disabled></button>
+      <button type="button" class="choice" data-key="2" disabled></button>
+      <button type="button" class="choice" data-key="3" disabled></button>
+      <button type="button" class="choice" data-key="4" disabled></button>
+    </div>
+
+    <p class="key-hint">키보드 1 ~ 4 로도 선택할 수 있어요 · Esc 일시정지</p>
   </div>
-  <script src="../assets/js/game8.js"></script>
+
+  <div class="overlay" id="overlay"></div>
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game8.js?v=4"></script>
 </body>
 </html>

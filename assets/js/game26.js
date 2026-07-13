@@ -1,6 +1,8 @@
 /* ── game26.js — 슈퍼 마리오 ── */
 'use strict';
 
+Arcade.init({ id: 'game26', title: '슈퍼 마리오', emoji: '🍄', accent: 'green' });
+
 const canvas  = document.getElementById('c');
 const ctx     = canvas.getContext('2d');
 const overlay = document.getElementById('overlay');
@@ -207,39 +209,20 @@ function setupTouch() {
   bind(btn('btnRun'),   { activate: 'Shift' });
 }
 
-/* ── 오디오 (간단 신디 사이즈) ── */
-let audioCtx = null;
-function audio() {
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-  }
-  return audioCtx;
-}
-function beep(freq, dur = 0.08, type = 'square', vol = 0.06, slide = 0) {
-  const ac = audio(); if (!ac) return;
-  const t0 = ac.currentTime;
-  const osc = ac.createOscillator();
-  const gain = ac.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, t0);
-  if (slide) osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t0 + dur);
-  gain.gain.setValueAtTime(vol, t0);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  osc.connect(gain); gain.connect(ac.destination);
-  osc.start(t0); osc.stop(t0 + dur);
-}
+/* ── 오디오 (Arcade.audio 공용 신스) ── */
 const SFX = {
-  jump:    () => beep(520, 0.10, 'square', 0.05, 350),
-  coin:    () => { beep(988, 0.05, 'square', 0.05); setTimeout(() => beep(1319, 0.1, 'square', 0.05), 50); },
-  stomp:   () => beep(180, 0.10, 'square', 0.07, -100),
-  bump:    () => beep(220, 0.04, 'square', 0.05),
-  brick:   () => beep(120, 0.10, 'square', 0.06, -80),
-  hurt:    () => { beep(330, 0.12, 'sawtooth', 0.08, -150); },
-  power:   () => { [262,330,392,523].forEach((f,i) => setTimeout(() => beep(f,0.10,'square',0.05), i*60)); },
-  star:    () => { [392,494,587,784].forEach((f,i) => setTimeout(() => beep(f,0.10,'square',0.05), i*50)); },
-  clear:   () => { [523,659,784,1047].forEach((f,i) => setTimeout(() => beep(f,0.14,'square',0.06), i*120)); },
-  over:    () => { [392,330,262,196].forEach((f,i) => setTimeout(() => beep(f,0.18,'square',0.07), i*150)); },
-  kick:    () => beep(440, 0.06, 'square', 0.06, -200),
+  jump:    () => Arcade.audio.play('whoosh'),
+  coin:    () => Arcade.audio.play('coin'),
+  stomp:   () => Arcade.audio.play('pop'),
+  bump:    () => Arcade.audio.tone(220, 40, { type: 'square', gain: 0.05 }),
+  brick:   () => Arcade.audio.tone(120, 100, { type: 'square', gain: 0.06, endFreq: 55 }),
+  hurt:    () => Arcade.audio.tone(330, 120, { type: 'sawtooth', gain: 0.08, endFreq: 180 }),
+  power:   () => Arcade.audio.play('powerup'),
+  star:    () => { [392,494,587,784].forEach((f,i) => Arcade.audio.tone(f, 100, { type: 'square', gain: 0.05, delay: i*50 })); },
+  pipe:    () => Arcade.audio.tone(200, 300, { type: 'square', gain: 0.08, endFreq: 80 }),
+  clear:   () => Arcade.audio.play('win'),
+  over:    () => Arcade.audio.play('lose'),
+  kick:    () => Arcade.audio.tone(440, 60, { type: 'square', gain: 0.06, endFreq: 240 }),
 };
 
 /* ── 타일 헬퍼 ── */
@@ -674,24 +657,30 @@ function initGame() {
 
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || Arcade.pause.active) return;
     timeLeft--; updateHud();
     if (timeLeft <= 0) startDeath(true);
   }, 1000);
 
   overlay.style.display = 'none';
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   if (!rafId) loop();
 }
 
 /* ── 게임 오버 / 클리어 ── */
+function bestLine(res) {
+  const bestScore = Arcade.best.score('game26') || 0;
+  return (res.isRecord ? '<span class="ov-record">🏆 신기록!</span><br>' : '')
+    + `최고 기록: ${bestScore.toLocaleString()}`;
+}
+
 function doGameOver() {
   gameRunning = false; gameState = 'gameover';
   clearInterval(timerInterval);
   SFX.over();
+  const res = Arcade.best.submit('game26', score);
   setTimeout(() => {
     ovTitle.textContent = 'GAME OVER';
-    ovMsg.innerHTML = `스코어: <strong>${score.toLocaleString()}</strong><br>코인: ${coins}개`;
+    ovMsg.innerHTML = `스코어: <strong>${score.toLocaleString()}</strong><br>코인: ${coins}개<br>` + bestLine(res);
     startBtn.textContent = '다시 시작';
     overlay.style.display = 'flex';
   }, 600);
@@ -702,9 +691,10 @@ function doClear() {
   clearInterval(timerInterval);
   const bonus = timeLeft * 50;
   score += bonus; updateHud();
+  const res = Arcade.best.submit('game26', score);
   setTimeout(() => {
     ovTitle.textContent = '🏆 COURSE CLEAR!';
-    ovMsg.innerHTML = `최종 스코어: <strong>${score.toLocaleString()}</strong><br>코인: ${coins}개 · 시간 보너스: +${bonus}`;
+    ovMsg.innerHTML = `최종 스코어: <strong>${score.toLocaleString()}</strong><br>코인: ${coins}개 · 시간 보너스: +${bonus}<br>` + bestLine(res);
     startBtn.textContent = '다시 시작';
     overlay.style.display = 'flex';
   }, 1600);
@@ -1656,6 +1646,10 @@ let rafId = null;
 
 function loop() {
   rafId = requestAnimationFrame(loop);
+
+  /* 일시정지: 프레임 기반 물리라 델타 보정 없이 업데이트만 건너뛴다 */
+  if (Arcade.pause.active) return;
+
   frameCount++;
 
   if (gameState === 'clear' && flagAnim) {
@@ -1737,11 +1731,17 @@ function loop() {
 
 /* ── 시작 ── */
 startBtn.addEventListener('click', () => {
-  audio(); // 사용자 제스처로 오디오 활성화
+  Arcade.audio.play('click');
   initGame();
 });
 
 setupTouch();
+
+/* ── 일시정지 연동 (Esc / 탭 전환) ── */
+Arcade.pause.register({
+  isActive: () => !!gameRunning && overlay.style.display === 'none',
+  onPause: () => { for (const k in keys) keys[k] = false; }
+});
 
 /* ── 초기 렌더 (오버레이 상태) ── */
 (function initialPaint() {

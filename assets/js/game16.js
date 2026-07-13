@@ -1,49 +1,66 @@
 /* ── Space Shooter — game16.js ── */
+'use strict';
+
+Arcade.init({ id: 'game16', title: '스페이스 슈터', emoji: '🚀', accent: 'cyan' });
+
 (function () {
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  const overlay  = document.getElementById('overlay');
-  const startBtn = document.getElementById('startBtn');
-  const ovTitle  = document.getElementById('ovTitle');
-  const ovMsg    = document.getElementById('ovMsg');
-  const scoreEl  = document.getElementById('scoreEl');
-  const waveEl   = document.getElementById('waveEl');
-  const livesEl  = document.getElementById('livesEl');
-  const bestEl   = document.getElementById('bestEl');
+  const scoreEl = document.getElementById('scoreEl');
+  const waveEl  = document.getElementById('waveEl');
+  const livesEl = document.getElementById('livesEl');
+  const bestEl  = document.getElementById('bestEl');
 
-  let best = parseInt(localStorage.getItem('shooter_best') || '0');
+  const ov  = Arcade.overlay('#overlay');
+  const fit = Arcade.fitCanvas(canvas, { padding: 28, paddingV: 200 });
+
+  let best = Arcade.best.score('game16') || 0;
   bestEl.textContent = best;
 
   // ── State ──
-  let running = false, raf = null;
+  let running = false, raf = 0;
   let score, wave, lives, invincible, invTimer, shieldTimer;
   let player, bullets, enemies, particles, powerups;
   let stars = [];
   let fireTimer = 0;
-  let waveClearing = false;
+  let shotCount = 0;
   let waveDelay = 0;
 
-  // ── Keys / touch ──
+  // ── 일시정지 (Esc/탭 전환) ──
+  Arcade.pause.register({
+    isActive: function () { return running; }
+  });
+
+  // ── Keys ──
   const keys = {};
   window.addEventListener('keydown', e => { keys[e.key] = true; });
   window.addEventListener('keyup',   e => { keys[e.key] = false; });
 
-  // Touch drag
-  let touchX = null;
-  canvas.addEventListener('touchstart', e => {
+  // ── Pointer drag (마우스/터치/펜 통합) ──
+  let pointerDown = false;
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
-    touchX = e.touches[0].clientX;
-  }, { passive: false });
-  canvas.addEventListener('touchmove', e => {
-    e.preventDefault();
-    if (touchX === null) return;
-    const dx = e.touches[0].clientX - touchX;
-    touchX = e.touches[0].clientX;
-    if (player) player.x = Math.max(20, Math.min(W - 20, player.x + dx));
-  }, { passive: false });
-  canvas.addEventListener('touchend', () => { touchX = null; });
+    pointerDown = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    movePlayerTo(e);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!pointerDown) return;
+    movePlayerTo(e);
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => {
+    canvas.addEventListener(ev, () => { pointerDown = false; });
+  });
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+  function movePlayerTo(e) {
+    if (!player || !running || Arcade.pause.active) return;
+    const p = fit.toCanvasXY(e);
+    player.x = Math.max(20, Math.min(W - 20, p.x));
+  }
 
   // ── Utility ──
   function lightenColor(hex, amt) {
@@ -105,7 +122,7 @@
     ctx.save();
     ctx.translate(p.x, p.y);
 
-    // Glow
+    // Shield ring
     if (p.hasShield) {
       ctx.beginPath();
       ctx.arc(0, 0, p.r + 14, 0, Math.PI * 2);
@@ -164,6 +181,10 @@
     } else {
       bullets.push({ x: player.x, y: player.y - 20, r: 3, vy: -12, color: '#06b6d4' });
     }
+    shotCount++;
+    if (shotCount % 2 === 0) {
+      Arcade.audio.tone(340, 35, { type: 'sine', gain: 0.045, endFreq: 520 }); // 낮은 pop
+    }
   }
 
   function drawBullets() {
@@ -193,6 +214,11 @@
                : ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
     }
     ctx.closePath();
+  }
+
+  function waveFanfare() {
+    Arcade.audio.tone(523, 110, { type: 'triangle', gain: 0.12 });
+    Arcade.audio.tone(784, 160, { type: 'triangle', gain: 0.12, delay: 120 });
   }
 
   function spawnWave() {
@@ -225,6 +251,7 @@
         });
       }
     }
+    waveFanfare();
   }
 
   function updateEnemies() {
@@ -335,7 +362,7 @@
     particles.forEach(p => {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2, '0');
+      ctx.fillStyle = p.color + Math.round(Math.max(0, p.alpha) * 255).toString(16).padStart(2, '0');
       ctx.fill();
     });
   }
@@ -391,8 +418,8 @@
   function updateHUD() {
     scoreEl.textContent = score;
     waveEl.textContent  = wave;
-    livesEl.textContent = '❤️'.repeat(Math.max(0, lives));
-    bestEl.textContent  = best;
+    livesEl.textContent = '❤️'.repeat(Math.max(0, lives)) || '💀';
+    bestEl.textContent  = Math.max(best, score);
   }
 
   // ── Collision ──
@@ -411,6 +438,7 @@
             spawnExplosion(e.x, e.y, e.color);
             trySpawnPowerup(e.x, e.y);
             enemies.splice(ei, 1);
+            Arcade.audio.play('explosion');
           }
           break;
         }
@@ -460,6 +488,7 @@
         } else {
           score += 500;
         }
+        Arcade.audio.play('powerup');
         powerups.splice(pi, 1);
       }
     }
@@ -469,9 +498,11 @@
     if (player.hasShield) {
       player.hasShield = false;
       shieldTimer = 0;
+      Arcade.audio.play('hit');
       return;
     }
     spawnExplosion(player.x, player.y, '#a78bfa');
+    Arcade.audio.play('hit');
     lives--;
     invincible = true;
     invTimer = 80;
@@ -483,7 +514,7 @@
   function update() {
     if (!running) return;
 
-    // Player movement
+    // Player movement (keyboard)
     const speed = player.speed;
     if (keys['ArrowLeft'] || keys['a'] || keys['A']) player.x -= speed;
     if (keys['ArrowRight'] || keys['d'] || keys['D']) player.x += speed;
@@ -527,11 +558,9 @@
     checkCollisions();
 
     // Wave clear
-    if (enemies.length === 0 && waveDelay === 0 && !waveClearing) {
-      waveClearing = true;
+    if (running && enemies.length === 0 && waveDelay === 0) {
       wave++;
       waveDelay = 90;
-      waveClearing = false;
       updateHUD();
     }
 
@@ -554,9 +583,11 @@
   }
 
   function loop() {
+    raf = requestAnimationFrame(loop);
+    if (!running) { cancelAnimationFrame(raf); return; }
+    if (Arcade.pause.active) return; // 일시정지: 프레임 스텝 정지
     update();
     draw();
-    if (running) raf = requestAnimationFrame(loop);
   }
 
   // ── Start / End ──
@@ -564,12 +595,12 @@
     score = 0; wave = 1; lives = 3;
     invincible = false; invTimer = 0; shieldTimer = 0;
     bullets = []; particles = []; powerups = [];
-    waveDelay = 0; waveClearing = false; fireTimer = 0;
+    waveDelay = 0; fireTimer = 0; shotCount = 0;
+    best = Arcade.best.score('game16') || 0;
     player = createPlayer();
     initStars();
     spawnWave();
     updateHUD();
-    overlay.classList.add('hidden');
     running = true;
     if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(loop);
@@ -577,23 +608,42 @@
 
   function endGame() {
     running = false;
-    if (score > best) {
-      best = score;
-      localStorage.setItem('shooter_best', best);
-      bestEl.textContent = best;
-    }
-    ovTitle.textContent = '게임 오버';
-    ovMsg.innerHTML = `
-      <div class="ov-score">${score.toLocaleString()}</div>
-      <div class="ov-sub">Wave ${wave} 도달 · 최고기록 ${best.toLocaleString()}</div>
-    `;
-    startBtn.textContent = '다시 하기';
-    overlay.classList.remove('hidden');
+    cancelAnimationFrame(raf);
+    Arcade.audio.play('lose');
+
+    const res = Arcade.best.submit('game16', score);
+    best = Arcade.best.score('game16') || 0;
+    updateHUD();
+
+    ov.show({
+      emoji: res.isRecord ? '🏆' : '💥',
+      title: '게임 오버',
+      isRecord: res.isRecord,
+      stats: [
+        { label: '점수', value: score.toLocaleString() },
+        { label: '웨이브', value: wave },
+        { label: '최고 기록', value: best.toLocaleString() }
+      ],
+      btnText: '다시 하기',
+      onStart: startGame
+    });
   }
 
-  startBtn.addEventListener('click', startGame);
+  function showStart() {
+    ov.show({
+      emoji: '🚀',
+      title: '스페이스 슈터',
+      msg: '적 우주선을 격파하고 최고 기록을 세워라!\n드래그 혹은 ← → / A·D 키로 이동\n기체는 자동으로 발사됩니다.',
+      stats: best > 0 ? [{ label: '최고 기록', value: best.toLocaleString() }] : [],
+      btnText: '시작하기',
+      onStart: startGame
+    });
+  }
 
   // Initial star draw
   initStars();
+  enemies = []; bullets = []; particles = []; powerups = [];
+  player = createPlayer();
   draw();
+  showStart();
 })();

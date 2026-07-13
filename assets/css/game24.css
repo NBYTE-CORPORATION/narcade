@@ -1,72 +1,60 @@
-/* ── game24.css — 핀볼 ── */
+/* ── game24.css — 핀볼 (v3 미니멀) ── */
 body {
-  padding: 60px 10px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  padding-top: calc(66px + env(safe-area-inset-top, 0px));
+  padding-bottom: 20px;
 }
 
 /* ── 전체 래퍼 ── */
 .pb-wrap {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  justify-content: center;
+  gap: 14px;
 }
 
 /* ── 사이드바 HUD ── */
 .pb-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 120px;
+  gap: 8px;
+  width: 118px;
   flex-shrink: 0;
 }
 
-.pb-score-box {
+.pb-score-box,
+.pb-mini-box {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   text-align: center;
-  backdrop-filter: blur(12px);
 }
 
-.pb-best-box {
-  background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(251,191,36,0.04));
-  border-color: rgba(245,158,11,0.25);
-}
+.pb-best-box { border-color: var(--border-strong); }
 
 .pb-score-lbl {
   display: block;
+  font-family: var(--mono);
   font-size: 9px;
   letter-spacing: 0.14em;
   color: var(--text-muted);
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 
 .pb-score-val {
   display: block;
-  font-size: 1.25rem;
-  font-weight: 900;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: var(--text);
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
   word-break: break-all;
 }
 
-.pb-best-val { color: #f59e0b; }
+.pb-best-val { color: var(--amber); }
 
 /* ── 볼 도트 ── */
-.pb-mini-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
-  text-align: center;
-}
-
 .pb-balls {
   display: flex;
   gap: 5px;
@@ -77,25 +65,22 @@ body {
 
 .pb-ball-dot {
   display: inline-block;
-  width: 12px; height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #c4b5fd, #7c3aed);
-  box-shadow: 0 0 6px rgba(124,58,237,0.8);
-  transition: opacity 0.3s;
+  background: var(--accent);
+  transition: opacity 0.3s, background 0.3s;
 }
 
-.pb-ball-dot.used {
-  background: rgba(100,116,139,0.3);
-  box-shadow: none;
-}
+.pb-ball-dot.used { background: var(--border-strong); }
 
 .pb-multi-val {
   display: block;
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #06b6d4;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent);
   margin-top: 4px;
-  text-shadow: 0 0 12px rgba(6,182,212,0.6);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── 컨트롤 힌트 ── */
@@ -124,10 +109,10 @@ body {
   min-width: 22px;
   height: 20px;
   padding: 0 4px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
   border-radius: 5px;
-  font-family: inherit;
+  font-family: var(--mono);
   font-size: 10px;
   font-weight: 700;
   color: var(--text);
@@ -136,73 +121,20 @@ body {
 
 /* ── 캔버스 래퍼 ── */
 .canvas-wrap {
-  position: relative;
-  border-radius: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.07),
-    0 24px 64px rgba(0,0,0,0.7),
-    0 0 60px rgba(124,58,237,0.15);
+  line-height: 0;
 }
 
-canvas { display: block; }
-
-/* ── Overlay ── */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(7,5,18,0.93);
-  backdrop-filter: blur(14px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-}
-
-.ov-inner {
-  text-align: center;
-  padding: 28px 24px;
-}
-
-.ov-emoji {
-  font-size: 52px;
+canvas {
   display: block;
-  margin-bottom: 14px;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-
-.ov-inner h2 {
-  font-size: 26px;
-  font-weight: 900;
-  margin: 0 0 10px;
-  background: linear-gradient(135deg, #a78bfa, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.ov-inner p {
-  color: var(--text-dim);
-  font-size: 13px;
-  line-height: 1.9;
-  margin: 0 0 18px;
-}
-
-.pb-best-info {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #f59e0b;
-  min-height: 18px;
+  touch-action: none;
 }
 
 /* ── 모바일 ── */
-@media (max-width: 540px) {
-  .pb-wrap { flex-direction: column; align-items: center; }
+@media (max-width: 560px) {
+  .pb-wrap { flex-direction: column-reverse; align-items: center; }
   .pb-sidebar {
     flex-direction: row;
     flex-wrap: wrap;
@@ -210,6 +142,7 @@ canvas { display: block; }
     max-width: 360px;
     justify-content: center;
   }
-  .pb-score-box, .pb-mini-box, .pb-controls { width: auto; min-width: 80px; }
-  canvas { width: 100% !important; height: auto !important; max-width: 360px; }
+  .pb-score-box, .pb-mini-box { width: auto; min-width: 78px; padding: 8px 10px; }
+  .pb-score-val { font-size: 1rem; }
+  .pb-controls { display: none; } /* 모바일에선 터치 조작 */
 }

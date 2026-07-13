@@ -2,14 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>체스 — 나케이드</title>
-  <link rel="stylesheet" href="../assets/css/common.css">
-  <link rel="stylesheet" href="../assets/css/game25.css">
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/game-base.css?v=4">
+  <link rel="stylesheet" href="../assets/css/game25.css?v=4">
 </head>
 <body>
-  <a href="../index.html" class="back-btn">← 목록</a>
-
   <div class="chess-wrap">
     <!-- 왼쪽 패널 -->
     <aside class="chess-side">
@@ -40,16 +39,13 @@
       </div>
 
       <div class="cs-controls">
-        <button id="startBtn" class="cs-btn primary">게임 시작</button>
-        <button id="undoBtn"  class="cs-btn" disabled>무르기</button>
+        <button type="button" id="startBtn">게임 시작</button>
+        <button type="button" id="undoBtn" class="btn-secondary" disabled>↩ 무르기</button>
         <div class="cs-difficulty">
           <span>난이도</span>
-          <div class="diff-btns">
-            <button class="diff-btn" data-d="2">쉬움</button>
-            <button class="diff-btn active" data-d="3">보통</button>
-            <button class="diff-btn" data-d="4">어려움</button>
-          </div>
+          <div id="diffPills"></div>
         </div>
+        <div class="cs-wins">누적 승리 <span id="winsEl">0</span></div>
       </div>
     </aside>
 
@@ -63,20 +59,10 @@
       <div class="promotion-popup hidden" id="promotionPopup">
         <div class="promo-title">프로모션 선택</div>
         <div class="promo-choices">
-          <button class="promo-btn" data-piece="5">♕</button>
-          <button class="promo-btn" data-piece="4">♖</button>
-          <button class="promo-btn" data-piece="3">♗</button>
-          <button class="promo-btn" data-piece="2">♘</button>
-        </div>
-      </div>
-
-      <!-- 게임 종료 오버레이 -->
-      <div class="chess-overlay" id="chessOverlay">
-        <div class="overlay-box">
-          <div class="overlay-icon" id="overlayIcon">♟</div>
-          <div class="overlay-title" id="overlayTitle">체스</div>
-          <div class="overlay-msg" id="overlayMsg">전략적 두뇌 대결<br>백(플레이어) vs 흑(AI)</div>
-          <button id="overlayBtn" class="cs-btn primary">게임 시작</button>
+          <button type="button" class="promo-btn" data-piece="5">♕</button>
+          <button type="button" class="promo-btn" data-piece="4">♖</button>
+          <button type="button" class="promo-btn" data-piece="3">♗</button>
+          <button type="button" class="promo-btn" data-piece="2">♘</button>
         </div>
       </div>
     </div>
@@ -88,6 +74,9 @@
     </aside>
   </div>
 
-  <script src="../assets/js/game25.js"></script>
+  <div class="overlay" id="overlay"></div>
+
+  <script src="../assets/js/arcade.js?v=4"></script>
+  <script src="../assets/js/game25.js?v=4"></script>
 </body>
 </html>

@@ -1,3 +1,5 @@
+Arcade.init({ id: 'game11', title: '스네이크', emoji: '🐍', accent: 'green' });
+
 const canvas = document.getElementById('snakeCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -5,14 +7,21 @@ const GRID = 20;
 const COLS = canvas.width / GRID;
 const ROWS = canvas.height / GRID;
 
-let snake, dir, nextDir, food, score, bestScore, running, loop;
+const BASE_SPEED = 120;   // ms/tick
+const SPEED_STEP = 3;     // 먹이당 감소
+const MIN_SPEED = 70;     // 최고 속도 캡
+
+let snake, dir, nextDir, food, score, bestScore, running, loop, foods, speed;
 
 const COLORS = {
-  head:  '#a78bfa',
-  body:  '#7c3aed',
+  head:  '#6ee7b7',
+  body:  '#10b981',
   food:  '#f59e0b',
   grid:  'rgba(255,255,255,0.03)',
 };
+
+const overlay = Arcade.overlay('#overlay');
+const fit = Arcade.fitCanvas(canvas, { paddingV: 240 });
 
 function init() {
   snake = [
@@ -23,7 +32,9 @@ function init() {
   dir     = { x: 1, y: 0 };
   nextDir = { x: 1, y: 0 };
   score   = 0;
-  bestScore = parseInt(localStorage.getItem('snake_best') || '0');
+  foods   = 0;
+  speed   = BASE_SPEED;
+  bestScore = Arcade.best.score('game11') || 0;
   updateScore();
   placeFood();
 }
@@ -124,12 +135,21 @@ function tick() {
 
   if (head.x === food.x && head.y === food.y) {
     score += 10;
+    foods++;
+    if (foods % 5 === 0) Arcade.audio.play('powerup');
+    else Arcade.audio.play('coin');
     if (score > bestScore) {
       bestScore = score;
-      localStorage.setItem('snake_best', bestScore);
     }
     updateScore();
     placeFood();
+    // 점진적 가속
+    const next = Math.max(MIN_SPEED, BASE_SPEED - foods * SPEED_STEP);
+    if (next !== speed) {
+      speed = next;
+      clearInterval(loop);
+      loop = setInterval(tick, speed);
+    }
   } else {
     snake.pop();
   }
@@ -140,25 +160,36 @@ function tick() {
 function gameOver() {
   running = false;
   clearInterval(loop);
+  Arcade.audio.play('lose');
 
-  const overlay = document.getElementById('overlay');
-  document.getElementById('overlayTitle').textContent = '게임 오버';
-  document.getElementById('overlayMsg').textContent = `점수: ${score}`;
-  document.getElementById('startBtn').textContent = '다시 하기';
-  overlay.classList.remove('hidden');
+  const result = Arcade.best.submit('game11', score);
+  bestScore = Arcade.best.score('game11') || 0;
+  updateScore();
+
+  overlay.show({
+    emoji: '💀',
+    title: '게임 오버',
+    isRecord: result.isRecord,
+    stats: [
+      { label: '점수', value: score },
+      { label: '최고', value: bestScore },
+    ],
+    btnText: '다시하기',
+    onStart: startGame,
+  });
 }
 
 function startGame() {
   init();
   render();
-  document.getElementById('overlay').classList.add('hidden');
+  overlay.hide();
   running = true;
   clearInterval(loop);
-  loop = setInterval(tick, 120);
+  loop = setInterval(tick, speed);
 }
 
 function setDir(x, y) {
-  if (!running) return;
+  if (!running || Arcade.pause.active) return;
   if (x === -dir.x && y === -dir.y) return;
   nextDir = { x, y };
 }
@@ -177,6 +208,29 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// 모바일: 캔버스 스와이프로 방향 전환
+Arcade.touch.swipe(canvas, d => {
+  const map = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  setDir(...map[d]);
+}, { threshold: 24 });
+
+// 일시정지 (Esc / 탭 전환)
+Arcade.pause.register({
+  isActive: () => running,
+  onPause: () => { clearInterval(loop); },
+  onResume: () => {
+    clearInterval(loop);
+    loop = setInterval(tick, speed);
+  },
+});
+
 // Init display
 init();
 render();
+overlay.show({
+  emoji: '🐍',
+  title: '스네이크',
+  msg: '방향키/WASD 또는 스와이프로 조작하세요',
+  btnText: '시작하기',
+  onStart: startGame,
+});
