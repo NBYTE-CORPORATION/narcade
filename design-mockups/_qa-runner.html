@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><title>QA runner</title>
+<style>body{background:#09090b;color:#eee;font:13px monospace;padding:20px}#log div{padding:2px 0}iframe{width:390px;height:700px;border:1px solid #333;position:fixed;right:10px;top:10px;background:#000}</style>
+</head>
+<body>
+<h3>narcade QA runner</h3>
+<div id="log"></div>
+<script>
+const GAMES = Array.from({length: 28}, (_, i) => 'game' + (i + 1));
+const results = [];
+const log = m => { const d = document.createElement('div'); d.textContent = m; document.getElementById('log').appendChild(d); };
+
+function runOne(id) {
+  return new Promise(resolve => {
+    const fr = document.createElement('iframe');
+    fr.src = '../games/' + id + '.html?qa=' + Date.now();
+    const rec = { id, errors: [], header: false, overlay: false, startClicked: false, loaded: false };
+    const timeout = setTimeout(() => { rec.errors.push('LOAD TIMEOUT'); done(); }, 8000);
+    function done() {
+      clearTimeout(timeout);
+      try { fr.remove(); } catch (e) {}
+      results.push(rec);
+      log(`${id}: ${rec.errors.length ? '❌ ' + rec.errors.join(' | ').slice(0, 160) : '✅'} header=${rec.header} start=${rec.startClicked}`);
+      resolve();
+    }
+    fr.onload = () => {
+      rec.loaded = true;
+      let win;
+      try { win = fr.contentWindow; } catch (e) { rec.errors.push('no access'); return done(); }
+      win.addEventListener('error', e => rec.errors.push((e.message || 'err') + ' @' + (e.filename || '').split('/').pop() + ':' + e.lineno));
+      win.addEventListener('unhandledrejection', e => rec.errors.push('rejection: ' + e.reason));
+      setTimeout(() => {
+        try {
+          const doc = fr.contentDocument;
+          rec.header = !!doc.querySelector('.arcade-header');
+          rec.overlay = !!doc.querySelector('.overlay');
+          const btn = doc.querySelector('.ov-btn, #startBtn, .start-btn');
+          if (btn) { btn.click(); rec.startClicked = true; }
+        } catch (e) { rec.errors.push('probe: ' + e.message); }
+        setTimeout(done, 1400);
+      }, 700);
+    };
+    document.body.appendChild(fr);
+  });
+}
+
+(async () => {
+  for (const id of GAMES) await runOne(id);
+  window.QA_RESULTS = results;
+  log('=== DONE: ' + results.filter(r => r.errors.length).length + ' failures / ' + results.length + ' ===');
+})();
+</script>
+</body>
+</html>

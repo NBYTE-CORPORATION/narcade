@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시안 A — 레트로 CRT 아케이드</title>
+<style>
+@font-face {
+  font-family: 'DungGeunMo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105@1.1/DungGeunMo.woff') format('woff');
+  font-display: swap;
+}
+:root {
+  --bg: #020604;
+  --phosphor: #33ff66;
+  --phosphor-dim: #1a9944;
+  --phosphor-dark: #0c3d1e;
+  --amber: #ffb000;
+  --red: #ff4a3d;
+  --cyan: #35e8ff;
+  --screen: #04120a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--phosphor);
+  font-family: 'DungGeunMo', 'Courier New', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* CRT 효과 */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.45) 3px);
+  pointer-events: none; z-index: 100;
+  opacity: .35;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+  pointer-events: none; z-index: 101;
+}
+@keyframes flicker { 0%,100%{opacity:1} 96%{opacity:1} 97%{opacity:.82} 98%{opacity:1} }
+.crt { animation: flicker 6s infinite; max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
+
+/* 마키 헤더 */
+.marquee {
+  border: 3px double var(--phosphor-dim);
+  padding: 26px 20px 22px;
+  text-align: center;
+  position: relative;
+  background: linear-gradient(180deg, rgba(51,255,102,.06), transparent);
+}
+.marquee h1 {
+  font-size: clamp(2.4rem, 7vw, 4.6rem);
+  letter-spacing: .18em;
+  color: var(--phosphor);
+  text-shadow: 0 0 6px rgba(51,255,102,.9), 0 0 28px rgba(51,255,102,.45);
+}
+.marquee h1 .cursor { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.marquee .sub {
+  margin-top: 10px;
+  color: var(--amber);
+  font-size: 15px;
+  letter-spacing: .3em;
+  text-shadow: 0 0 8px rgba(255,176,0,.6);
+}
+.insert-coin {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--cyan);
+  letter-spacing: .22em;
+  animation: blink 1.4s steps(1) infinite;
+}
+
+/* 스코어보드 */
+.scoreboard {
+  display: flex; justify-content: center; gap: 42px;
+  border: 3px double var(--phosphor-dim);
+  border-top: none;
+  padding: 12px;
+  font-size: 13px;
+  letter-spacing: .12em;
+  flex-wrap: wrap;
+}
+.scoreboard b { color: var(--amber); }
+
+/* 티커 */
+.ticker {
+  margin: 22px 0 8px;
+  border-top: 1px solid var(--phosphor-dark);
+  border-bottom: 1px solid var(--phosphor-dark);
+  overflow: hidden; white-space: nowrap;
+  padding: 7px 0; font-size: 13px; color: var(--phosphor-dim);
+  letter-spacing: .18em;
+}
+@keyframes scroll { from { transform: translateX(0);} to { transform: translateX(-50%);} }
+.ticker span { display: inline-block; animation: scroll 24s linear infinite; }
+
+/* 카테고리 셀렉터 */
+.cats {
+  display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;
+  margin: 22px 0 30px; font-size: 14px; letter-spacing: .1em;
+}
+.cats a {
+  color: var(--phosphor-dim); text-decoration: none;
+  padding: 8px 18px; border: 1px solid transparent;
+}
+.cats a.on {
+  color: var(--bg); background: var(--phosphor);
+  text-shadow: none;
+  box-shadow: 0 0 18px rgba(51,255,102,.55);
+}
+.cats a:not(.on):hover { border-color: var(--phosphor-dim); color: var(--phosphor); }
+
+/* 캐비닛 그리드 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 22px;
+}
+.cab {
+  border: 2px solid var(--phosphor-dark);
+  background: var(--screen);
+  padding: 8px;
+  text-decoration: none;
+  color: var(--phosphor);
+  display: block;
+  transition: transform .12s steps(2), box-shadow .12s;
+  position: relative;
+}
+.cab:hover {
+  transform: translateY(-4px);
+  border-color: var(--phosphor);
+  box-shadow: 0 0 24px rgba(51,255,102,.35), inset 0 0 30px rgba(51,255,102,.07);
+}
+.cab .screen {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(51,255,102,.14), transparent 70%),
+    #010803;
+  border: 1px solid var(--phosphor-dark);
+  height: 128px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 54px;
+  filter: drop-shadow(0 0 10px rgba(51,255,102,.5));
+}
+.cab .title {
+  margin: 12px 4px 4px;
+  font-size: 16px;
+  letter-spacing: .08em;
+  color: var(--phosphor);
+  text-shadow: 0 0 6px rgba(51,255,102,.7);
+}
+.cab .meta {
+  margin: 0 4px 8px;
+  font-size: 11px;
+  color: var(--phosphor-dim);
+  display: flex; justify-content: space-between;
+  letter-spacing: .08em;
+}
+.cab .meta .hi { color: var(--amber); }
+.cab .press {
+  border-top: 1px dashed var(--phosphor-dark);
+  padding: 8px 4px 2px;
+  font-size: 11px; letter-spacing: .26em;
+  color: var(--cyan);
+  text-align: center;
+}
+.cab:hover .press { animation: blink .8s steps(1) infinite; }
+.badge-new {
+  position: absolute; top: -9px; right: -7px;
+  background: var(--red); color: #fff;
+  font-size: 10px; letter-spacing: .14em;
+  padding: 4px 8px;
+  box-shadow: 0 0 14px rgba(255,74,61,.6);
+}
+footer {
+  margin-top: 52px; text-align: center;
+  font-size: 12px; color: var(--phosphor-dim); letter-spacing: .2em;
+  line-height: 2;
+}
+</style>
+</head>
+<body>
+<div class="crt">
+  <header class="marquee">
+    <h1>NARCADE<span class="cursor">_</span></h1>
+    <div class="sub">◆ 나 케 이 드 · 미니게임 오락실 ◆</div>
+    <div class="insert-coin">▶ INSERT COIN · PRESS START ◀</div>
+  </header>
+  <div class="scoreboard">
+    <span>GAMES <b>28</b></span>
+    <span>1UP <b>HI-SCORE 999,999</b></span>
+    <span>CREDIT <b>∞ FREE PLAY</b></span>
+  </div>
+
+  <div class="ticker"><span>★ 신작 입고 — 과일 박스 · 메탈 슬러그 · 슈퍼 마리오 ★ 오늘의 도전 — 테트리스 40줄 클리어 ★ 전 게임 무료 · 코인 필요 없음 ★&nbsp;&nbsp;&nbsp;★ 신작 입고 — 과일 박스 · 메탈 슬러그 · 슈퍼 마리오 ★ 오늘의 도전 — 테트리스 40줄 클리어 ★ 전 게임 무료 · 코인 필요 없음 ★&nbsp;&nbsp;&nbsp;</span></div>
+
+  <nav class="cats">
+    <a class="on" href="#">[ 전체 ]</a>
+    <a href="#">퍼즐</a>
+    <a href="#">아케이드</a>
+    <a href="#">반사신경</a>
+    <a href="#">퀴즈</a>
+  </nav>
+
+  <main class="grid">
+    <a class="cab" href="#"><span class="badge-new">NEW</span>
+      <div class="screen">🍎</div><div class="title">과일 박스</div>
+      <div class="meta"><span>PUZZLE</span><span class="hi">HI 12,400</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#"><span class="badge-new">NEW</span>
+      <div class="screen">🪖</div><div class="title">메탈 슬러그</div>
+      <div class="meta"><span>ACTION</span><span class="hi">HI 8,120</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#">
+      <div class="screen">🧱</div><div class="title">테트리스</div>
+      <div class="meta"><span>PUZZLE</span><span class="hi">HI 45,900</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#">
+      <div class="screen">🍄</div><div class="title">슈퍼 마리오</div>
+      <div class="meta"><span>ACTION</span><span class="hi">HI 3,350</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#">
+      <div class="screen">🐍</div><div class="title">스네이크</div>
+      <div class="meta"><span>ARCADE</span><span class="hi">HI 87</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#">
+      <div class="screen">🎱</div><div class="title">핀볼</div>
+      <div class="meta"><span>ARCADE</span><span class="hi">HI 66,200</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#">
+      <div class="screen">♟</div><div class="title">체스</div>
+      <div class="meta"><span>BRAIN</span><span class="hi">3 WINS</span></div>
+      <div class="press">PLAY ▶</div></a>
+    <a class="cab" href="#">
+      <div class="screen">🎵</div><div class="title">리듬 탭</div>
+      <div class="meta"><span>RHYTHM</span><span class="hi">HI 9,870</span></div>
+      <div class="press">PLAY ▶</div></a>
+  </main>
+
+  <footer>
+    © 2026 NBYTE — NARCADE v2.0<br>
+    NO COIN REQUIRED · GAME OVER IS JUST THE BEGINNING<span class="cursor">_</span>
+  </footer>
+</div>
+</body>
+</html>

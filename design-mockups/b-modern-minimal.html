@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시안 B — 모던 미니멀</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root {
+  --bg: #09090b;
+  --panel: #101012;
+  --line: #1e1e22;
+  --line-hi: #34343a;
+  --text: #f4f4f5;
+  --muted: #8e8e96;
+  --dim: #5a5a63;
+  --accent: #a3e635;
+  --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; }
+
+/* 내비 */
+nav {
+  display: flex; align-items: center; gap: 28px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.wordmark { font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+.wordmark i { color: var(--accent); font-style: normal; }
+nav .links { display: flex; gap: 20px; font-size: 14px; color: var(--muted); }
+nav .links a { color: inherit; text-decoration: none; }
+nav .links a:hover { color: var(--text); }
+.search {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--dim); font-size: 13px;
+  min-width: 220px;
+}
+.search kbd {
+  margin-left: auto; font-family: var(--mono); font-size: 11px;
+  border: 1px solid var(--line-hi); border-radius: 4px; padding: 1px 5px;
+}
+
+/* 히어로 */
+.hero { padding: 64px 0 40px; }
+.hero .eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+  color: var(--accent); margin-bottom: 14px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 800; letter-spacing: -0.04em; line-height: 1.12;
+}
+.hero h1 span { color: var(--dim); }
+.hero p { margin-top: 14px; color: var(--muted); font-size: 15px; }
+
+/* 탭 */
+.tabs {
+  display: flex; gap: 2px; margin: 34px 0 26px;
+  border-bottom: 1px solid var(--line);
+}
+.tabs a {
+  padding: 10px 16px; font-size: 14px; color: var(--muted);
+  text-decoration: none; border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabs a.on { color: var(--text); border-color: var(--accent); }
+.tabs a:hover { color: var(--text); }
+.tabs .count { margin-left: auto; align-self: center; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+
+/* 벤토 그리드 */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  text-decoration: none; color: var(--text);
+  display: flex; flex-direction: column;
+  min-height: 168px;
+  transition: border-color .18s, transform .18s, background .18s;
+  position: relative;
+}
+.tile:hover { border-color: var(--line-hi); transform: translateY(-2px); background: #131316; }
+.tile .emoji { font-size: 30px; margin-bottom: auto; }
+.tile h3 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; margin-top: 18px; }
+.tile .meta {
+  margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--dim);
+  display: flex; gap: 10px;
+}
+.tile .meta .best { color: var(--accent); }
+.tile.featured {
+  grid-column: span 2; grid-row: span 2;
+  justify-content: flex-end;
+  background:
+    radial-gradient(120% 90% at 85% 0%, rgba(163,230,53,.08), transparent 60%),
+    var(--panel);
+}
+.tile.featured .emoji { font-size: 64px; }
+.tile.featured h3 { font-size: 24px; }
+.tile.featured p.desc { color: var(--muted); font-size: 14px; margin-top: 8px; line-height: 1.55; }
+.tile .tag {
+  position: absolute; top: 18px; right: 18px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+  color: var(--bg); background: var(--accent);
+  padding: 3px 8px; border-radius: 99px; font-weight: 700;
+}
+.tile .tag.ghost { background: transparent; color: var(--dim); border: 1px solid var(--line-hi); }
+
+.play {
+  margin-top: 16px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--accent);
+}
+.play::after { content: '→'; transition: transform .18s; }
+.tile:hover .play::after { transform: translateX(3px); }
+
+footer {
+  margin-top: 72px; padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--dim);
+  font-family: var(--mono);
+}
+@media (max-width: 900px) { .bento { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) {
+  .bento { grid-template-columns: 1fr 1fr; }
+  .tile.featured { grid-column: span 2; }
+  nav .links, .search kbd { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="wordmark">narcade<i>.</i></div>
+    <div class="links"><a href="#">게임</a><a href="#">기록</a><a href="#">정보</a></div>
+    <div class="search">⌕ 게임 검색 <kbd>/</kbd></div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow">28 GAMES — FREE FOREVER</div>
+    <h1>설치 없이, 로그인 없이.<br><span>브라우저에서 바로 플레이.</span></h1>
+    <p>기록은 이 브라우저에만 저장됩니다. 광고도, 추적도 없습니다.</p>
+  </header>
+
+  <div class="tabs">
+    <a class="on" href="#">전체</a>
+    <a href="#">퍼즐</a>
+    <a href="#">아케이드</a>
+    <a href="#">반사</a>
+    <a href="#">퀴즈</a>
+    <span class="count">28 GAMES</span>
+  </div>
+
+  <main class="bento">
+    <a class="tile featured" href="#">
+      <span class="tag">NEW</span>
+      <span class="emoji">🍎</span>
+      <h3>과일 박스</h3>
+      <p class="desc">드래그로 사과를 묶어 합이 10이 되면 제거. 단순한 규칙, 끊을 수 없는 몰입 — 2분의 승부.</p>
+      <span class="play">바로 플레이</span>
+    </a>
+    <a class="tile" href="#">
+      <span class="tag ghost">PUZZLE</span>
+      <span class="emoji">🧱</span><h3>테트리스</h3>
+      <div class="meta"><span>PUZZLE</span><span class="best">BEST 45,900</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="tag">NEW</span>
+      <span class="emoji">🪖</span><h3>메탈 슬러그</h3>
+      <div class="meta"><span>ACTION</span><span class="best">BEST 8,120</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">♟</span><h3>체스</h3>
+      <div class="meta"><span>BRAIN</span><span class="best">3 WINS</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">🐍</span><h3>스네이크</h3>
+      <div class="meta"><span>ARCADE</span><span class="best">BEST 87</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">🍄</span><h3>슈퍼 마리오</h3>
+      <div class="meta"><span>ACTION</span><span class="best">BEST 3,350</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">🎱</span><h3>핀볼</h3>
+      <div class="meta"><span>ARCADE</span><span class="best">BEST 66,200</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">🎵</span><h3>리듬 탭</h3>
+      <div class="meta"><span>RHYTHM</span><span class="best">BEST 9,870</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">💣</span><h3>지뢰 찾기</h3>
+      <div class="meta"><span>PUZZLE</span><span class="best">42s</span></div>
+    </a>
+    <a class="tile" href="#">
+      <span class="emoji">🧩</span><h3>2048</h3>
+      <div class="meta"><span>PUZZLE</span><span class="best">BEST 2,048</span></div>
+    </a>
+  </main>
+
+  <footer>
+    <span>© 2026 NBYTE</span>
+    <span>ALL DATA STAYS IN YOUR BROWSER</span>
+  </footer>
+</div>
+</body>
+</html>

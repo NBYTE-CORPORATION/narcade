@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시안 C — 네온 시티 2.0</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root {
+  --bg: #05030f;
+  --text: #f4f2ff;
+  --muted: #9a94b8;
+  --violet: #8b5cf6;
+  --cyan: #22d3ee;
+  --pink: #f472b6;
+  --amber: #fbbf24;
+  --glass: rgba(255,255,255,.05);
+  --glass-line: rgba(255,255,255,.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  min-height: 100vh; overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+/* 배경: 메시 그라디언트 + 신스웨이브 그리드 지평선 */
+.mesh { position: fixed; inset: 0; z-index: -2; }
+.mesh::before, .mesh::after {
+  content: ''; position: absolute; border-radius: 50%; filter: blur(110px); opacity: .5;
+}
+.mesh::before {
+  width: 720px; height: 720px; left: -180px; top: -260px;
+  background: radial-gradient(circle, #6d28d9, transparent 65%);
+  animation: drift 14s ease-in-out infinite alternate;
+}
+.mesh::after {
+  width: 560px; height: 560px; right: -140px; top: 60px;
+  background: radial-gradient(circle, #0e7490, transparent 65%);
+  animation: drift 18s ease-in-out infinite alternate-reverse;
+}
+@keyframes drift { to { transform: translate(60px, 50px) scale(1.12); } }
+.horizon {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 38vh; z-index: -1;
+  background:
+    linear-gradient(to top, rgba(139,92,246,.16), transparent),
+    repeating-linear-gradient(to right, rgba(139,92,246,.16) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to top, rgba(139,92,246,.16) 0 1px, transparent 1px 44px);
+  transform: perspective(420px) rotateX(58deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, black 30%, transparent);
+  -webkit-mask-image: linear-gradient(to top, black 30%, transparent);
+}
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 26px 90px; }
+
+/* 헤더 */
+header.top {
+  display: flex; align-items: center; gap: 20px;
+  padding: 20px 0;
+}
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 20px; letter-spacing: -0.02em; }
+.logo .mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--violet), var(--cyan));
+  display: grid; place-items: center; font-size: 17px;
+  box-shadow: 0 0 24px rgba(139,92,246,.55);
+}
+.searchbar {
+  margin-left: auto;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(14px);
+  border-radius: 99px; padding: 10px 18px;
+  color: var(--muted); font-size: 14px; min-width: 240px;
+}
+
+/* 히어로 */
+.hero { text-align: center; padding: 58px 0 34px; }
+.hero .badge {
+  display: inline-flex; gap: 8px; align-items: center;
+  font-size: 13px; font-weight: 600; color: var(--cyan);
+  border: 1px solid rgba(34,211,238,.35);
+  background: rgba(34,211,238,.08);
+  padding: 7px 16px; border-radius: 99px;
+  box-shadow: 0 0 22px rgba(34,211,238,.18);
+}
+.hero h1 {
+  margin-top: 22px;
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  font-weight: 900; letter-spacing: -0.045em; line-height: 1.04;
+}
+.hero h1 .grad {
+  background: linear-gradient(92deg, var(--violet), var(--cyan) 45%, var(--pink) 90%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 26px rgba(139,92,246,.45));
+}
+.hero p { margin-top: 16px; color: var(--muted); font-size: 16px; }
+.hero .stats {
+  margin-top: 30px; display: inline-flex; gap: 0;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  border-radius: 18px; backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+.hero .stats div { padding: 14px 30px; }
+.hero .stats div + div { border-left: 1px solid var(--glass-line); }
+.hero .stats b { display: block; font-size: 22px; font-weight: 900;
+  background: linear-gradient(135deg, #c4b5fd, var(--cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero .stats span { font-size: 11px; color: var(--muted); letter-spacing: .14em; }
+
+/* 카테고리 필 */
+.pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 36px 0 30px; }
+.pill {
+  padding: 10px 22px; border-radius: 99px; font-size: 14px; font-weight: 700;
+  color: var(--muted); text-decoration: none;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(10px);
+  transition: all .2s;
+}
+.pill.on {
+  color: #fff; border-color: transparent;
+  background: linear-gradient(135deg, var(--violet), #6d28d9);
+  box-shadow: 0 6px 26px rgba(139,92,246,.5);
+}
+.pill:not(.on):hover { color: var(--text); border-color: rgba(255,255,255,.25); }
+
+/* 추천 가로 스크롤 */
+.rail-head { display: flex; align-items: baseline; gap: 12px; margin: 8px 2px 14px; }
+.rail-head h2 { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+.rail-head span { font-size: 13px; color: var(--muted); }
+.rail { display: grid; grid-auto-flow: column; grid-auto-columns: 300px; gap: 16px;
+  overflow-x: auto; padding: 4px 2px 18px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.rail::-webkit-scrollbar { display: none; }
+.feature {
+  scroll-snap-align: start;
+  position: relative; border-radius: 22px; padding: 24px;
+  min-height: 190px; display: flex; flex-direction: column; justify-content: flex-end;
+  text-decoration: none; color: var(--text);
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+}
+.feature:hover { transform: translateY(-6px); }
+.feature .glow { position: absolute; inset: 0; opacity: .9; }
+.feature.f1 .glow { background: radial-gradient(130% 100% at 80% 0%, rgba(244,114,182,.28), transparent 60%); }
+.feature.f2 .glow { background: radial-gradient(130% 100% at 80% 0%, rgba(34,211,238,.28), transparent 60%); }
+.feature.f3 .glow { background: radial-gradient(130% 100% at 80% 0%, rgba(251,191,36,.26), transparent 60%); }
+.feature .emoji { font-size: 52px; position: absolute; top: 20px; right: 22px;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.5)); }
+.feature .tag { position: absolute; top: 22px; left: 22px; font-size: 11px; font-weight: 800;
+  letter-spacing: .1em; color: #fff; background: rgba(255,255,255,.14); border-radius: 99px; padding: 4px 12px; }
+.feature h3 { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; position: relative; }
+.feature p { font-size: 13px; color: var(--muted); margin-top: 6px; position: relative; }
+
+/* 메인 그리드 */
+.grid {
+  margin-top: 26px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px;
+}
+.card {
+  position: relative; border-radius: 18px; padding: 20px;
+  background: var(--glass); border: 1px solid var(--glass-line);
+  backdrop-filter: blur(12px);
+  text-decoration: none; color: var(--text);
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(139,92,246,.6);
+  box-shadow: 0 18px 44px rgba(0,0,0,.5), 0 0 30px rgba(139,92,246,.25);
+}
+.card .emoji { font-size: 34px; display: block; }
+.card h3 { margin-top: 14px; font-size: 15px; font-weight: 800; }
+.card .sub { margin-top: 5px; font-size: 12px; color: var(--muted); display: flex; gap: 8px; }
+.card .best { color: var(--amber); font-weight: 700; }
+.card .cat { position: absolute; top: 16px; right: 16px; font-size: 10px; font-weight: 800;
+  letter-spacing: .08em; padding: 3px 9px; border-radius: 99px; }
+.cat.puzzle { color: #c4b5fd; background: rgba(139,92,246,.16); }
+.cat.arcade { color: #f9a8d4; background: rgba(244,114,182,.14); }
+.cat.reflex { color: #67e8f9; background: rgba(34,211,238,.13); }
+
+footer { margin-top: 70px; text-align: center; color: var(--muted); font-size: 13px; line-height: 2; }
+footer .heart { color: var(--pink); }
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="horizon"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><span class="mark">🕹️</span>나케이드</div>
+    <div class="searchbar">🔍 게임 검색…</div>
+  </header>
+
+  <section class="hero">
+    <span class="badge">✦ 신작 3종 업데이트</span>
+    <h1>오늘 밤,<br><span class="grad">네온 시티</span>가 열린다</h1>
+    <p>28가지 미니게임 · 설치 없음 · 전부 무료</p>
+    <div class="stats">
+      <div><b>28</b><span>GAMES</span></div>
+      <div><b>4</b><span>CATEGORIES</span></div>
+      <div><b>∞</b><span>FREE PLAY</span></div>
+    </div>
+  </section>
+
+  <nav class="pills">
+    <a class="pill on" href="#">🎮 전체</a>
+    <a class="pill" href="#">🧩 퍼즐</a>
+    <a class="pill" href="#">🕹️ 아케이드</a>
+    <a class="pill" href="#">⚡ 반사</a>
+    <a class="pill" href="#">🧠 퀴즈</a>
+  </nav>
+
+  <div class="rail-head"><h2>🔥 지금 뜨는 게임</h2><span>이번 주 신작</span></div>
+  <div class="rail">
+    <a class="feature f1" href="#"><span class="glow"></span>
+      <span class="tag">NEW</span><span class="emoji">🍎</span>
+      <h3>과일 박스</h3><p>합이 10이 되게 사과를 묶어라 — 2분의 승부</p></a>
+    <a class="feature f2" href="#"><span class="glow"></span>
+      <span class="tag">NEW</span><span class="emoji">🪖</span>
+      <h3>메탈 슬러그</h3><p>달리고, 쏘고, 폭파하라. 웨이브 런앤건</p></a>
+    <a class="feature f3" href="#"><span class="glow"></span>
+      <span class="tag">HOT</span><span class="emoji">🍄</span>
+      <h3>슈퍼 마리오</h3><p>클래식 플랫포머의 귀환 — 파워업 완비</p></a>
+  </div>
+
+  <div class="rail-head"><h2>전체 게임</h2><span>28개</span></div>
+  <main class="grid">
+    <a class="card" href="#"><span class="cat puzzle">PUZZLE</span><span class="emoji">🧱</span>
+      <h3>테트리스</h3><div class="sub"><span class="best">🏆 45,900</span><span>12회 플레이</span></div></a>
+    <a class="card" href="#"><span class="cat arcade">ARCADE</span><span class="emoji">🐍</span>
+      <h3>스네이크</h3><div class="sub"><span class="best">🏆 87</span><span>8회 플레이</span></div></a>
+    <a class="card" href="#"><span class="cat puzzle">PUZZLE</span><span class="emoji">♟</span>
+      <h3>체스</h3><div class="sub"><span class="best">🏆 3승</span></div></a>
+    <a class="card" href="#"><span class="cat arcade">ARCADE</span><span class="emoji">🎱</span>
+      <h3>핀볼</h3><div class="sub"><span class="best">🏆 66,200</span></div></a>
+    <a class="card" href="#"><span class="cat reflex">REFLEX</span><span class="emoji">🎵</span>
+      <h3>리듬 탭</h3><div class="sub"><span class="best">🏆 9,870</span></div></a>
+    <a class="card" href="#"><span class="cat puzzle">PUZZLE</span><span class="emoji">💣</span>
+      <h3>지뢰 찾기</h3><div class="sub"><span class="best">🏆 42초</span></div></a>
+    <a class="card" href="#"><span class="cat puzzle">PUZZLE</span><span class="emoji">🧩</span>
+      <h3>2048</h3><div class="sub"><span class="best">🏆 2048</span></div></a>
+    <a class="card" href="#"><span class="cat reflex">REFLEX</span><span class="emoji">🎯</span>
+      <h3>에임 트레이너</h3><div class="sub"><span class="best">🏆 91%</span></div></a>
+  </main>
+
+  <footer>
+    🕹️ 나케이드 — 브라우저 오락실<br>
+    © 2026 NBYTE · made with <span class="heart">♥</span> · 모든 기록은 브라우저에만 저장됩니다
+  </footer>
+</div>
+</body>
+</html>
