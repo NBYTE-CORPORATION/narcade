@@ -3,58 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <title>나케이드 — 미니게임 아케이드</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="assets/css/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="설치 없이, 로그인 없이. 브라우저에서 바로 즐기는 무료 미니게임 아케이드. 퍼즐·반사·퀴즈·아케이드 게임을 언제 어디서나.">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" href="favicon.ico">
+  <link rel="canonical" href="https://narcade.nbyte.xyz/">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta property="og:title" content="나케이드 — 미니게임 아케이드">
+  <meta property="og:description" content="설치 없이, 로그인 없이. 브라우저에서 바로 즐기는 무료 미니게임 아케이드.">
+  <meta property="og:url" content="https://narcade.nbyte.xyz/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="assets/css/main.css?v=4">
 </head>
 <body>
-  <div class="bg-grid"></div>
-  <div class="bg-orbs">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
-
   <div class="site-wrapper">
     <header class="site-header">
-      <div class="logo">
-        <span class="logo-icon">🎮</span>
-        <div class="logo-text">
-          <h1>나케이드</h1>
-          <span class="logo-sub">NARCADE · ARCADE</span>
-        </div>
-      </div>
+      <a class="logo" href="./">
+        <h1>narcade</h1><span class="logo-dot">.</span>
+      </a>
       <div class="search-bar">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" placeholder="게임 검색...">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput" placeholder="게임 검색" aria-label="게임 검색">
+        <kbd>/</kbd>
       </div>
-      <div class="header-stat">
-        <span class="stat-num" id="gameCount">0</span>
-        <span class="stat-label">GAMES</span>
-      </div>
+      <div class="header-stat"><b id="gameCount">0</b> GAMES</div>
     </header>
 
     <section class="hero">
-      <div class="hero-badge">✨ 새 게임 추가됨</div>
-      <h2 class="hero-title">지금 바로 <span class="gradient-text">플레이</span>하세요</h2>
-      <p class="hero-desc">24가지 미니게임 · 언제 어디서나 무료</p>
+      <div class="hero-eyebrow"><span id="heroCount"></span> GAMES — FREE FOREVER</div>
+      <h2 class="hero-title">설치 없이, 로그인 없이.<br><span class="line-dim">브라우저에서 바로 플레이.</span></h2>
+      <p class="hero-desc">기록은 이 브라우저에만 저장됩니다. 광고도, 추적도 없습니다.</p>
     </section>
 
-    <div class="filter-tabs">
-      <button class="tab active" data-cat="전체">🎮 전체</button>
-      <button class="tab" data-cat="퀴즈">🧩 퀴즈</button>
-      <button class="tab" data-cat="반사">⚡ 반사</button>
-      <button class="tab" data-cat="아케이드">🕹️ 아케이드</button>
-      <button class="tab" data-cat="퍼즐">🔢 퍼즐</button>
+    <section class="row-section" id="recentSection" style="display:none" aria-label="최근 플레이한 게임">
+      <h3 class="section-title">RECENT — 최근 플레이</h3>
+      <div class="h-scroll" id="recentRow"></div>
+    </section>
+
+    <section class="row-section" id="favSection" style="display:none" aria-label="즐겨찾기한 게임">
+      <h3 class="section-title">FAVORITES — 즐겨찾기</h3>
+      <div class="h-scroll" id="favRow"></div>
+    </section>
+
+    <div class="toolbar">
+      <div class="filter-tabs">
+        <button class="tab active" data-cat="전체">전체</button>
+        <button class="tab" data-cat="퍼즐">퍼즐</button>
+        <button class="tab" data-cat="아케이드">아케이드</button>
+        <button class="tab" data-cat="반사">반사</button>
+        <button class="tab" data-cat="퀴즈">퀴즈</button>
+      </div>
+      <div class="sort-wrap">
+        <label class="sort-label" for="sortSel">정렬</label>
+        <select id="sortSel" aria-label="정렬 기준">
+          <option value="default">기본</option>
+          <option value="new">신규순</option>
+          <option value="popular">인기순</option>
+          <option value="name">이름순</option>
+        </select>
+      </div>
     </div>
 
     <main class="game-grid" id="gameGrid"></main>
 
     <footer class="site-footer">
-      <p>🎮 나케이드 · 미니게임 모음집</p>
-      <p class="footer-copy">© 2025 NBYTE Corporation. All rights reserved.</p>
+      <p>© 2026 NBYTE</p>
+      <p>ALL DATA STAYS IN YOUR BROWSER</p>
     </footer>
   </div>
 
-  <script src="assets/js/main.js"></script>
+  <script src="assets/js/arcade.js?v=4"></script>
+  <script src="assets/js/main.js?v=4"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
 </body>
 </html>

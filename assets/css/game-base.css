@@ -1,21 +1,44 @@
-/* ============================
-   나케이드 — 공통 게임 스타일
-   ============================ */
+/* ============================================
+   나케이드 — 공통 게임 스타일 v3 (모던 미니멀)
+   arcade.js와 함께 사용. 기존 클래스/변수명 호환 유지.
+   ============================================ */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
 :root {
-  --bg: #07070f;
-  --surface: rgba(255, 255, 255, 0.05);
-  --border: rgba(255, 255, 255, 0.1);
-  --primary: #7c3aed;
-  --primary-light: #a78bfa;
-  --primary-glow: rgba(124, 58, 237, 0.35);
-  --cyan: #06b6d4;
-  --green: #10b981;
-  --red: #ef4444;
-  --amber: #f59e0b;
-  --text: #f1f5f9;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
+  --bg: #09090b;
+  --surface: #101012;
+  --surface-hover: #131316;
+  --border: #1e1e22;
+  --border-strong: #34343a;
+  --primary: #a3e635;
+  --primary-light: #bef264;
+  --primary-glow: rgba(163, 230, 53, 0.14);
+  --cyan: #22d3ee;
+  --cyan-glow: rgba(34, 211, 238, 0.14);
+  --pink: #f472b6;
+  --pink-glow: rgba(244, 114, 182, 0.14);
+  --green: #34d399;
+  --green-glow: rgba(52, 211, 153, 0.14);
+  --red: #f87171;
+  --red-glow: rgba(248, 113, 113, 0.14);
+  --amber: #fbbf24;
+  --amber-glow: rgba(251, 191, 36, 0.14);
+  --text: #f4f4f5;
+  --text-muted: #5a5a63;
+  --text-dim: #8e8e96;
+  --accent: var(--primary);
+  --accent-light: var(--primary-light);
+  --accent-glow: var(--primary-glow);
+  --accent-ink: #0c1203; /* 액센트 배경 위 텍스트 */
+  --sans: 'Pretendard Variable', Pretendard, system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
 }
+
+/* 게임별 강조색: <body data-accent="cyan"> — 전부 밝은 톤이라 어두운 잉크 텍스트 공용 */
+body[data-accent="cyan"]  { --accent: var(--cyan);  --accent-light: #67e8f9; --accent-glow: var(--cyan-glow);  --accent-ink: #03181d; }
+body[data-accent="pink"]  { --accent: var(--pink);  --accent-light: #f9a8d4; --accent-glow: var(--pink-glow);  --accent-ink: #21060f; }
+body[data-accent="amber"] { --accent: var(--amber); --accent-light: #fcd34d; --accent-glow: var(--amber-glow); --accent-ink: #1e1403; }
+body[data-accent="green"] { --accent: var(--green); --accent-light: #6ee7b7; --accent-glow: var(--green-glow); --accent-ink: #03160e; }
 
 * {
   box-sizing: border-box;
@@ -23,109 +46,179 @@
   padding: 0;
 }
 
+html { -webkit-text-size-adjust: 100%; }
+
 body {
   background: var(--bg);
-  background-image:
-    linear-gradient(rgba(124, 58, 237, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
   color: var(--text);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--sans);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px 40px;
+  padding: 82px 20px 40px;
+  padding-top: calc(82px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
   position: relative;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════ 표준 헤더 (Arcade.init이 주입) ══════════ */
+.arcade-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top, 0px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(9, 9, 11, 0.85);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 200;
+}
+
+.arcade-header .header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: -0.01em;
+}
+
+.arcade-header .header-emoji { font-size: 17px; }
+
+.arcade-header .sound-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  transition: border-color 0.15s;
+}
+
+.arcade-header .sound-toggle:hover {
+  border-color: var(--border-strong);
+  background: var(--surface);
+  box-shadow: none;
+  transform: none;
 }
 
 /* ── Back Button ── */
 .back-btn {
-  position: fixed;
-  top: 18px;
-  left: 18px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: none;
+  border: 1px solid var(--border);
   color: var(--text-dim);
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 7px 14px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+  flex: 0 0 auto;
+}
+
+/* arcade-header 밖에 단독으로 있을 때(레거시) */
+body > a.back-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  background: rgba(9, 9, 11, 0.85);
   backdrop-filter: blur(12px);
-  transition: all 0.25s;
   z-index: 100;
-  letter-spacing: 0.02em;
 }
 
 .back-btn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
-  box-shadow: 0 4px 16px var(--primary-glow);
+  border-color: var(--border-strong);
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: none;
 }
 
 /* ── Game Container ── */
 .game-container {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 16px;
   padding: 40px 36px;
   max-width: 580px;
   width: 100%;
-  backdrop-filter: blur(20px);
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 /* ── Typography ── */
 h1 {
-  font-size: 1.9rem;
-  font-weight: 900;
+  font-size: 1.7rem;
+  font-weight: 800;
   margin-bottom: 10px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 h1 + p,
 .game-desc {
   color: var(--text-dim);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   margin-bottom: 24px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* ── Buttons ── */
 button {
-  background: linear-gradient(135deg, var(--primary), #5b21b6);
-  color: white;
+  background: var(--accent);
+  color: var(--accent-ink);
   border: none;
-  padding: 12px 28px;
-  border-radius: 12px;
-  font-size: 15px;
+  padding: 12px 26px;
+  border-radius: 10px;
+  font-size: 14.5px;
   font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-  letter-spacing: 0.02em;
+  transition: transform 0.15s, filter 0.15s, opacity 0.15s;
+  letter-spacing: -0.01em;
+  touch-action: manipulation;
 }
 
 button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px var(--primary-glow);
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px var(--accent-glow);
 }
 
-button:active {
-  transform: translateY(0);
-}
+button:active { transform: translateY(0); filter: brightness(0.96); }
 
 button:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
   transform: none;
+  filter: none;
   box-shadow: none;
 }
 
@@ -139,44 +232,35 @@ button:disabled {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--surface-hover);
   box-shadow: none;
+  filter: none;
 }
 
-.btn-success {
-  background: linear-gradient(135deg, var(--green), #059669);
-  box-shadow: none;
-}
+.btn-success { background: var(--green); color: #03160e; }
+.btn-success:hover { box-shadow: 0 6px 20px var(--green-glow); }
 
-.btn-success:hover {
-  box-shadow: 0 8px 28px rgba(16, 185, 129, 0.35);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, var(--red), #dc2626);
-}
-
-.btn-danger:hover {
-  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.35);
-}
+.btn-danger { background: var(--red); color: #1e0505; }
+.btn-danger:hover { box-shadow: 0 6px 20px var(--red-glow); }
 
 /* ── Inputs ── */
 input[type="text"],
 input[type="number"] {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
   color: var(--text);
   padding: 12px 18px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 16px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   width: 100%;
   max-width: 320px;
   text-align: center;
@@ -184,19 +268,17 @@ input[type="number"] {
 }
 
 input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-input::placeholder {
-  color: var(--text-muted);
-}
+input::placeholder { color: var(--text-muted); }
 
 /* ── Result / Message Text ── */
 #result,
 #message,
 .result-text {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 600;
   margin-top: 16px;
   min-height: 1.5em;
@@ -213,42 +295,282 @@ input::placeholder {
 .stat-row {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  gap: 26px;
   margin: 16px 0;
   flex-wrap: wrap;
 }
 
-.stat-item {
-  text-align: center;
-}
+.stat-item { text-align: center; }
 
 .stat-item .stat-val {
   display: block;
-  font-size: 2rem;
-  font-weight: 900;
-  background: linear-gradient(135deg, var(--primary-light), var(--cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
 }
 
 .stat-item .stat-lbl {
   display: block;
-  font-size: 0.72rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
   letter-spacing: 0.1em;
   color: var(--text-muted);
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 3px;
+}
+
+/* ══════════ 표준 오버레이 (Arcade.overlay) ══════════ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 9, 11, 0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 300;
+  padding: 24px;
+}
+
+.overlay.show {
+  display: flex;
+  animation: ovFade 0.2s ease-out;
+}
+
+@keyframes ovFade { from { opacity: 0; } to { opacity: 1; } }
+
+.overlay-inner {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  padding: 36px 40px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  animation: ovPop 0.28s cubic-bezier(0.3, 1.2, 0.6, 1);
+}
+
+@keyframes ovPop {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.overlay-inner .ov-emoji {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.overlay-inner .ov-title,
+.overlay-inner h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+}
+
+.overlay-inner .ov-msg {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  white-space: pre-line;
+}
+
+.overlay-inner .ov-stats {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin: 6px 0 20px;
+}
+
+.overlay-inner .ov-stat-val {
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.overlay-inner .ov-stat-lbl {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.overlay-inner .ov-btn {
+  min-width: 160px;
+  font-size: 15px;
+  padding: 13px 32px;
+}
+
+/* ── 신기록 배지 ── */
+.record-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  background: var(--amber);
+  color: #1e1403;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 5px 14px;
+  border-radius: 99px;
+  margin-bottom: 12px;
+  animation: recordPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes recordPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+/* ══════════ 일시정지 오버레이 ══════════ */
+.pause-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 9, 11, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 400;
+}
+
+.pause-overlay.show { display: flex; }
+
+.pause-inner { text-align: center; }
+
+.pause-inner .pause-icon { font-size: 2.6rem; margin-bottom: 10px; }
+
+.pause-inner h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.pause-inner p {
+  color: var(--text-dim);
+  font-size: 0.86rem;
+  margin-bottom: 20px;
+}
+
+/* ══════════ 가상 게임패드 (Arcade.touch.buttons) ══════════ */
+.touch-pad {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 250;
+  pointer-events: none;
+}
+
+.touch-pad .touch-btn {
+  pointer-events: auto;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(16, 16, 18, 0.85);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 21px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.touch-pad .touch-btn.wide {
+  width: 94px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.touch-pad .touch-btn.pressed {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  transform: scale(0.94);
+}
+
+/* ══════════ 난이도 선택 (Arcade.difficulty) ══════════ */
+.diff-pills {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  margin: 10px 0 18px;
+}
+
+.diff-pills .diff-pill {
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.diff-pills .diff-pill:hover {
+  transform: none;
+  box-shadow: none;
+  filter: none;
+  color: var(--text);
+}
+
+.diff-pills .diff-pill.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ══════════ DOM 콘페티 (Arcade.Particles.domBurst) ══════════ */
+.arcade-confetti {
+  position: fixed;
+  z-index: 500;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: confettiFly 0.8s ease-out forwards;
+}
+
+@keyframes confettiFly {
+  from { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  to {
+    opacity: 0;
+    transform: translate(var(--cf-x, 0), var(--cf-y, -60px)) rotate(var(--cf-r, 180deg));
+  }
 }
 
 /* ── Responsive ── */
-@media (max-width: 480px) {
-  .game-container {
-    padding: 28px 20px;
-    border-radius: 18px;
-  }
+@media (max-width: 768px) {
+  body { padding-left: 14px; padding-right: 14px; }
+  .game-container { padding: 32px 22px; }
+  .overlay-inner { padding: 30px 24px; }
+}
 
-  h1 {
-    font-size: 1.5rem;
-  }
+@media (max-width: 480px) {
+  .game-container { padding: 28px 18px; border-radius: 14px; }
+  h1 { font-size: 1.4rem; }
+  .arcade-header .header-name { font-size: 13.5px; }
+  .back-btn { padding: 7px 11px; }
 }

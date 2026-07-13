@@ -6,7 +6,8 @@
     "file": "game28.html",
     "category": "퍼즐",
     "desc": "드래그로 사과를 감싸 숫자 합이 10이 되면 제거! 2분 안에 최대한 많이 없애세요.",
-    "isNew": true
+    "isNew": true,
+    "bestFormat": "score"
   },
   {
     "id": "game27",
@@ -15,7 +16,8 @@
     "file": "game27.html",
     "category": "아케이드",
     "desc": "달려라 쏴라! 적 병사와 탱크를 처치하는 런앤건. 수류탄, 웨이브 시스템, 폭발 이펙트.",
-    "isNew": true
+    "isNew": true,
+    "bestFormat": "score"
   },
   {
     "id": "game26",
@@ -24,7 +26,8 @@
     "file": "game26.html",
     "category": "아케이드",
     "desc": "달리고 점프하고 굼바를 밟아라! ? 블록, 코인, 파이프가 있는 클래식 플랫포머.",
-    "isNew": true
+    "isNew": true,
+    "bestFormat": "score"
   },
   {
     "id": "game25",
@@ -33,7 +36,8 @@
     "file": "game25.html",
     "category": "퍼즐",
     "desc": "알파-베타 AI와 두뇌 대결! 캐슬링·앙파상·프로모션 완전 구현. 쉬움/보통/어려움 3단계.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game24",
@@ -42,7 +46,8 @@
     "file": "game24.html",
     "category": "아케이드",
     "desc": "플리퍼로 공을 튕겨라! 범퍼, 슬링샷, 플런저 발사 시스템의 완전한 핀볼.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game23",
@@ -51,7 +56,8 @@
     "file": "game23.html",
     "category": "퍼즐",
     "desc": "AI와 오목 대결! 5개를 연속으로 이어라. 휴리스틱 AI, 승리 라인 하이라이트.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game22",
@@ -60,7 +66,9 @@
     "file": "game22.html",
     "category": "퍼즐",
     "desc": "숫자 타일을 밀어 순서를 맞춰라! 3×3·4×4·5×5 난이도, 키보드 조작 지원.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "time",
+    "bestSuffixes": ["3", "4", "5"]
   },
   {
     "id": "game21",
@@ -69,7 +77,8 @@
     "file": "game21.html",
     "category": "반사",
     "desc": "사라지기 전에 타깃을 클릭하라! 30초 정확도·콤보 도전, 에임 실력 측정.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game20",
@@ -78,7 +87,8 @@
     "file": "game20.html",
     "category": "아케이드",
     "desc": "장애물을 피해 달려라! 더블 점프, 파라렉스 배경, 속도 증가 시스템.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game19",
@@ -87,7 +97,9 @@
     "file": "game19.html",
     "category": "퀴즈",
     "desc": "같은 카드 쌍을 찾아라! 3D 플립 애니메이션, 콤보 시스템, 3가지 난이도.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "time",
+    "bestSuffixes": ["easy", "normal", "hard"]
   },
   {
     "id": "game18",
@@ -96,7 +108,8 @@
     "file": "game18.html",
     "category": "반사",
     "desc": "D·F·J·K 키로 4레인 노트를 받아라! Perfect/Good 판정, 60초 도전.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game17",
@@ -105,7 +118,9 @@
     "file": "game17.html",
     "category": "퍼즐",
     "desc": "숨겨진 지뢰를 피하며 모든 칸을 열어라! 3가지 난이도, 첫 클릭 안전 보장.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "time",
+    "bestSuffixes": ["easy", "normal", "hard"]
   },
   {
     "id": "game16",
@@ -114,7 +129,8 @@
     "file": "game16.html",
     "category": "아케이드",
     "desc": "우주선을 조종해 적을 처치하라! 웨이브, 파티클 폭발, 파워업 시스템.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game15",
@@ -123,7 +139,8 @@
     "file": "game15.html",
     "category": "아케이드",
     "desc": "패들로 공을 튕겨 모든 벽돌을 부수세요! 파티클 이펙트와 레벨 시스템이 짜릿해요.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game14",
@@ -132,7 +149,8 @@
     "file": "game14.html",
     "category": "퍼즐",
     "desc": "7가지 테트로미노를 쌓아 줄을 완성하세요! 고스트 블록, 하드드롭, 레벨 시스템 완비.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game13",
@@ -141,7 +159,8 @@
     "file": "game13.html",
     "category": "아케이드",
     "desc": "구멍에서 튀어나오는 두더지를 빠르게 잡아라! 30초 안에 최고 점수 도전.",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game12",
@@ -150,7 +169,8 @@
     "file": "game12.html",
     "category": "퍼즐",
     "desc": "같은 숫자 타일을 합쳐 2048을 만들어보세요. 중독성 강한 퍼즐!",
-    "isNew": true
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game11",
@@ -159,7 +179,8 @@
     "file": "game11.html",
     "category": "아케이드",
     "desc": "먹이를 먹고 점점 길어지는 클래식 스네이크 게임. 벽과 몸통을 피하세요!",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game10",
@@ -168,7 +189,28 @@
     "file": "game10.html",
     "category": "반사",
     "desc": "1부터 9까지 순서대로 최대한 빠르게 클릭! 기록을 깨보세요.",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "ms"
+  },
+  {
+    "id": "game9",
+    "emoji": "🎨",
+    "title": "사이먼 — 색상 기억",
+    "file": "game9.html",
+    "category": "퀴즈",
+    "desc": "4색 네온 패드가 빛나는 순서를 기억해 그대로 따라 누르세요! 라운드마다 점점 빨라집니다.",
+    "isNew": true,
+    "bestFormat": "score"
+  },
+  {
+    "id": "game8",
+    "emoji": "➕",
+    "title": "산수 스트릭",
+    "file": "game8.html",
+    "category": "퀴즈",
+    "desc": "제한시간 안에 4지선다 암산 문제를 풀어라! 콤보 배수로 점수를 불리고 3목숨으로 버티세요.",
+    "isNew": true,
+    "bestFormat": "score"
   },
   {
     "id": "game7",
@@ -177,7 +219,8 @@
     "file": "game7.html",
     "category": "반사",
     "desc": "주어진 문장을 최대한 빠르고 정확하게 타이핑하세요.",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game6",
@@ -186,7 +229,8 @@
     "file": "game6.html",
     "category": "반사",
     "desc": "화면이 바뀌는 순간 최대한 빠르게 클릭! 당신의 반응속도는?",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "ms"
   },
   {
     "id": "game5",
@@ -195,7 +239,8 @@
     "file": "game5.html",
     "category": "아케이드",
     "desc": "동전을 던져 짝수인지 홀수인지 맞혀보세요! 리얼한 동전 플립 애니메이션.",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game4",
@@ -204,7 +249,8 @@
     "file": "game4.html",
     "category": "아케이드",
     "desc": "주사위를 굴려 CPU와 대결! 진짜처럼 구르는 3D 주사위로 승부를 가려요.",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game3",
@@ -213,7 +259,8 @@
     "file": "game3.html",
     "category": "퀴즈",
     "desc": "3초 동안 보이는 11자리 숫자를 기억하고 정확히 입력하세요.",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "score"
   },
   {
     "id": "game2",
@@ -222,6 +269,17 @@
     "file": "game2.html",
     "category": "반사",
     "desc": "10초 안에 버튼을 최대한 많이 클릭하세요! 클릭 속도를 테스트해봐요.",
-    "isNew": false
+    "isNew": false,
+    "bestFormat": "score"
+  },
+  {
+    "id": "game1",
+    "emoji": "🎯",
+    "title": "숫자 맞추기",
+    "file": "game1.html",
+    "category": "퍼즐",
+    "desc": "1~100 사이 숨은 숫자를 8번 안에 추리! 뜨거워/차가워 온도 게이지가 정답으로 안내합니다.",
+    "isNew": true,
+    "bestFormat": "score"
   }
 ]
